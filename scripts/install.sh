@@ -9,3 +9,9 @@ pip install --pre torch==2.1.2  --index-url https://download.pytorch.org/whl/nig
 
 pip install packaging &&  pip install ninja && pip install flash-attn --no-build-isolation --no-cache-dir
 pip install -r requirements.txt
+
+# GUROBI free academic license
+# /home/zhaijidong/yhy/Software/licensetools12.0.0_linux64/grbgetkey 79171a71-14ae-4ab7-9dec-675e7026e2c6
+
+# set GUROBI licence env
+export GRB_LICENSE_FILE=/home/zhaijidong/yhy/.local/gurobi/gurobi.lic
