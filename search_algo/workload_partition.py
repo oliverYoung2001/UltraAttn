@@ -34,10 +34,10 @@ def print_lp_result(N: int, Vars: dict, v_attr: str):
     for i in range(N):
         for j in range(N):
             if i < j:
-                print(f'/', end=' ')
+                print(f'/ ', end=' ')
                 continue
             if i == j:
-                print(f'{i}', end=' ')
+                print(f'{i}{" " if i < 10 else ""}', end=' ')
                 continue
             max_v = 0
             max_kid = -1
@@ -46,7 +46,7 @@ def print_lp_result(N: int, Vars: dict, v_attr: str):
                 if cur_v > max_v:
                     max_v = cur_v
                     max_kid = k
-            print(f'{max_kid}', end=' ')
+            print(f'{max_kid}{" " if max_kid < 10 else ""}', end=' ')
         print(f'')
 
 def ILP(N: int):
@@ -124,26 +124,35 @@ def ILP(N: int):
         
 def Quad_LP_GUROBI(N: int):
     # causal = True, fwd
+    # Arguments
+    problem_type = 'OPT'
+    problem_type = 'SAT'
+    LOAD_BALANCE = True
+    LOAD_BALANCE = False
+    if problem_type == 'SAT':
+        TARGET = N // 2 + 1 + (LOAD_BALANCE) - 1
+    Var_cat_default = GRB.CONTINUOUS
+    Var_cat_default = GRB.INTEGER
+    
+    # LP Problem
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
-
     # Variables & Bound
     constraints = []
     Quad_Bound = 1 / (N * N)
+    Quad_Bound = 1 / (2 * N)
     Vars = dict()
-    Var_cat_default = GRB.CONTINUOUS
-    # Var_cat_default = GRB.INTEGER
     # Var_cat_default = 'Integer'
     for i in range(N):
         for j in range(i):
             for k in range(N):
-                # Vars[f"x_{i}_{j}_{k}"] = mylp.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}_{k}", lb=0, ub=1)
+                Vars[f"x_{i}_{j}_{k}"] = mylp.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}_{k}", lb=0, ub=1)
                 # # Quadratic Constraints
                 # constraints.append(Vars[f"x_{i}_{j}_{k}"] * (1 - Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
                 # constraints.append(Vars[f"x_{i}_{j}_{k}"] * (1 - Vars[f"x_{i}_{j}_{k}"]) >= 0)
                 # constraints.append(Vars[f"x_{i}_{j}_{k}"] * Vars[f"x_{i}_{j}_{k}"] <= 1)
                 # constraints.append(Vars[f"x_{i}_{j}_{k}"] - cp.square(Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
-                Vars[f"x_{i}_{j}_{k}"] = mylp.addVar(vtype=GRB.CONTINUOUS, name=f"x_{i}_{j}_{k}", lb=0, ub=1)
-                mylp.addConstr(Vars[f"x_{i}_{j}_{k}"] * (1 - Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
+                # Vars[f"x_{i}_{j}_{k}"] = mylp.addVar(vtype=GRB.CONTINUOUS, name=f"x_{i}_{j}_{k}", lb=0, ub=1)
+                # mylp.addConstr(Vars[f"x_{i}_{j}_{k}"] * (1 - Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
     for g in range(N):
         for i in range(N):
             Vars[f'a_{g}_{i}'] = mylp.addVar(vtype=Var_cat_default, name=f'a_{g}_{i}', lb=0, ub=1)
@@ -156,9 +165,14 @@ def Quad_LP_GUROBI(N: int):
         Vars[f'B_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'B_{g}', lb=0, ub=N-1)
         Vars[f'C_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'C_{g}', lb=0, ub=N-1)
         Vars[f'D_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'D_{g}', lb=0, ub=N-1)
+        Vars[f'Cin_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'Cin_{g}', lb=0)
+        Vars[f'Cout_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'Cout_{g}', lb=0)
     Vars[f'Comm_Volume'] = mylp.addVar(vtype=Var_cat_default, name=f'Comm_Volume', lb=0)
     
     # Constraints
+    # -1.
+    if problem_type == 'SAT':
+        mylp.addConstr(Vars[f'Comm_Volume'] == TARGET)
     # 0. Workload Partition
     for i in range(N):
         for j in range(i):
@@ -188,18 +202,21 @@ def Quad_LP_GUROBI(N: int):
         mylp.addConstr(Vars[f'C_{g}'] == gp.quicksum([Vars[f'a_{k}_{g}'] for k in range(N) if k != g]))
         mylp.addConstr(Vars[f'D_{g}'] == gp.quicksum([Vars[f'b_{k}_{g}'] for k in range(N) if k != g]))
     
-    # 3. Communication Volume
+    # 3. Communication Volume (In/Out)
     for g in range(N):
         # mylp += Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 <= Vars[f'Comm_Volume']
         # mylp += Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 <= Vars[f'Comm_Volume']
-        mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 <= Vars[f'Comm_Volume'])
-        mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 <= Vars[f'Comm_Volume'])
+        mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 == Vars[f'Cin_{g}'])
+        mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 == Vars[f'Cout_{g}'])
+        mylp.addConstr(Vars[f'Cin_{g}'] <= Vars[f'Comm_Volume'])
+        mylp.addConstr(Vars[f'Cout_{g}'] <= Vars[f'Comm_Volume'])
     
-    # 4. Load Balance
-    COMP_UB = int(math.ceil((1 + N - 1) * (N - 1) / 2 / N))
-    for g in range(N):
-        # mylp += pulp.lpSum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB
-        mylp.addConstr(gp.quicksum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB)
+    # # 4. Load Balance
+    if LOAD_BALANCE:
+        COMP_UB = int(math.ceil((1 + N - 1) * (N - 1) / 2 / N))
+        for g in range(N):
+            # mylp += pulp.lpSum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB
+            mylp.addConstr(gp.quicksum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB)
 
     # Objective
     mylp.setObjective(Vars[f'Comm_Volume'], GRB.MINIMIZE)
@@ -219,7 +236,7 @@ def Quad_LP_GUROBI(N: int):
     # causal = True, fwd
 
 def main():
-    N = 8
+    N = 16
     # ILP(N)
     # Quad_LP_CVXPY(N)
     # Quad_LP_SCIPY(N)
