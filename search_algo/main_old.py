@@ -10,7 +10,6 @@ from search_algo.execute_plan import Execution_Plan
 from search_algo.global_vars import *
 import pickle
 import numpy as np
-from search_algo.arguments import parse_config
 
 def get_exp_configs():
     # plan_type = 'automatic'
@@ -375,13 +374,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         with open(plan_file, 'wb') as f:
             pickle.dump(execute_plan, f)
  
-def generate_execution_plans(args):
-    
-    
 def main():
-    args = parse_config()
-    generate_execution_plans(args)
-    return
     da_configs = get_configs_for_search_workload_table()
     exp_configs = get_exp_configs_for_search_workload_table()
     for da_config in da_configs:

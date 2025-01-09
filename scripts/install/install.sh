@@ -13,3 +13,6 @@ pip install -r requirements.txt
 # GUROBI free academic license
 # /home/zhaijidong/yhy/Software/licensetools12.0.0_linux64/grbgetkey 79171a71-14ae-4ab7-9dec-675e7026e2c6
 
+# install pytorch nightly for flexattn in yhy_pt_nightly envs
+conda activate yhy_pt_nightly
+pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118

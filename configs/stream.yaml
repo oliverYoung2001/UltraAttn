@@ -1,0 +1,21 @@
+Parallel:
+  SP: 
+    - 4 # intra-node degree
+    - 1 # inter-node degree
+Shape:
+  Sq: 32768 # 32K
+  Skv: 32768 # 32K
+  Nhq: 32
+  Nhkv: 32
+  BS: 1
+  D: 128
+Pattern:
+  pattern_type: "stream"  # causal, full, star, stream, stride
+  pattern_sparsity: 0.125 # 1/8
+  local_blocks: 3 # 3 local blocks
+Experiment:
+  # transform_mode: "None"
+  transform_mode: "Greedy"
+  # transform_mode: "bf"
+  lowering_mode: "ILP"
+  # lowering_mode: "Flexflow"
