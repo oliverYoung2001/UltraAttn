@@ -11,6 +11,52 @@ import regex as re
 import numpy as np
 from typing import Optional
 
+
+class Block_Type(Enum):
+    EMPTY = 0
+    FULL = 1
+    CAUSAL = 2
+
+Block_Comp_Volume = {
+    Block_Type.EMPTY: 0,
+    Block_Type.FULL: 1,
+    Block_Type.CAUSAL: 0.5,
+}
+
+class Block_Attention_Config():
+    CP: int  # degree of CP
+    ParD: int  # degree of partition
+    cmap: np.ndarray  # Contxet map: context chunk -> CP_rank
+    block_table: np.ndarray  # 0 -> empty, 1 -> full, 2-> causal
+    
+    def __init__(self, CP: int, ParD: int, cmap: np.ndarray, block_table: np.ndarray):
+        self.CP = CP
+        self.ParD = ParD
+        self.cmap = cmap
+        self.block_table = block_table
+        block_table_value = np.array([v.value for v in block_table.flatten()]).reshape(block_table.shape)
+        print(f'block_table_value:\n{block_table_value}')
+    
+    @classmethod
+    def from_causal(cls, CP: int, ParD: int, cmap: np.ndarray):
+        block_table = np.zeros((ParD, ParD), dtype=Block_Type)
+        # clear block_table to empty
+        for i in range(ParD):
+            for j in range(ParD):
+                block_table[i, j] = Block_Type.EMPTY
+        # set block_table to causal
+        for i in range(ParD):
+            for j in range(i):
+                block_table[i, j] = Block_Type.FULL
+            block_table[i, i] = Block_Type.CAUSAL
+        return cls(CP, ParD, cmap, block_table)
+    
+    # @classmethod
+    # def from_custom(cls, CP: int, ParD: int, cmap: np.ndarray, block_table: np.ndarray):
+    #     return cls(CP, ParD, cmap, block_table)
+    
+
+
 def get_factors(n: int):
     factors = []
     for i in range(1, n + 1):
