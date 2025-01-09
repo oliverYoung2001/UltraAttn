@@ -2,7 +2,7 @@ import torch
 import torch.distributed as dist
 from flash_attn.flash_attn_interface import _flash_attn_forward, _flash_attn_backward
 import torch.distributed
-from .utils import RingCommNew, RingCommOld, RingComm
+from comm_lib.comm_utils import RingCommNew, RingCommOld, RingComm
 from .utils import update_out_and_lse_old as update_out_and_lse
 from .utils import print_rank_0
 

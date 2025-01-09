@@ -110,7 +110,8 @@ set +x
 exit 0
 
 # Run with MPI
-# salloc -p rag -w g3017 -N 1 -n 128 -t 3600
+# salloc -N 1 -n 128 --gres=gpu:8 --exclusive -p rag
+# salloc -N 1 -n 128 --gres=gpu:8 --exclusive -p xl
 # salloc -p arch -w g3029 -N 1 -n 128 -t 3600
 # salloc -p rag -w g3013 -N 1 -n 128 -t 3600
 # salloc -p hit -w g4008 -N 1 -n 128 -t 3600

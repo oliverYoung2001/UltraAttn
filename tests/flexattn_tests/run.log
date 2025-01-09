@@ -1,0 +1,18 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p rag -N 1 --ntasks-per-node=1 --gres=gpu:1 --mem 256G -K -w g3015 -c 16 python tests/flexattn_tests/flexattn.py
+srun: job 46322 queued and waiting for resources
+srun: job 46322 has been allocated resources
+Traceback (most recent call last):
+  File "/home/zhaijidong/yhy/llm/UltraAttn/tests/flexattn_tests/flexattn.py", line 247, in <module>
+    test_mask(noop)
+  File "/home/zhaijidong/yhy/llm/UltraAttn/tests/flexattn_tests/flexattn.py", line 44, in test_mask
+    block_mask = create_block_mask_from_score_mod(mask_fn, 1, 1, S, S, device=query.device)
+  File "/home/zhaijidong/yhy/llm/UltraAttn/tests/flexattn_tests/flexattn.py", line 25, in create_block_mask_from_score_mod
+    block_mask = create_block_mask(score_mod, B, H, M, N, device=device)
+  File "/home/zhaijidong/miniconda3/envs/yhy_pt_nightly/lib/python3.10/site-packages/torch/nn/attention/flex_attention.py", line 865, in create_block_mask
+    mod_type == _ModificationType.MASK_MOD
+AssertionError: create-block_mask requires a mask_mod function! Got <function noop at 0x7f75d47140d0>
+srun: error: g3015: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=46322.0
++ set +x

@@ -1025,6 +1025,7 @@ def run_all_inter_attn(args, ncclcomm_global, gloo_global_group):
         # # flash_attn_func,
         # # hierarchy_attn_func,                # one case
         # # overlapped_hierarchy_attn_func,     # another case
+        deepspeed_ulysses_attn_func,
     ]
     
     # # modified PROC_INFO for debug, version1:  1 * 8 -> 8 * 8

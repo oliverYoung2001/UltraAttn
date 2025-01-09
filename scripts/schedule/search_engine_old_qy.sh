@@ -6,3 +6,4 @@ export TMPDIR=./search_algo/tmp
 ./scripts/cpu_task_qy.sh \
 python search_algo/main.py \
 
+
