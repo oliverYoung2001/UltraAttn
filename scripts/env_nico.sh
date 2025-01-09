@@ -9,6 +9,9 @@ spack load cuda@12.1.1
 conda deactivate && conda deactivate && conda deactivate
 conda activate mg
 
+# set GUROBI licence env
+export GRB_LICENSE_FILE=/home/yhy/.local/gurobi/gurobi.lic
+
 # export http_proxy="http://127.0.0.1:8901"
 # export https_proxy="http://127.0.0.1:8901"
 

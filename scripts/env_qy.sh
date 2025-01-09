@@ -22,6 +22,9 @@ export LD_LIBRARY_PATH="$(dirname `which nvcc`)/../lib64:$LD_LIBRARY_PATH"  # fo
 conda deactivate && conda deactivate && conda deactivate
 conda activate yhy_easycontext
 
+# set GUROBI licence env
+export GRB_LICENSE_FILE=/home/zhaijidong/yhy/.local/gurobi/gurobi.lic
+
 # [NOTE]: tmux of qy has bug along with conda, thus the solution is copy the $PATH out of tmux into tmux  !!!
 
 # export http_proxy="http://127.0.0.1:8901"
