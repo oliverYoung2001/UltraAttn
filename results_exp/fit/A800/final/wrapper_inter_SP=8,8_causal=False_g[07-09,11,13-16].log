@@ -1,0 +1,368 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p a01 -N 8 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w 'g[07-09,11,13-16]' -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+Sqkvs: [256, 512, 1024, 2048, 4096, 8192]
+total_size: 15149826048
+[rank34]:[W112 17:50:39.230785157 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 34]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank39]:[W112 17:50:39.231788416 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 39]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank14]:[W112 17:50:30.904416366 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 14]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank15]:[W112 17:50:30.904664097 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 15]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank13]:[W112 17:50:30.905235297 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 13]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank61]:[W112 17:50:57.699062240 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 61]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank48]:[W112 17:50:49.256322162 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 48]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank5]:[W112 17:50:46.019342217 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 5]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank53]:[W112 17:50:49.256911149 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 53]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank62]:[W112 17:50:57.699659297 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 62]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank10]:[W112 17:50:30.908038067 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 10]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank60]:[W112 17:50:57.700124875 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 60]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank4]:[W112 17:50:46.020302122 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 4]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank44]:[W112 17:50:59.952574484 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 44]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank50]:[W112 17:50:49.257999825 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 50]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank49]:[W112 17:50:49.258168955 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 49]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank45]:[W112 17:50:59.953077247 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 45]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank55]:[W112 17:50:49.258436839 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 55]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank52]:[W112 17:50:49.258455871 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 52]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank18]:[W112 17:50:58.188332892 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 18]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank19]:[W112 17:50:58.188350206 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 19]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank23]:[W112 17:50:58.188611972 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 23]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank40]:[W112 17:50:59.953895249 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 40]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank6]:[W112 17:50:46.022373877 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 6]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank17]:[W112 17:50:58.189247702 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 17]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank29]:[W112 17:50:30.412992004 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 29]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank26]:[W112 17:50:30.413622774 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 26]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank42]:[W112 17:50:59.968533292 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 42]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank7]:[W112 17:50:46.046656644 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 7]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank35]:[W112 17:50:39.288469600 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 35]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank3]:[W112 17:50:46.079804140 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+causal=False, fob=0:
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+[rank32]:[W112 17:50:39.303695961 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 32]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank22]:[W112 17:50:58.255626474 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 22]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank41]:[W112 17:51:00.021893098 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 41]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank51]:[W112 17:50:49.327370276 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 51]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank0]:[W112 17:50:46.091360139 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank36]:[W112 17:50:39.308218117 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 36]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank1]:[W112 17:50:46.092227070 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank57]:[W112 17:50:57.772716650 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 57]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank33]:[W112 17:50:39.309776463 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 33]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank30]:[W112 17:50:30.478879706 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 30]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank21]:[W112 17:50:58.262160394 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 21]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank46]:[W112 17:51:00.027653811 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 46]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank24]:[W112 17:50:30.479862647 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 24]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank12]:[W112 17:50:31.984120990 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 12]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank11]:[W112 17:50:31.984492826 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 11]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank58]:[W112 17:50:57.776584424 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 58]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank2]:[W112 17:50:46.096808149 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank63]:[W112 17:50:57.777009792 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 63]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank56]:[W112 17:50:57.777201341 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 56]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank8]:[W112 17:50:31.985485575 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 8]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank54]:[W112 17:50:49.334735834 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 54]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank28]:[W112 17:50:30.481954718 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 28]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank47]:[W112 17:51:00.030255067 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 47]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank43]:[W112 17:51:00.030827194 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 43]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank59]:[W112 17:50:57.779025647 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 59]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank16]:[W112 17:50:58.266019689 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 16]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank37]:[W112 17:50:39.316024901 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 37]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank9]:[W112 17:50:31.987707415 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 9]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank31]:[W112 17:50:30.483791167 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 31]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank25]:[W112 17:50:30.483973365 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 25]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank38]:[W112 17:50:39.317832587 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 38]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank20]:[W112 17:50:58.270095794 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 20]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank27]:[W112 17:50:30.487424221 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 27]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+# ring_flash_attn_func, fwd
+mfu: 0.069 Tflops/s, hfu: 0.069 Tflops/s, 32.031 iter/s, 3.122e-02 s/iter, (12.407, 0.008, 0.125) sec
+# orchestrated_attn_func
+mfu: 0.296 Tflops/s, hfu: 0.296 Tflops/s, 138.030 iter/s, 7.245e-03 s/iter, (17.434, 0.001, 0.029) sec
+mfu: 0.495 Tflops/s, hfu: 0.495 Tflops/s, 230.444 iter/s, 4.339e-03 s/iter, (0.250, 0.002, 0.017) sec
+mfu: 0.483 Tflops/s, hfu: 0.483 Tflops/s, 224.833 iter/s, 4.448e-03 s/iter, (0.228, 0.002, 0.018) sec
+mfu: 0.528 Tflops/s, hfu: 0.528 Tflops/s, 246.001 iter/s, 4.065e-03 s/iter, (0.228, 0.001, 0.016) sec
+mfu: 0.671 Tflops/s, hfu: 0.671 Tflops/s, 312.350 iter/s, 3.202e-03 s/iter, (2.261, 0.001, 0.013) sec
+mfu: 0.896 Tflops/s, hfu: 0.896 Tflops/s, 417.245 iter/s, 2.397e-03 s/iter, (0.462, 0.001, 0.010) sec
+mfu: 0.685 Tflops/s, hfu: 0.685 Tflops/s, 318.930 iter/s, 3.135e-03 s/iter, (2.063, 0.001, 0.013) sec
+mfu: 0.734 Tflops/s, hfu: 0.734 Tflops/s, 341.784 iter/s, 2.926e-03 s/iter, (0.218, 0.001, 0.012) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 0.435 Tflops/s, hfu: 0.435 Tflops/s, 50.654 iter/s, 1.974e-02 s/iter, (0.041, 0.002, 0.079) sec
+# orchestrated_attn_func
+mfu: 0.58 Tflops/s, hfu: 0.58 Tflops/s, 67.545 iter/s, 1.480e-02 s/iter, (0.239, 0.001, 0.059) sec
+mfu: 1.902 Tflops/s, hfu: 1.902 Tflops/s, 221.443 iter/s, 4.516e-03 s/iter, (0.232, 0.001, 0.018) sec
+mfu: 1.908 Tflops/s, hfu: 1.908 Tflops/s, 222.085 iter/s, 4.503e-03 s/iter, (0.230, 0.001, 0.018) sec
+mfu: 2.004 Tflops/s, hfu: 2.004 Tflops/s, 233.320 iter/s, 4.286e-03 s/iter, (0.230, 0.001, 0.017) sec
+mfu: 2.578 Tflops/s, hfu: 2.578 Tflops/s, 300.111 iter/s, 3.332e-03 s/iter, (0.223, 0.001, 0.013) sec
+mfu: 2.493 Tflops/s, hfu: 2.493 Tflops/s, 290.190 iter/s, 3.446e-03 s/iter, (0.222, 0.001, 0.014) sec
+mfu: 2.695 Tflops/s, hfu: 2.695 Tflops/s, 313.780 iter/s, 3.187e-03 s/iter, (0.618, 0.001, 0.013) sec
+mfu: 2.849 Tflops/s, hfu: 2.849 Tflops/s, 331.685 iter/s, 3.015e-03 s/iter, (0.218, 0.001, 0.012) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 1.686 Tflops/s, hfu: 1.686 Tflops/s, 49.069 iter/s, 2.038e-02 s/iter, (0.042, 0.001, 0.082) sec
+# orchestrated_attn_func
+mfu: 2.91 Tflops/s, hfu: 2.91 Tflops/s, 84.701 iter/s, 1.181e-02 s/iter, (0.235, 0.001, 0.047) sec
+mfu: 6.939 Tflops/s, hfu: 6.939 Tflops/s, 201.957 iter/s, 4.952e-03 s/iter, (0.230, 0.002, 0.020) sec
+mfu: 6.899 Tflops/s, hfu: 6.899 Tflops/s, 200.794 iter/s, 4.980e-03 s/iter, (0.229, 0.001, 0.020) sec
+mfu: 6.017 Tflops/s, hfu: 6.017 Tflops/s, 175.113 iter/s, 5.711e-03 s/iter, (0.230, 0.001, 0.023) sec
+mfu: 9.398 Tflops/s, hfu: 9.398 Tflops/s, 273.528 iter/s, 3.656e-03 s/iter, (0.603, 0.001, 0.015) sec
+mfu: 9.578 Tflops/s, hfu: 9.578 Tflops/s, 278.759 iter/s, 3.587e-03 s/iter, (0.219, 0.001, 0.014) sec
+mfu: 9.848 Tflops/s, hfu: 9.848 Tflops/s, 286.613 iter/s, 3.489e-03 s/iter, (1.324, 0.001, 0.014) sec
+mfu: 10.387 Tflops/s, hfu: 10.387 Tflops/s, 302.295 iter/s, 3.308e-03 s/iter, (0.229, 0.001, 0.013) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 6.573 Tflops/s, hfu: 6.573 Tflops/s, 47.821 iter/s, 2.091e-02 s/iter, (0.043, 0.001, 0.084) sec
+# orchestrated_attn_func
+mfu: 10.358 Tflops/s, hfu: 10.358 Tflops/s, 75.361 iter/s, 1.327e-02 s/iter, (0.261, 0.001, 0.053) sec
+mfu: 24.198 Tflops/s, hfu: 24.198 Tflops/s, 176.060 iter/s, 5.680e-03 s/iter, (0.232, 0.001, 0.023) sec
+mfu: 24.09 Tflops/s, hfu: 24.09 Tflops/s, 175.278 iter/s, 5.705e-03 s/iter, (0.231, 0.001, 0.023) sec
+mfu: 24.737 Tflops/s, hfu: 24.737 Tflops/s, 179.987 iter/s, 5.556e-03 s/iter, (0.230, 0.001, 0.022) sec
+mfu: 30.08 Tflops/s, hfu: 30.08 Tflops/s, 218.862 iter/s, 4.569e-03 s/iter, (0.318, 0.001, 0.018) sec
+mfu: 29.58 Tflops/s, hfu: 29.58 Tflops/s, 215.220 iter/s, 4.646e-03 s/iter, (0.225, 0.001, 0.019) sec
+mfu: 34.261 Tflops/s, hfu: 34.261 Tflops/s, 249.282 iter/s, 4.012e-03 s/iter, (0.619, 0.001, 0.016) sec
+mfu: 32.021 Tflops/s, hfu: 32.021 Tflops/s, 232.986 iter/s, 4.292e-03 s/iter, (0.230, 0.001, 0.017) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 25.984 Tflops/s, hfu: 25.984 Tflops/s, 47.265 iter/s, 2.116e-02 s/iter, (0.043, 0.001, 0.085) sec
+# orchestrated_attn_func
+mfu: 41.955 Tflops/s, hfu: 41.955 Tflops/s, 76.316 iter/s, 1.310e-02 s/iter, (0.260, 0.003, 0.052) sec
+mfu: 62.24 Tflops/s, hfu: 62.24 Tflops/s, 113.215 iter/s, 8.833e-03 s/iter, (0.238, 0.001, 0.035) sec
+mfu: 61.409 Tflops/s, hfu: 61.409 Tflops/s, 111.703 iter/s, 8.952e-03 s/iter, (0.243, 0.001, 0.036) sec
+mfu: 90.822 Tflops/s, hfu: 90.822 Tflops/s, 165.204 iter/s, 6.053e-03 s/iter, (0.237, 0.001, 0.024) sec
+mfu: 77.951 Tflops/s, hfu: 77.951 Tflops/s, 141.793 iter/s, 7.053e-03 s/iter, (0.329, 0.001, 0.028) sec
+mfu: 81.052 Tflops/s, hfu: 81.052 Tflops/s, 147.433 iter/s, 6.783e-03 s/iter, (0.223, 0.001, 0.027) sec
+mfu: 89.285 Tflops/s, hfu: 89.285 Tflops/s, 162.409 iter/s, 6.157e-03 s/iter, (0.619, 0.001, 0.025) sec
+mfu: 86.071 Tflops/s, hfu: 86.071 Tflops/s, 156.563 iter/s, 6.387e-03 s/iter, (0.225, 0.001, 0.026) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 90.279 Tflops/s, hfu: 90.279 Tflops/s, 41.054 iter/s, 2.436e-02 s/iter, (0.051, 0.002, 0.097) sec
+# orchestrated_attn_func
+mfu: 112.309 Tflops/s, hfu: 112.309 Tflops/s, 51.072 iter/s, 1.958e-02 s/iter, (0.263, 0.001, 0.078) sec
+mfu: 115.21 Tflops/s, hfu: 115.21 Tflops/s, 52.391 iter/s, 1.909e-02 s/iter, (0.262, 0.001, 0.076) sec
+mfu: 116.173 Tflops/s, hfu: 116.173 Tflops/s, 52.829 iter/s, 1.893e-02 s/iter, (0.260, 0.001, 0.076) sec
+mfu: 127.887 Tflops/s, hfu: 127.887 Tflops/s, 58.156 iter/s, 1.720e-02 s/iter, (0.261, 0.001, 0.069) sec
+mfu: 134.075 Tflops/s, hfu: 134.075 Tflops/s, 60.970 iter/s, 1.640e-02 s/iter, (0.347, 0.001, 0.066) sec
+mfu: 152.05 Tflops/s, hfu: 152.05 Tflops/s, 69.145 iter/s, 1.446e-02 s/iter, (0.240, 0.001, 0.058) sec
+mfu: 156.209 Tflops/s, hfu: 156.209 Tflops/s, 71.036 iter/s, 1.408e-02 s/iter, (0.439, 0.001, 0.056) sec
+mfu: 155.595 Tflops/s, hfu: 155.595 Tflops/s, 70.756 iter/s, 1.413e-02 s/iter, (0.241, 0.001, 0.057) sec
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 3.441 Tflops/s, hfu: 3.441 Tflops/s, 50.079 iter/s, 1.997e-02 s/iter, (0.047, 0.002, 0.080) sec
+# orchestrated_attn_func
+mfu: 5.772 Tflops/s, hfu: 5.772 Tflops/s, 83.998 iter/s, 1.191e-02 s/iter, (0.262, 0.001, 0.048) sec
+mfu: 12.362 Tflops/s, hfu: 12.362 Tflops/s, 179.887 iter/s, 5.559e-03 s/iter, (0.233, 0.001, 0.022) sec
+mfu: 12.084 Tflops/s, hfu: 12.084 Tflops/s, 175.838 iter/s, 5.687e-03 s/iter, (0.520, 0.001, 0.023) sec
+mfu: 8.443 Tflops/s, hfu: 8.443 Tflops/s, 122.857 iter/s, 8.140e-03 s/iter, (0.234, 0.001, 0.033) sec
+mfu: 11.741 Tflops/s, hfu: 11.741 Tflops/s, 170.855 iter/s, 5.853e-03 s/iter, (0.438, 0.001, 0.023) sec
+mfu: 13.844 Tflops/s, hfu: 13.844 Tflops/s, 201.457 iter/s, 4.964e-03 s/iter, (0.226, 0.001, 0.020) sec
+mfu: 15.09 Tflops/s, hfu: 15.09 Tflops/s, 219.588 iter/s, 4.554e-03 s/iter, (0.627, 0.001, 0.018) sec
+mfu: 12.036 Tflops/s, hfu: 12.036 Tflops/s, 175.145 iter/s, 5.710e-03 s/iter, (0.235, 0.001, 0.023) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 10.265 Tflops/s, hfu: 10.265 Tflops/s, 37.345 iter/s, 2.678e-02 s/iter, (0.057, 0.001, 0.107) sec
+# orchestrated_attn_func
+mfu: 13.91 Tflops/s, hfu: 13.91 Tflops/s, 50.606 iter/s, 1.976e-02 s/iter, (0.243, 0.001, 0.079) sec
+mfu: 35.536 Tflops/s, hfu: 35.536 Tflops/s, 129.278 iter/s, 7.735e-03 s/iter, (0.234, 0.001, 0.031) sec
+mfu: 34.068 Tflops/s, hfu: 34.068 Tflops/s, 123.937 iter/s, 8.069e-03 s/iter, (0.240, 0.001, 0.032) sec
+mfu: 24.808 Tflops/s, hfu: 24.808 Tflops/s, 90.251 iter/s, 1.108e-02 s/iter, (0.238, 0.001, 0.044) sec
+mfu: 29.617 Tflops/s, hfu: 29.617 Tflops/s, 107.747 iter/s, 9.281e-03 s/iter, (0.239, 0.001, 0.037) sec
+mfu: 40.25 Tflops/s, hfu: 40.25 Tflops/s, 146.428 iter/s, 6.829e-03 s/iter, (0.241, 0.001, 0.027) sec
+mfu: 42.407 Tflops/s, hfu: 42.407 Tflops/s, 154.275 iter/s, 6.482e-03 s/iter, (0.416, 0.001, 0.026) sec
+mfu: 31.533 Tflops/s, hfu: 31.533 Tflops/s, 114.718 iter/s, 8.717e-03 s/iter, (0.241, 0.001, 0.035) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 20.938 Tflops/s, hfu: 20.938 Tflops/s, 19.043 iter/s, 5.251e-02 s/iter, (0.119, 0.002, 0.210) sec
+# orchestrated_attn_func
+mfu: 49.218 Tflops/s, hfu: 49.218 Tflops/s, 44.764 iter/s, 2.234e-02 s/iter, (0.256, 0.001, 0.089) sec
+mfu: 85.462 Tflops/s, hfu: 85.462 Tflops/s, 77.727 iter/s, 1.287e-02 s/iter, (0.248, 0.001, 0.051) sec
+mfu: 84.703 Tflops/s, hfu: 84.703 Tflops/s, 77.037 iter/s, 1.298e-02 s/iter, (0.245, 0.001, 0.052) sec
+mfu: 64.762 Tflops/s, hfu: 64.762 Tflops/s, 58.901 iter/s, 1.698e-02 s/iter, (0.252, 0.001, 0.068) sec
+mfu: 59.666 Tflops/s, hfu: 59.666 Tflops/s, 54.266 iter/s, 1.843e-02 s/iter, (0.256, 0.001, 0.074) sec
+mfu: 85.73 Tflops/s, hfu: 85.73 Tflops/s, 77.971 iter/s, 1.283e-02 s/iter, (0.246, 0.001, 0.051) sec
+mfu: 96.028 Tflops/s, hfu: 96.028 Tflops/s, 87.337 iter/s, 1.145e-02 s/iter, (0.247, 0.001, 0.046) sec
+mfu: 71.409 Tflops/s, hfu: 71.409 Tflops/s, 64.946 iter/s, 1.540e-02 s/iter, (0.257, 0.001, 0.062) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 39.412 Tflops/s, hfu: 39.412 Tflops/s, 8.961 iter/s, 1.116e-01 s/iter, (0.234, 0.002, 0.446) sec
+# orchestrated_attn_func
+mfu: 110.358 Tflops/s, hfu: 110.358 Tflops/s, 25.093 iter/s, 3.985e-02 s/iter, (0.313, 0.001, 0.159) sec
+mfu: 143.515 Tflops/s, hfu: 143.515 Tflops/s, 32.631 iter/s, 3.065e-02 s/iter, (0.769, 0.001, 0.123) sec
+mfu: 143.88 Tflops/s, hfu: 143.88 Tflops/s, 32.715 iter/s, 3.057e-02 s/iter, (0.282, 0.001, 0.122) sec
+mfu: 146.048 Tflops/s, hfu: 146.048 Tflops/s, 33.207 iter/s, 3.011e-02 s/iter, (0.283, 0.001, 0.120) sec
+mfu: 99.63 Tflops/s, hfu: 99.63 Tflops/s, 22.653 iter/s, 4.414e-02 s/iter, (0.316, 0.001, 0.177) sec
+mfu: 133.91 Tflops/s, hfu: 133.91 Tflops/s, 30.448 iter/s, 3.284e-02 s/iter, (0.297, 0.001, 0.131) sec
+mfu: 149.32 Tflops/s, hfu: 149.32 Tflops/s, 33.951 iter/s, 2.945e-02 s/iter, (0.392, 0.001, 0.118) sec
+mfu: 140.692 Tflops/s, hfu: 140.692 Tflops/s, 31.990 iter/s, 3.126e-02 s/iter, (0.296, 0.001, 0.125) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 66.373 Tflops/s, hfu: 66.373 Tflops/s, 3.773 iter/s, 2.651e-01 s/iter, (0.531, 0.002, 1.060) sec
+# orchestrated_attn_func
+mfu: 191.237 Tflops/s, hfu: 191.237 Tflops/s, 10.871 iter/s, 9.199e-02 s/iter, (1.116, 0.001, 0.368) sec
+mfu: 190.329 Tflops/s, hfu: 190.329 Tflops/s, 10.819 iter/s, 9.243e-02 s/iter, (0.709, 0.001, 0.370) sec
+mfu: 192.895 Tflops/s, hfu: 192.895 Tflops/s, 10.965 iter/s, 9.120e-02 s/iter, (0.417, 0.001, 0.365) sec
+mfu: 200.111 Tflops/s, hfu: 200.111 Tflops/s, 11.375 iter/s, 8.791e-02 s/iter, (0.612, 0.001, 0.352) sec
+mfu: 138.004 Tflops/s, hfu: 138.004 Tflops/s, 7.845 iter/s, 1.275e-01 s/iter, (0.470, 0.001, 0.510) sec
+mfu: 172.636 Tflops/s, hfu: 172.636 Tflops/s, 9.813 iter/s, 1.019e-01 s/iter, (0.431, 0.001, 0.408) sec
+mfu: 176.417 Tflops/s, hfu: 176.417 Tflops/s, 10.028 iter/s, 9.972e-02 s/iter, (0.430, 0.001, 0.399) sec
+mfu: 177.884 Tflops/s, hfu: 177.884 Tflops/s, 10.112 iter/s, 9.890e-02 s/iter, (0.542, 0.001, 0.396) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, fwd
+mfu: 102.851 Tflops/s, hfu: 102.851 Tflops/s, 1.462 iter/s, 6.842e-01 s/iter, (1.376, 0.005, 2.737) sec
+# orchestrated_attn_func
+mfu: 211.559 Tflops/s, hfu: 211.559 Tflops/s, 3.006 iter/s, 3.326e-01 s/iter, (1.635, 0.005, 1.330) sec
+mfu: 211.656 Tflops/s, hfu: 211.656 Tflops/s, 3.008 iter/s, 3.325e-01 s/iter, (0.897, 0.001, 1.330) sec
+mfu: 212.053 Tflops/s, hfu: 212.053 Tflops/s, 3.013 iter/s, 3.318e-01 s/iter, (0.897, 0.001, 1.327) sec
+mfu: 216.246 Tflops/s, hfu: 216.246 Tflops/s, 3.073 iter/s, 3.254e-01 s/iter, (0.991, 0.004, 1.302) sec
+mfu: 173.146 Tflops/s, hfu: 173.146 Tflops/s, 2.461 iter/s, 4.064e-01 s/iter, (1.041, 0.004, 1.626) sec
+mfu: 182.201 Tflops/s, hfu: 182.201 Tflops/s, 2.589 iter/s, 3.862e-01 s/iter, (1.014, 0.004, 1.545) sec
+mfu: 196.819 Tflops/s, hfu: 196.819 Tflops/s, 2.797 iter/s, 3.575e-01 s/iter, (0.965, 0.004, 1.430) sec
+mfu: 190.119 Tflops/s, hfu: 190.119 Tflops/s, 2.702 iter/s, 3.701e-01 s/iter, (0.997, 0.004, 1.481) sec
+causal=False, fob=1:
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 0.095 Tflops/s, hfu: 0.119 Tflops/s, 22.220 iter/s, 4.501e-02 s/iter, (0.090, 0.006, 0.180) sec
+# orchestrated_attn_func
+mfu: 0.55 Tflops/s, hfu: 0.687 Tflops/s, 128.044 iter/s, 7.810e-03 s/iter, (0.256, 0.002, 0.031) sec
+mfu: 0.707 Tflops/s, hfu: 0.883 Tflops/s, 164.529 iter/s, 6.078e-03 s/iter, (0.233, 0.001, 0.024) sec
+mfu: 0.727 Tflops/s, hfu: 0.909 Tflops/s, 169.380 iter/s, 5.904e-03 s/iter, (0.232, 0.001, 0.024) sec
+mfu: 0.391 Tflops/s, hfu: 0.489 Tflops/s, 91.070 iter/s, 1.098e-02 s/iter, (0.232, 0.001, 0.044) sec
+mfu: 1.219 Tflops/s, hfu: 1.523 Tflops/s, 283.761 iter/s, 3.524e-03 s/iter, (0.766, 0.001, 0.014) sec
+mfu: 1.279 Tflops/s, hfu: 1.599 Tflops/s, 297.846 iter/s, 3.357e-03 s/iter, (0.220, 0.001, 0.013) sec
+mfu: 1.251 Tflops/s, hfu: 1.564 Tflops/s, 291.294 iter/s, 3.433e-03 s/iter, (0.326, 0.001, 0.014) sec
+mfu: 1.203 Tflops/s, hfu: 1.504 Tflops/s, 280.199 iter/s, 3.569e-03 s/iter, (0.222, 0.001, 0.014) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 0.631 Tflops/s, hfu: 0.789 Tflops/s, 36.738 iter/s, 2.722e-02 s/iter, (0.059, 0.001, 0.109) sec
+# orchestrated_attn_func
+mfu: 0.665 Tflops/s, hfu: 0.831 Tflops/s, 38.710 iter/s, 2.583e-02 s/iter, (0.246, 0.001, 0.103) sec
+mfu: 2.306 Tflops/s, hfu: 2.883 Tflops/s, 134.231 iter/s, 7.450e-03 s/iter, (0.235, 0.001, 0.030) sec
+mfu: 2.36 Tflops/s, hfu: 2.949 Tflops/s, 137.346 iter/s, 7.281e-03 s/iter, (0.237, 0.001, 0.029) sec
+mfu: 1.581 Tflops/s, hfu: 1.976 Tflops/s, 92.018 iter/s, 1.087e-02 s/iter, (0.236, 0.001, 0.043) sec
+mfu: 4.511 Tflops/s, hfu: 5.639 Tflops/s, 262.587 iter/s, 3.808e-03 s/iter, (0.421, 0.002, 0.015) sec
+mfu: 4.754 Tflops/s, hfu: 5.943 Tflops/s, 276.725 iter/s, 3.614e-03 s/iter, (0.221, 0.001, 0.014) sec
+mfu: 4.755 Tflops/s, hfu: 5.944 Tflops/s, 276.784 iter/s, 3.613e-03 s/iter, (0.613, 0.001, 0.014) sec
+mfu: 4.624 Tflops/s, hfu: 5.78 Tflops/s, 269.155 iter/s, 3.715e-03 s/iter, (0.222, 0.001, 0.015) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 2.377 Tflops/s, hfu: 2.971 Tflops/s, 34.588 iter/s, 2.891e-02 s/iter, (0.065, 0.002, 0.116) sec
+# orchestrated_attn_func
+mfu: 4.103 Tflops/s, hfu: 5.129 Tflops/s, 59.706 iter/s, 1.675e-02 s/iter, (0.262, 0.001, 0.067) sec
+mfu: 6.605 Tflops/s, hfu: 8.256 Tflops/s, 96.116 iter/s, 1.040e-02 s/iter, (0.244, 0.001, 0.042) sec
+mfu: 6.748 Tflops/s, hfu: 8.435 Tflops/s, 98.196 iter/s, 1.018e-02 s/iter, (0.242, 0.001, 0.041) sec
+mfu: 4.378 Tflops/s, hfu: 5.472 Tflops/s, 63.704 iter/s, 1.570e-02 s/iter, (0.248, 0.001, 0.063) sec
+mfu: 15.831 Tflops/s, hfu: 19.789 Tflops/s, 230.376 iter/s, 4.341e-03 s/iter, (0.223, 0.001, 0.017) sec
+mfu: 16.181 Tflops/s, hfu: 20.226 Tflops/s, 235.458 iter/s, 4.247e-03 s/iter, (0.222, 0.001, 0.017) sec
+mfu: 15.556 Tflops/s, hfu: 19.445 Tflops/s, 226.371 iter/s, 4.418e-03 s/iter, (0.558, 0.001, 0.018) sec
+mfu: 15.476 Tflops/s, hfu: 19.345 Tflops/s, 225.209 iter/s, 4.440e-03 s/iter, (0.224, 0.001, 0.018) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 9.368 Tflops/s, hfu: 11.71 Tflops/s, 34.081 iter/s, 2.934e-02 s/iter, (0.064, 0.001, 0.117) sec
+# orchestrated_attn_func
+mfu: 16.37 Tflops/s, hfu: 20.463 Tflops/s, 59.555 iter/s, 1.679e-02 s/iter, (0.294, 0.001, 0.067) sec
+mfu: 17.145 Tflops/s, hfu: 21.431 Tflops/s, 62.372 iter/s, 1.603e-02 s/iter, (0.252, 0.001, 0.064) sec
+mfu: 17.543 Tflops/s, hfu: 21.928 Tflops/s, 63.820 iter/s, 1.567e-02 s/iter, (0.253, 0.001, 0.063) sec
+mfu: 17.372 Tflops/s, hfu: 21.715 Tflops/s, 63.198 iter/s, 1.582e-02 s/iter, (0.256, 0.001, 0.063) sec
+mfu: 39.474 Tflops/s, hfu: 49.343 Tflops/s, 143.607 iter/s, 6.963e-03 s/iter, (0.426, 0.001, 0.028) sec
+mfu: 43.664 Tflops/s, hfu: 54.58 Tflops/s, 158.849 iter/s, 6.295e-03 s/iter, (0.226, 0.001, 0.025) sec
+mfu: 44.639 Tflops/s, hfu: 55.799 Tflops/s, 162.395 iter/s, 6.158e-03 s/iter, (0.327, 0.001, 0.025) sec
+mfu: 43.065 Tflops/s, hfu: 53.831 Tflops/s, 156.670 iter/s, 6.383e-03 s/iter, (0.228, 0.001, 0.026) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 35.845 Tflops/s, hfu: 44.806 Tflops/s, 32.600 iter/s, 3.067e-02 s/iter, (0.064, 0.001, 0.123) sec
+# orchestrated_attn_func
+mfu: 42.483 Tflops/s, hfu: 53.103 Tflops/s, 38.638 iter/s, 2.588e-02 s/iter, (0.306, 0.001, 0.104) sec
+mfu: 40.083 Tflops/s, hfu: 50.104 Tflops/s, 36.455 iter/s, 2.743e-02 s/iter, (0.372, 0.001, 0.110) sec
+mfu: 41.099 Tflops/s, hfu: 51.374 Tflops/s, 37.380 iter/s, 2.675e-02 s/iter, (0.278, 0.001, 0.107) sec
+mfu: 42.184 Tflops/s, hfu: 52.73 Tflops/s, 38.366 iter/s, 2.606e-02 s/iter, (0.279, 0.001, 0.104) sec
+mfu: 78.639 Tflops/s, hfu: 98.299 Tflops/s, 71.522 iter/s, 1.398e-02 s/iter, (0.242, 0.001, 0.056) sec
+mfu: 90.009 Tflops/s, hfu: 112.511 Tflops/s, 81.863 iter/s, 1.222e-02 s/iter, (0.237, 0.001, 0.049) sec
+mfu: 89.757 Tflops/s, hfu: 112.196 Tflops/s, 81.634 iter/s, 1.225e-02 s/iter, (0.238, 0.001, 0.049) sec
+mfu: 82.855 Tflops/s, hfu: 103.569 Tflops/s, 75.356 iter/s, 1.327e-02 s/iter, (0.444, 0.001, 0.053) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 81.783 Tflops/s, hfu: 102.229 Tflops/s, 18.595 iter/s, 5.378e-02 s/iter, (0.109, 0.001, 0.215) sec
+# orchestrated_attn_func
+mfu: 90.318 Tflops/s, hfu: 112.898 Tflops/s, 20.536 iter/s, 4.870e-02 s/iter, (0.938, 0.001, 0.195) sec
+mfu: 87.835 Tflops/s, hfu: 109.793 Tflops/s, 19.971 iter/s, 5.007e-02 s/iter, (0.323, 0.001, 0.200) sec
+mfu: 89.288 Tflops/s, hfu: 111.61 Tflops/s, 20.302 iter/s, 4.926e-02 s/iter, (0.322, 0.001, 0.197) sec
+mfu: 90.436 Tflops/s, hfu: 113.044 Tflops/s, 20.563 iter/s, 4.863e-02 s/iter, (0.875, 0.001, 0.195) sec
+mfu: 119.089 Tflops/s, hfu: 148.861 Tflops/s, 27.078 iter/s, 3.693e-02 s/iter, (0.306, 0.001, 0.148) sec
+mfu: 123.381 Tflops/s, hfu: 154.227 Tflops/s, 28.054 iter/s, 3.565e-02 s/iter, (0.285, 0.001, 0.143) sec
+mfu: 125.288 Tflops/s, hfu: 156.61 Tflops/s, 28.487 iter/s, 3.510e-02 s/iter, (0.285, 0.001, 0.140) sec
+mfu: 118.361 Tflops/s, hfu: 147.951 Tflops/s, 26.912 iter/s, 3.716e-02 s/iter, (0.291, 0.001, 0.149) sec
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 3.338 Tflops/s, hfu: 4.172 Tflops/s, 24.285 iter/s, 4.118e-02 s/iter, (0.083, 0.002, 0.165) sec
+# orchestrated_attn_func
+mfu: 5.471 Tflops/s, hfu: 6.838 Tflops/s, 39.805 iter/s, 2.512e-02 s/iter, (0.253, 0.001, 0.100) sec
+mfu: 17.244 Tflops/s, hfu: 21.556 Tflops/s, 125.470 iter/s, 7.970e-03 s/iter, (0.244, 0.001, 0.032) sec
+mfu: 17.267 Tflops/s, hfu: 21.584 Tflops/s, 125.635 iter/s, 7.960e-03 s/iter, (0.236, 0.001, 0.032) sec
+mfu: 6.584 Tflops/s, hfu: 8.23 Tflops/s, 47.904 iter/s, 2.088e-02 s/iter, (0.243, 0.001, 0.084) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 7.288 Tflops/s, hfu: 9.11 Tflops/s, 13.256 iter/s, 7.544e-02 s/iter, (0.160, 0.001, 0.302) sec
+# orchestrated_attn_func
+mfu: 8.393 Tflops/s, hfu: 10.491 Tflops/s, 15.266 iter/s, 6.550e-02 s/iter, (0.255, 0.001, 0.262) sec
+mfu: 40.582 Tflops/s, hfu: 50.728 Tflops/s, 73.818 iter/s, 1.355e-02 s/iter, (0.615, 0.001, 0.054) sec
+mfu: 40.915 Tflops/s, hfu: 51.143 Tflops/s, 74.423 iter/s, 1.344e-02 s/iter, (0.249, 0.001, 0.054) sec
+mfu: 28.206 Tflops/s, hfu: 35.258 Tflops/s, 51.307 iter/s, 1.949e-02 s/iter, (0.254, 0.001, 0.078) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 9.346 Tflops/s, hfu: 11.683 Tflops/s, 4.250 iter/s, 2.353e-01 s/iter, (0.305, 0.001, 0.941) sec
+# orchestrated_attn_func
+mfu: 74.407 Tflops/s, hfu: 93.009 Tflops/s, 33.836 iter/s, 2.955e-02 s/iter, (0.289, 0.001, 0.118) sec
+mfu: 78.513 Tflops/s, hfu: 98.141 Tflops/s, 35.704 iter/s, 2.801e-02 s/iter, (0.283, 0.001, 0.112) sec
+mfu: 79.532 Tflops/s, hfu: 99.415 Tflops/s, 36.167 iter/s, 2.765e-02 s/iter, (0.278, 0.001, 0.111) sec
+mfu: 58.459 Tflops/s, hfu: 73.074 Tflops/s, 26.584 iter/s, 3.762e-02 s/iter, (0.282, 0.001, 0.150) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 30.153 Tflops/s, hfu: 37.691 Tflops/s, 3.428 iter/s, 2.917e-01 s/iter, (0.600, 0.002, 1.167) sec
+# orchestrated_attn_func
+mfu: 112.034 Tflops/s, hfu: 140.042 Tflops/s, 12.737 iter/s, 7.851e-02 s/iter, (0.723, 0.001, 0.314) sec
+mfu: 110.618 Tflops/s, hfu: 138.273 Tflops/s, 12.576 iter/s, 7.952e-02 s/iter, (0.383, 0.001, 0.318) sec
+mfu: 111.197 Tflops/s, hfu: 138.996 Tflops/s, 12.642 iter/s, 7.910e-02 s/iter, (0.481, 0.001, 0.316) sec
+mfu: 107.098 Tflops/s, hfu: 133.873 Tflops/s, 12.176 iter/s, 8.213e-02 s/iter, (0.486, 0.001, 0.329) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 56.35 Tflops/s, hfu: 70.438 Tflops/s, 1.602 iter/s, 6.244e-01 s/iter, (1.253, 0.002, 2.498) sec
+# orchestrated_attn_func
+mfu: 123.962 Tflops/s, hfu: 154.953 Tflops/s, 3.523 iter/s, 2.838e-01 s/iter, (1.133, 0.001, 1.135) sec
+mfu: 125.205 Tflops/s, hfu: 156.506 Tflops/s, 3.559 iter/s, 2.810e-01 s/iter, (0.786, 0.001, 1.124) sec
+mfu: 125.998 Tflops/s, hfu: 157.498 Tflops/s, 3.581 iter/s, 2.792e-01 s/iter, (0.791, 0.001, 1.117) sec
+mfu: 125.416 Tflops/s, hfu: 156.77 Tflops/s, 3.565 iter/s, 2.805e-01 s/iter, (0.793, 0.001, 1.122) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 8), (2, 4), (4, 2), (8, 1)]
+# ring_flash_attn_func, bwd
+mfu: 59.583 Tflops/s, hfu: 74.479 Tflops/s, 0.423 iter/s, 2.362e+00 s/iter, (4.026, 0.002, 9.448) sec
+# orchestrated_attn_func
+mfu: 132.51 Tflops/s, hfu: 165.637 Tflops/s, 0.942 iter/s, 1.062e+00 s/iter, (2.492, 0.001, 4.248) sec
+mfu: 131.971 Tflops/s, hfu: 164.964 Tflops/s, 0.938 iter/s, 1.066e+00 s/iter, (2.529, 0.001, 4.266) sec
+mfu: 132.696 Tflops/s, hfu: 165.87 Tflops/s, 0.943 iter/s, 1.061e+00 s/iter, (2.379, 0.004, 4.242) sec
+mfu: 132.899 Tflops/s, hfu: 166.124 Tflops/s, 0.944 iter/s, 1.059e+00 s/iter, (2.404, 0.001, 4.236) sec
++ set +x

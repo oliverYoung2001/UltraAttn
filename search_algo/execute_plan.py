@@ -42,6 +42,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         self.hierarchy_sp = self.da_config.SP[self.hierarchy]
         if plan_type == 'automatic':
             self.TIME_BUDGET = 5 * 60   # 5mins
+            self.TIME_BUDGET = 10   # 10s
             self.threshold = 1.3
             self.generate_execution_plan()
         elif plan_type == 'ablation1':  # Flexflow
@@ -127,12 +128,13 @@ class Execution_Plan(): # input: kernel streams of gpus
         t0 = time.time()
         MSG = 1
         MSG = 0 # disable msg
-        mylp.solve(pulp.PULP_CBC_CMD(msg=MSG, timeLimit=self.TIME_BUDGET))
+        # mylp.solve(pulp.PULP_CBC_CMD(msg=MSG, timeLimit=self.TIME_BUDGET))    # Use CBC
+        mylp.solve(pulp.GUROBI(msg=MSG, timeLimit=self.TIME_BUDGET))    # Use GUROBI !!!
         # print(f'after solve !!!', flush=True)
         t1 = time.time()
         print(f'LP solve time: {t1 - t0} s', flush=True)
         # pulp.GUROBI(mgs=0).solve(mylp)
-        self.mylp = mylp
+        # self.mylp = mylp
         self.stream_kernel_lists = stream_kernel_lists
         
         # post process
@@ -152,6 +154,7 @@ class Execution_Plan(): # input: kernel streams of gpus
                 kernel_list += self.stream_kernel_lists[(g, s)]
             kernel_list.sort(key=lambda x: (x.start_time.value(), x.id))
             self.gpu_kernel_lists.append(kernel_list)
+        self.mylp_obj = pulp.value(mylp.objective)
         return mylp
     
     def print_lp_result(self):
@@ -161,25 +164,25 @@ class Execution_Plan(): # input: kernel streams of gpus
         hierarchy_sp = self.hierarchy_sp
         OJB = 'node' if hierarchy == 0 else 'gpu'
         
-        # print(f'schedule:\n{d_graph.schedule.schedule_table}', flush=True)
-        # print(f'fob: {fob}, get_e2e_time(): {d_graph.schedule.get_e2e_time()[fob]:.3e}, get_absolute_cc_time:{d_graph.schedule.get_absolute_cc_time()[fob]}', flush=True)
-        # for v in d_graph.kernel_dict.values():
-        #     if not v.is_empty(fob):
-        #         print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
+        print(f'schedule:\n{d_graph.schedule.schedule_table}', flush=True)
+        print(f'fob: {fob}, get_e2e_time(): {d_graph.schedule.get_e2e_time()[fob]:.3e}, get_absolute_cc_time:{d_graph.schedule.get_absolute_cc_time()[fob]}', flush=True)
+        for v in d_graph.kernel_dict.values():
+            if not v.is_empty(fob):
+                print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
         
-        # print(f'Streams:')
-        # for g in range(hierarchy_sp):
-        #     for s in range(3):
-        #         print(f"{OJB}{g}, {['comp', 'send', 'recv'][s]}: {len(self.stream_kernel_lists[(g, s)])}")
-        #         for v in self.stream_kernel_lists[(g, s)]:
-        #             print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
+        print(f'Streams:')
+        for g in range(hierarchy_sp):
+            for s in range(3):
+                print(f"{OJB}{g}, {['comp', 'send', 'recv'][s]}: {len(self.stream_kernel_lists[(g, s)])}")
+                for v in self.stream_kernel_lists[(g, s)]:
+                    print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
         if self.plan_type == 'automatic':
-            print(f'objective={pulp.value(self.mylp.objective):.3e}', flush=True)
+            print(f'objective={self.mylp_obj:.3e}', flush=True)
         # elif self.plan_type == 'manual':
         else:
             print(f'end_time={self.end_time:.3e}', flush=True)
     
-    def determine_kernel_order(self):
+    def determine_kernel_order(self):   # [NOTE]: for full attn intra-node, non-fused, manually cc schedule
         hierarchy_sp = self.hierarchy_sp
         X = self.X
         Y = self.Y

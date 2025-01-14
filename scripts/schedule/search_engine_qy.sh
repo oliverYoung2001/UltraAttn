@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export CLUSTER_NAME='fit'
+export PLATFORM='A800'
+
 # set pulp tmp dir
 export TMPDIR=./search_algo/tmp
 

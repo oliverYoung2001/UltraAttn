@@ -10,6 +10,7 @@ from search_algo.execute_plan import Execution_Plan
 from search_algo.global_vars import *
 import pickle
 import numpy as np
+from search_algo.bsa_config import BSA_Config
 
 def get_exp_configs():
     # plan_type = 'automatic'
@@ -18,7 +19,7 @@ def get_exp_configs():
     MAX_QUEUE_SIZE = 100
     fobs = [
         0,
-        1,
+        # 1,
     ]
     # hierarchy = 0  # 0: intra-machine, 1: inter-machine
     hierarchy = None    # define in exps !!!
@@ -30,63 +31,96 @@ def get_exp_configs():
     return exp_configs
 
 def get_configs():
+    # da_config: SP=(1,8),Sg=(1024,1024),S=(8192,8192),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=None
+
     hierarchy = None    # define in exps !!!
     
     # for Intra:
     SP0, SP1 = 1, 1
-    # SP0, SP1 = 1, 2
-    # SP0, SP1 = 1, 4
-    # SP0, SP1 = 1, 8
+    SP0, SP1 = 1, 2
+    SP0, SP1 = 1, 4
+    SP0, SP1 = 1, 8
     # Sq = Skv = 16 * 1024   # 16k
     # Sq = Skv = 8 * 1024   # 8k
     
     
-    # for Inter:
+    # # for Inter:
     # SP0, SP1 = 1, 8
     # SP0, SP1 = 2, 8
-    # # SP0, SP1 = 3, 8
-    # SP0, SP1 = 4, 8
-    # # # SP0, SP1 = 6, 8
-    # # SP0, SP1 = 8, 8
+    # # # SP0, SP1 = 3, 8
+    # SP0, SP1 = 4, 8 # 512K (global) -> 16K (S per gpu)
+    # # # # SP0, SP1 = 6, 8
+    # SP0, SP1 = 8, 8 # 512K (global) -> 8K (S per gpu)
     # # SP0, SP1 = 16, 8
 
-    Sq = Skv = 256   # S per GPU
-    Sq = Skv = 512   # S per GPU
-    # Sq = Skv = 1 * 1024   # S per GPU
-    # Sq = Skv = 2 * 1024   # S per GPU
-    # Sq = Skv = 4 * 1024   # S per GPU
-    Sq = Skv = 8 * 1024   # S per GPU
     Ss = [
-        256, 
-        512, 
-        1 * 1024, 
-        2 * 1024, 
-        4 * 1024, 
-        8 * 1024, 
-        16 * 1024, 
-        32 * 1024,    # fused failed on 8 * 8!!!
-        # 64 * 1024,    # fused failed !!!
+        # 256, 
+        # 512, 
+        # 1 * 1024, 
+        # 2 * 1024, 
+        # 4 * 1024, 
+        # 8 * 1024, 
+        # 16 * 1024, 
+        # 32 * 1024,    # fused failed on 8 * 8 !!!
+        64 * 1024,    # fused failed on 4 * 8 !!!
     ]    # S per GPU
     # Ss = [16 * 1024]    # S per GPU
 
     # Nhq = Ng = 32
     # # Nhq = Ng = 1
     Nhs = [
-        1,
+        # 1,
         32,
     ]
     bs = 1
     D = 128
     causal = False
     causal = True
-    
+    use_BSA = False
+    use_BSA = True  # prior than 'causal', this will hide 'causal'
+    # CP, Par_D, pattern_type, pattern_sparsity, local_blocks(l&r), global_blocks(l&r), (replicate)
+    # 8_8_lg_1-8_0_0&1
+    # 8_8_lg_1-4_3_0_2
+    BSA_patterns = [    # a dict
+        # # stride_16_4_3 (8x2)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (3, 3), 'global_blocks': (0, 0), 'replicate': 2},
+        # stride_16_4_3 (8x4)
+        {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (3, 3), 'global_blocks': (0, 0), 'replicate': 1},
+        # # stride_16_4_3 (8x8)
+        # # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (2, 2), 'global_blocks': (0, 0), 'replicate': 1},  # full
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (1, 2), 'global_blocks': (0, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (2, 1), 'global_blocks': (0, 0), 'replicate': 1},
+        # # lg_16_1_1 (8x2)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (0, 0), 'global_blocks': (0, 1), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (0, 0), 'global_blocks': (1, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (1, 1), 'global_blocks': (0, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (1, 1), 'global_blocks': (1, 1), 'replicate': 1},
+        # # lg_16_1_1 (8x4)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (0, 0), 'global_blocks': (0, 1), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (0, 0), 'global_blocks': (1, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (1, 1), 'global_blocks': (0, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (1, 1), 'global_blocks': (1, 1), 'replicate': 1},
+        # # lg_16_1_1 (8x8)
+        # # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (2, 2), 'global_blocks': (0, 0), 'replicate': 1},  # full
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (0, 0), 'global_blocks': (0, 1), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (0, 0), 'global_blocks': (1, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (1, 1), 'global_blocks': (0, 0), 'replicate': 1},
+    ]
+    if use_BSA:
+        assert SP1 == 8, f'[ERROR]: Now not support for degree of CP({SP1}) intra-node not equal to 8'
+        BSA_configs = [BSA_Config(**p) for p in BSA_patterns]
     tot_sp = SP0 * SP1
     da_configs = []
     for Nh in Nhs:
         Nhq = Ng = Nh
         for S in Ss:
             Sq = Skv = S
-            da_configs.append(Dist_Attn_Config((SP0, SP1), (Sq * tot_sp, Skv * tot_sp), (Nhq, Ng), bs, D, causal, hierarchy))
+            if use_BSA:
+                for bsa_config in BSA_configs:
+                    da_configs.append(Dist_Attn_Config((SP0, SP1), (Sq * tot_sp, Skv * tot_sp), (Nhq, Ng), bs, D, causal, hierarchy, bsa_config))
+            else:
+                da_configs.append(Dist_Attn_Config((SP0, SP1), (Sq * tot_sp, Skv * tot_sp), (Nhq, Ng), bs, D, causal, hierarchy))
+
     return da_configs
 
 def get_exp_configs_for_search_workload_table():
@@ -114,7 +148,7 @@ def get_configs_for_search_workload_table():
     SP0, SP1 = 1, 1
     # SP0, SP1 = 1, 2
     SP0, SP1 = 1, 4
-    SP0, SP1 = 1, 8
+    # SP0, SP1 = 1, 8
     # Sq = Skv = 16 * 1024   # 16k
     # Sq = Skv = 8 * 1024   # 8k
     
@@ -293,21 +327,25 @@ def search_workload_table(exp_config: Evaluation_Configs, da_config: Dist_Attn_C
     execute_plan_loaded.print_lp_result()
 
 def generate_inter_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config):
-    exp_config.hierarchy = da_config.hierarchy = 0
+    hierarchy = exp_config.hierarchy = da_config.hierarchy = 0
     m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
     cc_optimal_schedule = get_cc_optimal_schedule(da_config, m_config)
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
         cc_optimal_schedule = cc_optimal_schedule[0]
-    d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
-    par_dir = f'{os.path.dirname(__file__)}/execution_plans/inter_SP{da_config.hierarchy_sp}_fob={exp_config.fob}'
+    print(f'cc_optimal_schedule: {cc_optimal_schedule.schedule_table}')
+    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
+    par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/inter_SP{da_config.hierarchy_sp}_fob={exp_config.fob}'
     os.makedirs(par_dir, exist_ok=True)
     plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
     for plan_type in plan_types:
         # Raw Execution_Plan:
-        print(f'Raw, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)
+        print(f'Raw, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True) # use 'level0'
         # if not plan_type == 'automatic':
         if True:
+            cur_level = 0
+            cc_optimal_schedule.m_config.comp_profile_maps[hierarchy].change_current_level(cur_level)  # [NOTE]: Use it before Graph construction
+            d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
             execute_plan = Execution_Plan(d_graph, exp_config.fob, plan_type=plan_type)
             execute_plan.print_lp_result()
             plan_name = execute_plan.get_plan_name()
@@ -319,7 +357,10 @@ def generate_inter_execution_plans(exp_config: Evaluation_Configs, da_config: Di
                 pickle.dump(execute_plan, f)
         
         # Transformed Execution_Plans:
-        print(f'Fused, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)
+        print(f'Fused, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)   # use 'level1' and 'level2'
+        cur_level = 2 if plan_type == 'automatic' else 1
+        cc_optimal_schedule.m_config.comp_profile_maps[hierarchy].change_current_level(cur_level)  # [NOTE]: Use it before Graph construction
+        d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
         gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
         execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
         if execute_plan is None:    # No feasible transformations
@@ -340,9 +381,18 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
         cc_optimal_schedule = cc_optimal_schedule[0]
+    print(f'cc_optimal_schedule.schedule_table: \n{cc_optimal_schedule.schedule_table}')
     d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
-    par_dir = f'{os.path.dirname(__file__)}/execution_plans/intra_SP{da_config.hierarchy_sp}_fob={exp_config.fob}_causal={da_config.causal}'
+    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
+
+    if da_config.bsa_config:
+        print(f'bsa_config_string: {da_config.bsa_config.to_string()}')
+        par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{da_config.hierarchy_sp}_fob={exp_config.fob}_{da_config.bsa_config}'
+    else:
+        par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{da_config.hierarchy_sp}_fob={exp_config.fob}_causal={da_config.causal}'
+    print(f'par_dir: {par_dir}')
     os.makedirs(par_dir, exist_ok=True)
+    # return
     plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
     for plan_type in plan_types:
         # Raw Execution_Plan:
@@ -375,13 +425,15 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
             pickle.dump(execute_plan, f)
  
 def main():
-    da_configs = get_configs_for_search_workload_table()
-    exp_configs = get_exp_configs_for_search_workload_table()
-    for da_config in da_configs:
-        for exp_config in exp_configs:
-            search_workload_table(exp_config, da_config)
+    # [Deprecated]: begin. Use ILP to workload partition !!!
+    # da_configs = get_configs_for_search_workload_table()
+    # exp_configs = get_exp_configs_for_search_workload_table()
+    # for da_config in da_configs:
+    #     for exp_config in exp_configs:
+    #         search_workload_table(exp_config, da_config)
+    # [Deprecated]: end. 
     
-    return
+    # return
     da_configs = get_configs()
     exp_configs = get_exp_configs()
     if isinstance(da_configs, Dist_Attn_Config):
@@ -396,6 +448,7 @@ def main():
             # run_exp(exp_config, da_config)
             # generate_inter_execution_plans(exp_config, da_config) # for causal
             generate_intra_execution_plans(exp_config, da_config)   # for causal
+            # generate_intra_execution_plans_for_BSA(exp_config, da_config)
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,392 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p a01 -N 8 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w 'g[07-09,11,13-16]' -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+Sqkvs: [256, 512, 1024, 2048, 4096, 8192]
+total_size: 15149826048
+[rank19]:[W112 17:45:12.710660466 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 19]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank24]:[W112 17:44:44.926835201 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 24]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank27]:[W112 17:44:44.926828584 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 27]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank29]:[W112 17:44:44.926822434 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 29]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank30]:[W112 17:44:44.926828439 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 30]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank31]:[W112 17:44:44.926828651 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 31]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank39]:[W112 17:44:53.762413433 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 39]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank32]:[W112 17:44:53.762834857 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 32]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank40]:[W112 17:45:14.478778138 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 40]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank43]:[W112 17:45:14.478762855 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 43]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank44]:[W112 17:45:14.479112795 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 44]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank8]:[W112 17:44:45.437200893 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 8]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank10]:[W112 17:44:45.437198799 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 10]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank51]:[W112 17:45:03.786365989 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 51]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank12]:[W112 17:44:45.437529908 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 12]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank53]:[W112 17:45:03.786359012 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 53]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank54]:[W112 17:45:03.786380671 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 54]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank55]:[W112 17:45:03.786360291 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 55]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank52]:[W112 17:45:03.786597772 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 52]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank63]:[W112 17:45:12.233192246 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 63]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank59]:[W112 17:45:12.235274183 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 59]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank14]:[W112 17:44:45.447606463 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 14]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank50]:[W112 17:45:03.805621595 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 50]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank11]:[W112 17:44:45.459159012 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 11]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank57]:[W112 17:45:12.251310616 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 57]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank34]:[W112 17:44:53.794972095 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 34]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank1]:[W112 17:45:00.590255023 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank2]:[W112 17:45:00.590263454 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank4]:[W112 17:45:00.590256173 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 4]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank7]:[W112 17:45:00.590267467 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 7]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+causal=True, fob=0:
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+[rank42]:[W112 17:45:14.530681086 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 42]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank25]:[W112 17:44:45.996939868 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 25]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank3]:[W112 17:45:00.616488604 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank6]:[W112 17:45:00.616392877 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 6]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank5]:[W112 17:45:00.617121258 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 5]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank46]:[W112 17:45:14.549147219 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 46]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank28]:[W112 17:44:45.001455371 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 28]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank49]:[W112 17:45:03.856423201 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 49]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank47]:[W112 17:45:14.552097520 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 47]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank41]:[W112 17:45:14.552453943 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 41]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank0]:[W112 17:45:00.621401861 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank35]:[W112 17:44:53.839027584 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 35]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank36]:[W112 17:44:53.839160568 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 36]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank33]:[W112 17:44:53.839579822 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 33]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank13]:[W112 17:44:45.510629278 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 13]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank58]:[W112 17:45:12.301199832 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 58]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank38]:[W112 17:44:53.839934278 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 38]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank60]:[W112 17:45:12.301565671 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 60]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank37]:[W112 17:44:53.840550837 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 37]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank62]:[W112 17:45:12.301992327 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 62]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank61]:[W112 17:45:12.302604521 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 61]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank9]:[W112 17:44:45.513427337 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 9]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank45]:[W112 17:45:14.556365781 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 45]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank17]:[W112 17:45:12.792641320 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 17]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank21]:[W112 17:45:12.792596095 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 21]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank56]:[W112 17:45:12.304359501 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 56]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank48]:[W112 17:45:03.863173332 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 48]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank23]:[W112 17:45:12.792987587 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 23]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank22]:[W112 17:45:12.794530128 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 22]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank15]:[W112 17:44:45.516322376 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 15]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank20]:[W112 17:45:12.797762626 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 20]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank16]:[W112 17:45:12.798742203 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 16]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank18]:[W112 17:45:12.800807755 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 18]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank26]:[W112 17:44:45.023300549 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 26]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+# ring_flash_attn_func, fwd
+mfu: 0.018 Tflops/s, hfu: 0.018 Tflops/s, 17.081 iter/s, 5.854e-02 s/iter, (11.714, 0.006, 0.234) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 0.066 Tflops/s, hfu: 0.066 Tflops/s, 61.442 iter/s, 1.628e-02 s/iter, (0.263, 0.007, 0.065) sec
+# stripe_flash_attn_func, fwd
+mfu: 0.03 Tflops/s, hfu: 0.03 Tflops/s, 28.259 iter/s, 3.539e-02 s/iter, (0.083, 0.006, 0.142) sec
+# orchestrated_attn_func
+mfu: 0.251 Tflops/s, hfu: 0.251 Tflops/s, 234.132 iter/s, 4.271e-03 s/iter, (17.561, 0.004, 0.017) sec
+mfu: 0.307 Tflops/s, hfu: 0.307 Tflops/s, 285.984 iter/s, 3.497e-03 s/iter, (1.970, 0.002, 0.014) sec
+mfu: 0.237 Tflops/s, hfu: 0.237 Tflops/s, 221.104 iter/s, 4.523e-03 s/iter, (0.659, 0.001, 0.018) sec
+mfu: 0.289 Tflops/s, hfu: 0.289 Tflops/s, 269.471 iter/s, 3.711e-03 s/iter, (0.254, 0.002, 0.015) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 0.224 Tflops/s, hfu: 0.224 Tflops/s, 52.039 iter/s, 1.922e-02 s/iter, (0.040, 0.003, 0.077) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 0.332 Tflops/s, hfu: 0.332 Tflops/s, 77.260 iter/s, 1.294e-02 s/iter, (0.028, 0.002, 0.052) sec
+# stripe_flash_attn_func, fwd
+mfu: 0.136 Tflops/s, hfu: 0.136 Tflops/s, 31.553 iter/s, 3.169e-02 s/iter, (0.071, 0.006, 0.127) sec
+# orchestrated_attn_func
+mfu: 1.02 Tflops/s, hfu: 1.02 Tflops/s, 237.491 iter/s, 4.211e-03 s/iter, (0.262, 0.002, 0.017) sec
+mfu: 1.176 Tflops/s, hfu: 1.176 Tflops/s, 273.777 iter/s, 3.653e-03 s/iter, (2.286, 0.001, 0.015) sec
+mfu: 0.973 Tflops/s, hfu: 0.973 Tflops/s, 226.528 iter/s, 4.414e-03 s/iter, (0.556, 0.002, 0.018) sec
+mfu: 1.203 Tflops/s, hfu: 1.203 Tflops/s, 280.199 iter/s, 3.569e-03 s/iter, (0.244, 0.002, 0.014) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 0.732 Tflops/s, hfu: 0.732 Tflops/s, 42.614 iter/s, 2.347e-02 s/iter, (0.048, 0.004, 0.094) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 1.148 Tflops/s, hfu: 1.148 Tflops/s, 66.809 iter/s, 1.497e-02 s/iter, (0.039, 0.005, 0.060) sec
+# stripe_flash_attn_func, fwd
+mfu: 0.538 Tflops/s, hfu: 0.538 Tflops/s, 31.313 iter/s, 3.194e-02 s/iter, (0.071, 0.006, 0.128) sec
+# orchestrated_attn_func
+mfu: 3.93 Tflops/s, hfu: 3.93 Tflops/s, 228.784 iter/s, 4.371e-03 s/iter, (0.253, 0.002, 0.017) sec
+mfu: 4.778 Tflops/s, hfu: 4.778 Tflops/s, 278.124 iter/s, 3.596e-03 s/iter, (0.240, 0.001, 0.014) sec
+mfu: 3.772 Tflops/s, hfu: 3.772 Tflops/s, 219.551 iter/s, 4.555e-03 s/iter, (0.246, 0.002, 0.018) sec
+mfu: 4.677 Tflops/s, hfu: 4.677 Tflops/s, 272.232 iter/s, 3.673e-03 s/iter, (0.246, 0.001, 0.015) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 3.387 Tflops/s, hfu: 3.387 Tflops/s, 49.292 iter/s, 2.029e-02 s/iter, (0.041, 0.004, 0.081) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 6.114 Tflops/s, hfu: 6.114 Tflops/s, 88.968 iter/s, 1.124e-02 s/iter, (0.029, 0.001, 0.045) sec
+# stripe_flash_attn_func, fwd
+mfu: 3.134 Tflops/s, hfu: 3.134 Tflops/s, 45.602 iter/s, 2.193e-02 s/iter, (0.049, 0.003, 0.088) sec
+# orchestrated_attn_func
+mfu: 14.465 Tflops/s, hfu: 14.465 Tflops/s, 210.500 iter/s, 4.751e-03 s/iter, (0.255, 0.002, 0.019) sec
+mfu: 16.948 Tflops/s, hfu: 16.948 Tflops/s, 246.622 iter/s, 4.055e-03 s/iter, (0.242, 0.002, 0.016) sec
+mfu: 13.08 Tflops/s, hfu: 13.08 Tflops/s, 190.345 iter/s, 5.254e-03 s/iter, (0.252, 0.002, 0.021) sec
+mfu: 16.038 Tflops/s, hfu: 16.038 Tflops/s, 233.390 iter/s, 4.285e-03 s/iter, (0.259, 0.002, 0.017) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 13.113 Tflops/s, hfu: 13.113 Tflops/s, 47.705 iter/s, 2.096e-02 s/iter, (0.038, 0.002, 0.084) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 24.829 Tflops/s, hfu: 24.829 Tflops/s, 90.328 iter/s, 1.107e-02 s/iter, (0.030, 0.004, 0.044) sec
+# stripe_flash_attn_func, fwd
+mfu: 12.109 Tflops/s, hfu: 12.109 Tflops/s, 44.052 iter/s, 2.270e-02 s/iter, (0.050, 0.004, 0.091) sec
+# orchestrated_attn_func
+mfu: 40.186 Tflops/s, hfu: 40.186 Tflops/s, 146.197 iter/s, 6.840e-03 s/iter, (0.276, 0.002, 0.027) sec
+mfu: 48.575 Tflops/s, hfu: 48.575 Tflops/s, 176.713 iter/s, 5.659e-03 s/iter, (0.254, 0.001, 0.023) sec
+mfu: 37.406 Tflops/s, hfu: 37.406 Tflops/s, 136.083 iter/s, 7.348e-03 s/iter, (0.264, 0.002, 0.029) sec
+mfu: 46.306 Tflops/s, hfu: 46.306 Tflops/s, 168.460 iter/s, 5.936e-03 s/iter, (0.260, 0.002, 0.024) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 48.13 Tflops/s, hfu: 48.13 Tflops/s, 43.774 iter/s, 2.284e-02 s/iter, (0.048, 0.005, 0.091) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 62.191 Tflops/s, hfu: 62.191 Tflops/s, 56.562 iter/s, 1.768e-02 s/iter, (0.042, 0.006, 0.071) sec
+# stripe_flash_attn_func, fwd
+mfu: 49.392 Tflops/s, hfu: 49.392 Tflops/s, 44.922 iter/s, 2.226e-02 s/iter, (0.047, 0.003, 0.089) sec
+# orchestrated_attn_func
+mfu: 82.203 Tflops/s, hfu: 82.203 Tflops/s, 74.764 iter/s, 1.338e-02 s/iter, (0.299, 0.002, 0.054) sec
+mfu: 104.97 Tflops/s, hfu: 104.97 Tflops/s, 95.470 iter/s, 1.047e-02 s/iter, (0.274, 0.002, 0.042) sec
+mfu: 82.806 Tflops/s, hfu: 82.806 Tflops/s, 75.311 iter/s, 1.328e-02 s/iter, (0.266, 0.003, 0.053) sec
+mfu: 105.148 Tflops/s, hfu: 105.148 Tflops/s, 95.631 iter/s, 1.046e-02 s/iter, (0.258, 0.001, 0.042) sec
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 1.74 Tflops/s, hfu: 1.74 Tflops/s, 50.650 iter/s, 1.974e-02 s/iter, (0.040, 0.004, 0.079) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 2.378 Tflops/s, hfu: 2.378 Tflops/s, 69.202 iter/s, 1.445e-02 s/iter, (0.036, 0.004, 0.058) sec
+# stripe_flash_attn_func, fwd
+mfu: 1.117 Tflops/s, hfu: 1.117 Tflops/s, 32.504 iter/s, 3.077e-02 s/iter, (0.060, 0.005, 0.123) sec
+# orchestrated_attn_func
+mfu: 6.706 Tflops/s, hfu: 6.706 Tflops/s, 195.176 iter/s, 5.124e-03 s/iter, (0.256, 0.002, 0.020) sec
+mfu: 7.09 Tflops/s, hfu: 7.09 Tflops/s, 206.352 iter/s, 4.846e-03 s/iter, (0.257, 0.001, 0.019) sec
+mfu: 7.05 Tflops/s, hfu: 7.05 Tflops/s, 205.182 iter/s, 4.874e-03 s/iter, (0.246, 0.002, 0.019) sec
+mfu: 7.14 Tflops/s, hfu: 7.14 Tflops/s, 207.801 iter/s, 4.812e-03 s/iter, (0.254, 0.002, 0.019) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 5.061 Tflops/s, hfu: 5.061 Tflops/s, 36.823 iter/s, 2.716e-02 s/iter, (0.057, 0.002, 0.109) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 5.436 Tflops/s, hfu: 5.436 Tflops/s, 39.553 iter/s, 2.528e-02 s/iter, (0.060, 0.005, 0.101) sec
+# stripe_flash_attn_func, fwd
+mfu: 4.923 Tflops/s, hfu: 4.923 Tflops/s, 35.820 iter/s, 2.792e-02 s/iter, (0.055, 0.002, 0.112) sec
+# orchestrated_attn_func
+mfu: 19.127 Tflops/s, hfu: 19.127 Tflops/s, 139.166 iter/s, 7.186e-03 s/iter, (0.260, 0.002, 0.029) sec
+mfu: 22.333 Tflops/s, hfu: 22.333 Tflops/s, 162.496 iter/s, 6.154e-03 s/iter, (0.268, 0.002, 0.025) sec
+mfu: 20.108 Tflops/s, hfu: 20.108 Tflops/s, 146.307 iter/s, 6.835e-03 s/iter, (0.261, 0.002, 0.027) sec
+mfu: 19.56 Tflops/s, hfu: 19.56 Tflops/s, 142.320 iter/s, 7.026e-03 s/iter, (0.266, 0.002, 0.028) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 10.552 Tflops/s, hfu: 10.552 Tflops/s, 19.194 iter/s, 5.210e-02 s/iter, (0.110, 0.004, 0.208) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 11.245 Tflops/s, hfu: 11.245 Tflops/s, 20.455 iter/s, 4.889e-02 s/iter, (0.098, 0.003, 0.196) sec
+# stripe_flash_attn_func, fwd
+mfu: 10.578 Tflops/s, hfu: 10.578 Tflops/s, 19.241 iter/s, 5.197e-02 s/iter, (0.106, 0.001, 0.208) sec
+# orchestrated_attn_func
+mfu: 46.365 Tflops/s, hfu: 46.365 Tflops/s, 84.337 iter/s, 1.186e-02 s/iter, (0.288, 0.002, 0.047) sec
+mfu: 53.272 Tflops/s, hfu: 53.272 Tflops/s, 96.900 iter/s, 1.032e-02 s/iter, (0.270, 0.002, 0.041) sec
+mfu: 49.875 Tflops/s, hfu: 49.875 Tflops/s, 90.723 iter/s, 1.102e-02 s/iter, (0.271, 0.003, 0.044) sec
+mfu: 49.365 Tflops/s, hfu: 49.365 Tflops/s, 89.795 iter/s, 1.114e-02 s/iter, (0.275, 0.002, 0.045) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 20.175 Tflops/s, hfu: 20.175 Tflops/s, 9.174 iter/s, 1.090e-01 s/iter, (0.224, 0.006, 0.436) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 21.845 Tflops/s, hfu: 21.845 Tflops/s, 9.934 iter/s, 1.007e-01 s/iter, (0.203, 0.006, 0.403) sec
+# stripe_flash_attn_func, fwd
+mfu: 21.05 Tflops/s, hfu: 21.05 Tflops/s, 9.572 iter/s, 1.045e-01 s/iter, (0.216, 0.006, 0.418) sec
+# orchestrated_attn_func
+mfu: 97.008 Tflops/s, hfu: 97.008 Tflops/s, 44.114 iter/s, 2.267e-02 s/iter, (0.303, 0.004, 0.091) sec
+mfu: 97.399 Tflops/s, hfu: 97.399 Tflops/s, 44.292 iter/s, 2.258e-02 s/iter, (0.291, 0.002, 0.090) sec
+mfu: 96.986 Tflops/s, hfu: 96.986 Tflops/s, 44.104 iter/s, 2.267e-02 s/iter, (0.283, 0.003, 0.091) sec
+mfu: 92.506 Tflops/s, hfu: 92.506 Tflops/s, 42.067 iter/s, 2.377e-02 s/iter, (0.295, 0.002, 0.095) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 34.977 Tflops/s, hfu: 34.977 Tflops/s, 3.976 iter/s, 2.515e-01 s/iter, (0.505, 0.005, 1.006) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 39.749 Tflops/s, hfu: 39.749 Tflops/s, 4.519 iter/s, 2.213e-01 s/iter, (0.441, 0.005, 0.885) sec
+# stripe_flash_attn_func, fwd
+mfu: 38.496 Tflops/s, hfu: 38.496 Tflops/s, 4.376 iter/s, 2.285e-01 s/iter, (0.455, 0.005, 0.914) sec
+# orchestrated_attn_func
+mfu: 155.991 Tflops/s, hfu: 155.991 Tflops/s, 17.734 iter/s, 5.639e-02 s/iter, (0.396, 0.004, 0.226) sec
+mfu: 143.472 Tflops/s, hfu: 143.472 Tflops/s, 16.311 iter/s, 6.131e-02 s/iter, (0.366, 0.004, 0.245) sec
+mfu: 151.31 Tflops/s, hfu: 151.31 Tflops/s, 17.202 iter/s, 5.813e-02 s/iter, (0.464, 0.004, 0.233) sec
+mfu: 134.507 Tflops/s, hfu: 134.507 Tflops/s, 15.292 iter/s, 6.540e-02 s/iter, (0.689, 0.005, 0.262) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=0/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 55.504 Tflops/s, hfu: 55.504 Tflops/s, 1.578 iter/s, 6.339e-01 s/iter, (1.279, 0.006, 2.536) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 68.846 Tflops/s, hfu: 68.846 Tflops/s, 1.957 iter/s, 5.111e-01 s/iter, (1.020, 0.005, 2.044) sec
+# stripe_flash_attn_func, fwd
+mfu: 66.192 Tflops/s, hfu: 66.192 Tflops/s, 1.881 iter/s, 5.315e-01 s/iter, (1.050, 0.006, 2.126) sec
+# orchestrated_attn_func
+mfu: 174.167 Tflops/s, hfu: 174.167 Tflops/s, 4.950 iter/s, 2.020e-01 s/iter, (0.699, 0.005, 0.808) sec
+mfu: 154.796 Tflops/s, hfu: 154.796 Tflops/s, 4.400 iter/s, 2.273e-01 s/iter, (0.826, 0.005, 0.909) sec
+mfu: 171.911 Tflops/s, hfu: 171.911 Tflops/s, 4.886 iter/s, 2.047e-01 s/iter, (0.675, 0.004, 0.819) sec
+mfu: 155.917 Tflops/s, hfu: 155.917 Tflops/s, 4.431 iter/s, 2.257e-01 s/iter, (0.704, 0.005, 0.903) sec
+causal=True, fob=1:
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 0.049 Tflops/s, hfu: 0.061 Tflops/s, 22.859 iter/s, 4.375e-02 s/iter, (0.131, 0.005, 0.175) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 0.048 Tflops/s, hfu: 0.06 Tflops/s, 22.528 iter/s, 4.439e-02 s/iter, (0.105, 0.005, 0.178) sec
+# stripe_flash_attn_func, bwd
+mfu: 0.048 Tflops/s, hfu: 0.06 Tflops/s, 22.273 iter/s, 4.490e-02 s/iter, (0.091, 0.006, 0.180) sec
+# orchestrated_attn_func
+mfu: 0.405 Tflops/s, hfu: 0.506 Tflops/s, 188.589 iter/s, 5.303e-03 s/iter, (0.620, 0.001, 0.021) sec
+mfu: 0.56 Tflops/s, hfu: 0.7 Tflops/s, 260.608 iter/s, 3.837e-03 s/iter, (0.269, 0.002, 0.015) sec
+mfu: 0.442 Tflops/s, hfu: 0.553 Tflops/s, 205.939 iter/s, 4.856e-03 s/iter, (0.266, 0.002, 0.019) sec
+mfu: 0.579 Tflops/s, hfu: 0.724 Tflops/s, 269.731 iter/s, 3.707e-03 s/iter, (0.349, 0.001, 0.015) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 0.215 Tflops/s, hfu: 0.269 Tflops/s, 25.042 iter/s, 3.993e-02 s/iter, (0.084, 0.005, 0.160) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 0.188 Tflops/s, hfu: 0.235 Tflops/s, 21.886 iter/s, 4.569e-02 s/iter, (0.093, 0.004, 0.183) sec
+# stripe_flash_attn_func, bwd
+mfu: 0.191 Tflops/s, hfu: 0.239 Tflops/s, 22.277 iter/s, 4.489e-02 s/iter, (0.095, 0.006, 0.180) sec
+# orchestrated_attn_func
+mfu: 1.428 Tflops/s, hfu: 1.784 Tflops/s, 166.188 iter/s, 6.017e-03 s/iter, (0.968, 0.002, 0.024) sec
+mfu: 2.186 Tflops/s, hfu: 2.733 Tflops/s, 254.495 iter/s, 3.929e-03 s/iter, (0.250, 0.001, 0.016) sec
+mfu: 1.526 Tflops/s, hfu: 1.907 Tflops/s, 177.629 iter/s, 5.630e-03 s/iter, (0.353, 0.001, 0.023) sec
+mfu: 2.079 Tflops/s, hfu: 2.598 Tflops/s, 241.993 iter/s, 4.132e-03 s/iter, (0.258, 0.002, 0.017) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 1.196 Tflops/s, hfu: 1.496 Tflops/s, 34.820 iter/s, 2.872e-02 s/iter, (0.057, 0.001, 0.115) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 1.221 Tflops/s, hfu: 1.526 Tflops/s, 35.541 iter/s, 2.814e-02 s/iter, (0.065, 0.002, 0.113) sec
+# stripe_flash_attn_func, bwd
+mfu: 1.186 Tflops/s, hfu: 1.483 Tflops/s, 34.518 iter/s, 2.897e-02 s/iter, (0.063, 0.002, 0.116) sec
+# orchestrated_attn_func
+mfu: 4.583 Tflops/s, hfu: 5.728 Tflops/s, 133.374 iter/s, 7.498e-03 s/iter, (0.265, 0.001, 0.030) sec
+mfu: 7.874 Tflops/s, hfu: 9.843 Tflops/s, 229.173 iter/s, 4.364e-03 s/iter, (1.358, 0.001, 0.017) sec
+mfu: 4.394 Tflops/s, hfu: 5.493 Tflops/s, 127.893 iter/s, 7.819e-03 s/iter, (0.287, 0.002, 0.031) sec
+mfu: 7.61 Tflops/s, hfu: 9.512 Tflops/s, 221.468 iter/s, 4.515e-03 s/iter, (0.265, 0.002, 0.018) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 3.536 Tflops/s, hfu: 4.42 Tflops/s, 25.726 iter/s, 3.887e-02 s/iter, (0.083, 0.005, 0.155) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 3.055 Tflops/s, hfu: 3.819 Tflops/s, 22.231 iter/s, 4.498e-02 s/iter, (0.093, 0.005, 0.180) sec
+# stripe_flash_attn_func, bwd
+mfu: 1.364 Tflops/s, hfu: 1.705 Tflops/s, 9.924 iter/s, 1.008e-01 s/iter, (0.099, 0.005, 0.403) sec
+# orchestrated_attn_func
+mfu: 12.457 Tflops/s, hfu: 15.571 Tflops/s, 90.636 iter/s, 1.103e-02 s/iter, (0.290, 0.002, 0.044) sec
+mfu: 23.45 Tflops/s, hfu: 29.313 Tflops/s, 170.623 iter/s, 5.861e-03 s/iter, (1.364, 0.002, 0.023) sec
+mfu: 12.534 Tflops/s, hfu: 15.668 Tflops/s, 91.197 iter/s, 1.097e-02 s/iter, (0.274, 0.002, 0.044) sec
+mfu: 23.815 Tflops/s, hfu: 29.769 Tflops/s, 173.280 iter/s, 5.771e-03 s/iter, (0.362, 0.002, 0.023) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 17.744 Tflops/s, hfu: 22.181 Tflops/s, 32.277 iter/s, 3.098e-02 s/iter, (0.061, 0.008, 0.124) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 17.847 Tflops/s, hfu: 22.309 Tflops/s, 32.464 iter/s, 3.080e-02 s/iter, (0.067, 0.001, 0.123) sec
+# stripe_flash_attn_func, bwd
+mfu: 17.623 Tflops/s, hfu: 22.028 Tflops/s, 32.055 iter/s, 3.120e-02 s/iter, (0.069, 0.004, 0.125) sec
+# orchestrated_attn_func
+mfu: 32.764 Tflops/s, hfu: 40.955 Tflops/s, 59.597 iter/s, 1.678e-02 s/iter, (1.119, 0.003, 0.067) sec
+mfu: 56.726 Tflops/s, hfu: 70.908 Tflops/s, 103.184 iter/s, 9.691e-03 s/iter, (0.268, 0.002, 0.039) sec
+mfu: 31.255 Tflops/s, hfu: 39.068 Tflops/s, 56.852 iter/s, 1.759e-02 s/iter, (0.286, 0.003, 0.070) sec
+mfu: 54.95 Tflops/s, hfu: 68.687 Tflops/s, 99.953 iter/s, 1.000e-02 s/iter, (0.267, 0.001, 0.040) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 41.625 Tflops/s, hfu: 52.031 Tflops/s, 18.929 iter/s, 5.283e-02 s/iter, (0.107, 0.004, 0.211) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 43.002 Tflops/s, hfu: 53.753 Tflops/s, 19.555 iter/s, 5.114e-02 s/iter, (0.104, 0.005, 0.205) sec
+# stripe_flash_attn_func, bwd
+mfu: 41.051 Tflops/s, hfu: 51.313 Tflops/s, 18.668 iter/s, 5.357e-02 s/iter, (0.108, 0.002, 0.214) sec
+# orchestrated_attn_func
+mfu: 71.476 Tflops/s, hfu: 89.345 Tflops/s, 32.504 iter/s, 3.077e-02 s/iter, (0.315, 0.004, 0.123) sec
+mfu: 91.142 Tflops/s, hfu: 113.927 Tflops/s, 41.447 iter/s, 2.413e-02 s/iter, (0.309, 0.002, 0.097) sec
+mfu: 71.059 Tflops/s, hfu: 88.823 Tflops/s, 32.314 iter/s, 3.095e-02 s/iter, (0.414, 0.003, 0.124) sec
+mfu: 91.103 Tflops/s, hfu: 113.879 Tflops/s, 41.429 iter/s, 2.414e-02 s/iter, (0.391, 0.004, 0.097) sec
+da_config: SP=(8,8),Sg=(256,256),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(16384, 16384)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 1.648 Tflops/s, hfu: 2.061 Tflops/s, 23.988 iter/s, 4.169e-02 s/iter, (0.084, 0.003, 0.167) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 1.621 Tflops/s, hfu: 2.026 Tflops/s, 23.584 iter/s, 4.240e-02 s/iter, (0.089, 0.005, 0.170) sec
+# stripe_flash_attn_func, bwd
+mfu: 1.654 Tflops/s, hfu: 2.068 Tflops/s, 24.070 iter/s, 4.155e-02 s/iter, (0.082, 0.002, 0.166) sec
+# orchestrated_attn_func
+mfu: 9.729 Tflops/s, hfu: 12.161 Tflops/s, 141.572 iter/s, 7.064e-03 s/iter, (0.270, 0.002, 0.028) sec
+mfu: 10.635 Tflops/s, hfu: 13.294 Tflops/s, 154.758 iter/s, 6.462e-03 s/iter, (0.263, 0.001, 0.026) sec
+mfu: 10.274 Tflops/s, hfu: 12.842 Tflops/s, 149.504 iter/s, 6.689e-03 s/iter, (0.271, 0.002, 0.027) sec
+mfu: 11.294 Tflops/s, hfu: 14.117 Tflops/s, 164.342 iter/s, 6.085e-03 s/iter, (0.360, 0.001, 0.024) sec
+da_config: SP=(8,8),Sg=(512,512),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(32768, 32768)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 3.65 Tflops/s, hfu: 4.563 Tflops/s, 13.280 iter/s, 7.530e-02 s/iter, (0.156, 0.006, 0.301) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 3.227 Tflops/s, hfu: 4.034 Tflops/s, 11.741 iter/s, 8.517e-02 s/iter, (0.151, 0.003, 0.341) sec
+# stripe_flash_attn_func, bwd
+mfu: 3.562 Tflops/s, hfu: 4.452 Tflops/s, 12.958 iter/s, 7.717e-02 s/iter, (0.152, 0.002, 0.309) sec
+# orchestrated_attn_func
+mfu: 26.968 Tflops/s, hfu: 33.709 Tflops/s, 98.108 iter/s, 1.019e-02 s/iter, (0.276, 0.003, 0.041) sec
+mfu: 24.152 Tflops/s, hfu: 30.19 Tflops/s, 87.866 iter/s, 1.138e-02 s/iter, (0.274, 0.003, 0.046) sec
+mfu: 25.441 Tflops/s, hfu: 31.801 Tflops/s, 92.552 iter/s, 1.080e-02 s/iter, (0.265, 0.002, 0.043) sec
+mfu: 27.944 Tflops/s, hfu: 34.93 Tflops/s, 101.659 iter/s, 9.837e-03 s/iter, (0.276, 0.001, 0.039) sec
+da_config: SP=(8,8),Sg=(1024,1024),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(65536, 65536)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 7.52 Tflops/s, hfu: 9.399 Tflops/s, 6.839 iter/s, 1.462e-01 s/iter, (0.301, 0.005, 0.585) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 7.405 Tflops/s, hfu: 9.256 Tflops/s, 6.735 iter/s, 1.485e-01 s/iter, (0.300, 0.006, 0.594) sec
+# stripe_flash_attn_func, bwd
+mfu: 7.461 Tflops/s, hfu: 9.326 Tflops/s, 6.786 iter/s, 1.474e-01 s/iter, (0.295, 0.005, 0.589) sec
+# orchestrated_attn_func
+mfu: 55.167 Tflops/s, hfu: 68.959 Tflops/s, 50.174 iter/s, 1.993e-02 s/iter, (0.340, 0.002, 0.080) sec
+mfu: 51.097 Tflops/s, hfu: 63.871 Tflops/s, 46.472 iter/s, 2.152e-02 s/iter, (0.295, 0.002, 0.086) sec
+mfu: 49.687 Tflops/s, hfu: 62.109 Tflops/s, 45.190 iter/s, 2.213e-02 s/iter, (0.297, 0.002, 0.089) sec
+mfu: 52.727 Tflops/s, hfu: 65.909 Tflops/s, 47.955 iter/s, 2.085e-02 s/iter, (0.292, 0.001, 0.083) sec
+da_config: SP=(8,8),Sg=(2048,2048),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(131072, 131072)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 15.108 Tflops/s, hfu: 18.885 Tflops/s, 3.435 iter/s, 2.911e-01 s/iter, (0.592, 0.004, 1.164) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 15.185 Tflops/s, hfu: 18.981 Tflops/s, 3.453 iter/s, 2.896e-01 s/iter, (0.583, 0.005, 1.159) sec
+# stripe_flash_attn_func, bwd
+mfu: 15.097 Tflops/s, hfu: 18.871 Tflops/s, 3.433 iter/s, 2.913e-01 s/iter, (0.584, 0.004, 1.165) sec
+# orchestrated_attn_func
+mfu: 88.922 Tflops/s, hfu: 111.153 Tflops/s, 20.219 iter/s, 4.946e-02 s/iter, (1.065, 0.001, 0.198) sec
+mfu: 87.915 Tflops/s, hfu: 109.893 Tflops/s, 19.990 iter/s, 5.003e-02 s/iter, (0.357, 0.002, 0.200) sec
+mfu: 81.821 Tflops/s, hfu: 102.276 Tflops/s, 18.604 iter/s, 5.375e-02 s/iter, (0.762, 0.002, 0.215) sec
+mfu: 80.385 Tflops/s, hfu: 100.481 Tflops/s, 18.277 iter/s, 5.471e-02 s/iter, (0.881, 0.002, 0.219) sec
+da_config: SP=(8,8),Sg=(4096,4096),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(262144, 262144)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 26.166 Tflops/s, hfu: 32.707 Tflops/s, 1.487 iter/s, 6.723e-01 s/iter, (1.295, 0.005, 2.689) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 30.158 Tflops/s, hfu: 37.697 Tflops/s, 1.714 iter/s, 5.833e-01 s/iter, (1.172, 0.004, 2.333) sec
+# stripe_flash_attn_func, bwd
+mfu: 30.015 Tflops/s, hfu: 37.518 Tflops/s, 1.706 iter/s, 5.861e-01 s/iter, (1.169, 0.006, 2.344) sec
+# orchestrated_attn_func
+mfu: 106.359 Tflops/s, hfu: 132.949 Tflops/s, 6.046 iter/s, 1.654e-01 s/iter, (0.858, 0.004, 0.662) sec
+mfu: 107.044 Tflops/s, hfu: 133.805 Tflops/s, 6.085 iter/s, 1.643e-01 s/iter, (0.590, 0.004, 0.657) sec
+mfu: 101.772 Tflops/s, hfu: 127.215 Tflops/s, 5.785 iter/s, 1.729e-01 s/iter, (0.612, 0.004, 0.691) sec
+mfu: 99.508 Tflops/s, hfu: 124.385 Tflops/s, 5.656 iter/s, 1.768e-01 s/iter, (1.065, 0.004, 0.707) sec
+da_config: SP=(8,8),Sg=(8192,8192),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP8_fob=1/S=(524288, 524288)_SP=(8, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 37.248 Tflops/s, hfu: 46.56 Tflops/s, 0.529 iter/s, 1.889e+00 s/iter, (3.577, 0.005, 7.557) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 55.831 Tflops/s, hfu: 69.789 Tflops/s, 0.793 iter/s, 1.260e+00 s/iter, (2.524, 0.004, 5.042) sec
+# stripe_flash_attn_func, bwd
+mfu: 49.952 Tflops/s, hfu: 62.44 Tflops/s, 0.710 iter/s, 1.409e+00 s/iter, (2.559, 0.006, 5.635) sec
+# orchestrated_attn_func
+mfu: 112.049 Tflops/s, hfu: 140.062 Tflops/s, 1.592 iter/s, 6.280e-01 s/iter, (1.789, 0.004, 2.512) sec
+mfu: 107.583 Tflops/s, hfu: 134.478 Tflops/s, 1.529 iter/s, 6.541e-01 s/iter, (1.612, 0.004, 2.616) sec
+mfu: 111.156 Tflops/s, hfu: 138.945 Tflops/s, 1.580 iter/s, 6.331e-01 s/iter, (1.538, 0.003, 2.532) sec
+mfu: 107.629 Tflops/s, hfu: 134.536 Tflops/s, 1.529 iter/s, 6.538e-01 s/iter, (1.577, 0.004, 2.615) sec
++ set +x

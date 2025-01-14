@@ -1,0 +1,298 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p a01 -N 2 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w 'g[07-08]' -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+Sqkvs: [256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
+total_size: 60599304192
+[rank6]:[W112 18:00:38.118285422 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 6]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank1]:[W112 18:00:38.118581315 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank5]:[W112 18:00:38.121104484 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 5]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank15]:[W112 18:00:23.010974832 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 15]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank3]:[W112 18:00:38.123700062 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank14]:[W112 18:00:23.012137756 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 14]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank7]:[W112 18:00:38.126804022 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 7]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank8]:[W112 18:00:23.071982453 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 8]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank2]:[W112 18:00:38.186388995 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank11]:[W112 18:00:23.074743453 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 11]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank9]:[W112 18:00:23.079411959 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 9]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+causal=False, fob=0:
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+[rank4]:[W112 18:00:38.195215107 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 4]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank10]:[W112 18:00:23.084352038 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 10]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank0]:[W112 18:00:38.197039956 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank12]:[W112 18:00:23.085184772 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 12]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank13]:[W112 18:00:23.086872405 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 13]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+# ring_flash_attn_func, fwd
+mfu: 0.074 Tflops/s, hfu: 0.074 Tflops/s, 138.628 iter/s, 7.214e-03 s/iter, (3.005, 0.002, 0.029) sec
+# orchestrated_attn_func
+mfu: 0.834 Tflops/s, hfu: 0.834 Tflops/s, 1553.799 iter/s, 6.436e-04 s/iter, (11.481, 0.003, 0.003) sec
+mfu: 1.145 Tflops/s, hfu: 1.145 Tflops/s, 2132.233 iter/s, 4.690e-04 s/iter, (0.124, 0.001, 0.002) sec
+mfu: 2.185 Tflops/s, hfu: 2.185 Tflops/s, 4069.011 iter/s, 2.458e-04 s/iter, (1.476, 0.001, 0.001) sec
+mfu: 3.718 Tflops/s, hfu: 3.718 Tflops/s, 6925.975 iter/s, 1.444e-04 s/iter, (0.116, 0.001, 0.001) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 0.288 Tflops/s, hfu: 0.288 Tflops/s, 134.245 iter/s, 7.449e-03 s/iter, (0.016, 0.001, 0.030) sec
+# orchestrated_attn_func
+mfu: 3.944 Tflops/s, hfu: 3.944 Tflops/s, 1836.507 iter/s, 5.445e-04 s/iter, (0.121, 0.001, 0.002) sec
+mfu: 4.796 Tflops/s, hfu: 4.796 Tflops/s, 2233.419 iter/s, 4.477e-04 s/iter, (0.116, 0.001, 0.002) sec
+mfu: 7.989 Tflops/s, hfu: 7.989 Tflops/s, 3720.238 iter/s, 2.688e-04 s/iter, (0.116, 0.001, 0.001) sec
+mfu: 10.318 Tflops/s, hfu: 10.318 Tflops/s, 4804.735 iter/s, 2.081e-04 s/iter, (1.773, 0.001, 0.001) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 1.124 Tflops/s, hfu: 1.124 Tflops/s, 130.845 iter/s, 7.643e-03 s/iter, (0.017, 0.001, 0.031) sec
+# orchestrated_attn_func
+mfu: 13.668 Tflops/s, hfu: 13.668 Tflops/s, 1591.141 iter/s, 6.285e-04 s/iter, (0.121, 0.001, 0.003) sec
+mfu: 16.016 Tflops/s, hfu: 16.016 Tflops/s, 1864.559 iter/s, 5.363e-04 s/iter, (0.117, 0.001, 0.002) sec
+mfu: 21.09 Tflops/s, hfu: 21.09 Tflops/s, 2455.217 iter/s, 4.073e-04 s/iter, (0.114, 0.001, 0.002) sec
+mfu: 36.197 Tflops/s, hfu: 36.197 Tflops/s, 4213.862 iter/s, 2.373e-04 s/iter, (0.129, 0.001, 0.001) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 7.0 Tflops/s, hfu: 7.0 Tflops/s, 203.716 iter/s, 4.909e-03 s/iter, (0.013, 0.001, 0.020) sec
+# orchestrated_attn_func
+mfu: 41.956 Tflops/s, hfu: 41.956 Tflops/s, 1221.085 iter/s, 8.189e-04 s/iter, (0.118, 0.001, 0.003) sec
+mfu: 46.442 Tflops/s, hfu: 46.442 Tflops/s, 1351.644 iter/s, 7.398e-04 s/iter, (0.116, 0.001, 0.003) sec
+mfu: 58.002 Tflops/s, hfu: 58.002 Tflops/s, 1688.094 iter/s, 5.924e-04 s/iter, (0.114, 0.001, 0.002) sec
+mfu: 67.753 Tflops/s, hfu: 67.753 Tflops/s, 1971.858 iter/s, 5.071e-04 s/iter, (1.839, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 18.295 Tflops/s, hfu: 18.295 Tflops/s, 133.115 iter/s, 7.512e-03 s/iter, (0.019, 0.002, 0.030) sec
+# orchestrated_attn_func
+mfu: 81.554 Tflops/s, hfu: 81.554 Tflops/s, 593.384 iter/s, 1.685e-03 s/iter, (0.121, 0.001, 0.007) sec
+mfu: 106.248 Tflops/s, hfu: 106.248 Tflops/s, 773.056 iter/s, 1.294e-03 s/iter, (0.120, 0.001, 0.005) sec
+mfu: 100.481 Tflops/s, hfu: 100.481 Tflops/s, 731.097 iter/s, 1.368e-03 s/iter, (0.116, 0.001, 0.005) sec
+mfu: 127.705 Tflops/s, hfu: 127.705 Tflops/s, 929.175 iter/s, 1.076e-03 s/iter, (0.115, 0.001, 0.004) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 97.916 Tflops/s, hfu: 97.916 Tflops/s, 178.107 iter/s, 5.615e-03 s/iter, (0.015, 0.001, 0.022) sec
+# orchestrated_attn_func
+mfu: 127.266 Tflops/s, hfu: 127.266 Tflops/s, 231.495 iter/s, 4.320e-03 s/iter, (0.125, 0.001, 0.017) sec
+mfu: 142.652 Tflops/s, hfu: 142.652 Tflops/s, 259.483 iter/s, 3.854e-03 s/iter, (0.122, 0.001, 0.015) sec
+mfu: 156.716 Tflops/s, hfu: 156.716 Tflops/s, 285.065 iter/s, 3.508e-03 s/iter, (1.058, 0.001, 0.014) sec
+mfu: 180.506 Tflops/s, hfu: 180.506 Tflops/s, 328.339 iter/s, 3.046e-03 s/iter, (0.120, 0.001, 0.012) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 124.756 Tflops/s, hfu: 124.756 Tflops/s, 56.732 iter/s, 1.763e-02 s/iter, (0.038, 0.001, 0.071) sec
+# orchestrated_attn_func
+mfu: 134.421 Tflops/s, hfu: 134.421 Tflops/s, 61.128 iter/s, 1.636e-02 s/iter, (0.147, 0.001, 0.065) sec
+mfu: 135.921 Tflops/s, hfu: 135.921 Tflops/s, 61.810 iter/s, 1.618e-02 s/iter, (0.148, 0.001, 0.065) sec
+mfu: 198.359 Tflops/s, hfu: 198.359 Tflops/s, 90.203 iter/s, 1.109e-02 s/iter, (0.136, 0.001, 0.044) sec
+mfu: 203.761 Tflops/s, hfu: 203.761 Tflops/s, 92.660 iter/s, 1.079e-02 s/iter, (0.135, 0.001, 0.043) sec
+da_config: SP=(2,8),Sg=(32768,32768),S=(524288,524288),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 167.644 Tflops/s, hfu: 167.644 Tflops/s, 19.059 iter/s, 5.247e-02 s/iter, (0.108, 0.001, 0.210) sec
+# orchestrated_attn_func
+mfu: 176.369 Tflops/s, hfu: 176.369 Tflops/s, 20.051 iter/s, 4.987e-02 s/iter, (1.093, 0.002, 0.199) sec
+mfu: 177.083 Tflops/s, hfu: 177.083 Tflops/s, 20.132 iter/s, 4.967e-02 s/iter, (0.214, 0.001, 0.199) sec
+mfu: 216.24 Tflops/s, hfu: 216.24 Tflops/s, 24.584 iter/s, 4.068e-02 s/iter, (0.197, 0.001, 0.163) sec
+mfu: 224.37 Tflops/s, hfu: 224.37 Tflops/s, 25.508 iter/s, 3.920e-02 s/iter, (0.192, 0.001, 0.157) sec
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 3.395 Tflops/s, hfu: 3.395 Tflops/s, 197.605 iter/s, 5.061e-03 s/iter, (0.011, 0.001, 0.020) sec
+# orchestrated_attn_func
+mfu: 23.605 Tflops/s, hfu: 23.605 Tflops/s, 1373.989 iter/s, 7.278e-04 s/iter, (0.124, 0.001, 0.003) sec
+mfu: 27.269 Tflops/s, hfu: 27.269 Tflops/s, 1587.261 iter/s, 6.300e-04 s/iter, (0.118, 0.001, 0.003) sec
+mfu: 21.077 Tflops/s, hfu: 21.077 Tflops/s, 1226.837 iter/s, 8.151e-04 s/iter, (0.116, 0.002, 0.003) sec
+mfu: 24.114 Tflops/s, hfu: 24.114 Tflops/s, 1403.611 iter/s, 7.124e-04 s/iter, (0.118, 0.001, 0.003) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 10.955 Tflops/s, hfu: 10.955 Tflops/s, 159.413 iter/s, 6.273e-03 s/iter, (0.016, 0.001, 0.025) sec
+# orchestrated_attn_func
+mfu: 58.343 Tflops/s, hfu: 58.343 Tflops/s, 849.000 iter/s, 1.178e-03 s/iter, (0.118, 0.002, 0.005) sec
+mfu: 58.636 Tflops/s, hfu: 58.636 Tflops/s, 853.266 iter/s, 1.172e-03 s/iter, (0.117, 0.001, 0.005) sec
+mfu: 46.652 Tflops/s, hfu: 46.652 Tflops/s, 678.876 iter/s, 1.473e-03 s/iter, (0.118, 0.001, 0.006) sec
+mfu: 68.566 Tflops/s, hfu: 68.566 Tflops/s, 997.765 iter/s, 1.002e-03 s/iter, (0.118, 0.001, 0.004) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 22.013 Tflops/s, hfu: 22.013 Tflops/s, 80.082 iter/s, 1.249e-02 s/iter, (0.033, 0.001, 0.050) sec
+# orchestrated_attn_func
+mfu: 100.745 Tflops/s, hfu: 100.745 Tflops/s, 366.509 iter/s, 2.728e-03 s/iter, (0.122, 0.001, 0.011) sec
+mfu: 110.615 Tflops/s, hfu: 110.615 Tflops/s, 402.416 iter/s, 2.485e-03 s/iter, (0.324, 0.001, 0.010) sec
+mfu: 83.69 Tflops/s, hfu: 83.69 Tflops/s, 304.462 iter/s, 3.284e-03 s/iter, (0.123, 0.001, 0.013) sec
+mfu: 119.491 Tflops/s, hfu: 119.491 Tflops/s, 434.704 iter/s, 2.300e-03 s/iter, (0.121, 0.001, 0.009) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 41.688 Tflops/s, hfu: 41.688 Tflops/s, 37.915 iter/s, 2.637e-02 s/iter, (0.059, 0.002, 0.105) sec
+# orchestrated_attn_func
+mfu: 153.102 Tflops/s, hfu: 153.102 Tflops/s, 139.245 iter/s, 7.182e-03 s/iter, (0.139, 0.001, 0.029) sec
+mfu: 153.359 Tflops/s, hfu: 153.359 Tflops/s, 139.479 iter/s, 7.170e-03 s/iter, (0.128, 0.001, 0.029) sec
+mfu: 126.774 Tflops/s, hfu: 126.774 Tflops/s, 115.300 iter/s, 8.673e-03 s/iter, (0.133, 0.001, 0.035) sec
+mfu: 161.94 Tflops/s, hfu: 161.94 Tflops/s, 147.283 iter/s, 6.790e-03 s/iter, (0.136, 0.001, 0.027) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 70.703 Tflops/s, hfu: 70.703 Tflops/s, 16.076 iter/s, 6.220e-02 s/iter, (0.130, 0.002, 0.249) sec
+# orchestrated_attn_func
+mfu: 189.747 Tflops/s, hfu: 189.747 Tflops/s, 43.143 iter/s, 2.318e-02 s/iter, (0.846, 0.001, 0.093) sec
+mfu: 197.677 Tflops/s, hfu: 197.677 Tflops/s, 44.946 iter/s, 2.225e-02 s/iter, (0.161, 0.001, 0.089) sec
+mfu: 162.312 Tflops/s, hfu: 162.312 Tflops/s, 36.905 iter/s, 2.710e-02 s/iter, (0.171, 0.001, 0.108) sec
+mfu: 190.76 Tflops/s, hfu: 190.76 Tflops/s, 43.374 iter/s, 2.306e-02 s/iter, (0.165, 0.001, 0.092) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 109.524 Tflops/s, hfu: 109.524 Tflops/s, 6.226 iter/s, 1.606e-01 s/iter, (0.324, 0.001, 0.642) sec
+# orchestrated_attn_func
+mfu: 208.558 Tflops/s, hfu: 208.558 Tflops/s, 11.855 iter/s, 8.435e-02 s/iter, (1.160, 0.001, 0.337) sec
+mfu: 215.244 Tflops/s, hfu: 215.244 Tflops/s, 12.235 iter/s, 8.173e-02 s/iter, (0.282, 0.001, 0.327) sec
+mfu: 187.56 Tflops/s, hfu: 187.56 Tflops/s, 10.662 iter/s, 9.379e-02 s/iter, (0.306, 0.001, 0.375) sec
+mfu: 196.633 Tflops/s, hfu: 196.633 Tflops/s, 11.177 iter/s, 8.947e-02 s/iter, (0.305, 0.002, 0.358) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 145.243 Tflops/s, hfu: 145.243 Tflops/s, 2.064 iter/s, 4.845e-01 s/iter, (0.958, 0.003, 1.938) sec
+# orchestrated_attn_func
+mfu: 209.295 Tflops/s, hfu: 209.295 Tflops/s, 2.974 iter/s, 3.362e-01 s/iter, (1.479, 0.002, 1.345) sec
+mfu: 218.6 Tflops/s, hfu: 218.6 Tflops/s, 3.106 iter/s, 3.219e-01 s/iter, (0.794, 0.003, 1.288) sec
+mfu: 188.965 Tflops/s, hfu: 188.965 Tflops/s, 2.685 iter/s, 3.724e-01 s/iter, (0.865, 0.003, 1.490) sec
+mfu: 203.027 Tflops/s, hfu: 203.027 Tflops/s, 2.885 iter/s, 3.466e-01 s/iter, (0.817, 0.003, 1.386) sec
+da_config: SP=(2,8),Sg=(32768,32768),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, fwd
+mfu: 167.376 Tflops/s, hfu: 167.376 Tflops/s, 0.595 iter/s, 1.682e+00 s/iter, (3.306, 0.002, 6.727) sec
+# orchestrated_attn_func
+mfu: 213.95 Tflops/s, hfu: 213.95 Tflops/s, 0.760 iter/s, 1.316e+00 s/iter, (2.819, 0.002, 5.262) sec
+mfu: 221.885 Tflops/s, hfu: 221.885 Tflops/s, 0.788 iter/s, 1.269e+00 s/iter, (2.766, 0.003, 5.074) sec
+mfu: 195.377 Tflops/s, hfu: 195.377 Tflops/s, 0.694 iter/s, 1.441e+00 s/iter, (3.014, 0.002, 5.763) sec
+mfu: 230.079 Tflops/s, hfu: 230.079 Tflops/s, 0.817 iter/s, 1.223e+00 s/iter, (2.582, 0.001, 4.894) sec
+causal=False, fob=1:
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 0.151 Tflops/s, hfu: 0.189 Tflops/s, 140.594 iter/s, 7.113e-03 s/iter, (0.015, 0.001, 0.028) sec
+# orchestrated_attn_func
+mfu: 1.22 Tflops/s, hfu: 1.525 Tflops/s, 1135.868 iter/s, 8.804e-04 s/iter, (0.118, 0.001, 0.004) sec
+mfu: 1.25 Tflops/s, hfu: 1.563 Tflops/s, 1164.307 iter/s, 8.589e-04 s/iter, (0.117, 0.001, 0.003) sec
+mfu: 3.507 Tflops/s, hfu: 4.384 Tflops/s, 3266.095 iter/s, 3.062e-04 s/iter, (0.117, 0.001, 0.001) sec
+mfu: 2.036 Tflops/s, hfu: 2.545 Tflops/s, 1896.238 iter/s, 5.274e-04 s/iter, (0.131, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 0.641 Tflops/s, hfu: 0.801 Tflops/s, 149.145 iter/s, 6.705e-03 s/iter, (0.016, 0.001, 0.027) sec
+# orchestrated_attn_func
+mfu: 3.496 Tflops/s, hfu: 4.37 Tflops/s, 813.972 iter/s, 1.229e-03 s/iter, (0.119, 0.001, 0.005) sec
+mfu: 3.345 Tflops/s, hfu: 4.182 Tflops/s, 778.913 iter/s, 1.284e-03 s/iter, (0.117, 0.001, 0.005) sec
+mfu: 9.788 Tflops/s, hfu: 12.235 Tflops/s, 2279.026 iter/s, 4.388e-04 s/iter, (0.115, 0.001, 0.002) sec
+mfu: 8.089 Tflops/s, hfu: 10.112 Tflops/s, 1883.438 iter/s, 5.309e-04 s/iter, (0.114, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 2.501 Tflops/s, hfu: 3.127 Tflops/s, 145.598 iter/s, 6.868e-03 s/iter, (0.016, 0.001, 0.027) sec
+# orchestrated_attn_func
+mfu: 8.816 Tflops/s, hfu: 11.02 Tflops/s, 513.170 iter/s, 1.949e-03 s/iter, (0.120, 0.001, 0.008) sec
+mfu: 8.846 Tflops/s, hfu: 11.058 Tflops/s, 514.929 iter/s, 1.942e-03 s/iter, (0.118, 0.001, 0.008) sec
+mfu: 27.537 Tflops/s, hfu: 34.422 Tflops/s, 1602.893 iter/s, 6.239e-04 s/iter, (0.114, 0.001, 0.002) sec
+mfu: 25.517 Tflops/s, hfu: 31.896 Tflops/s, 1485.266 iter/s, 6.733e-04 s/iter, (0.116, 0.001, 0.003) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 8.677 Tflops/s, hfu: 10.847 Tflops/s, 126.273 iter/s, 7.919e-03 s/iter, (0.016, 0.001, 0.032) sec
+# orchestrated_attn_func
+mfu: 20.556 Tflops/s, hfu: 25.694 Tflops/s, 299.123 iter/s, 3.343e-03 s/iter, (0.127, 0.001, 0.013) sec
+mfu: 20.355 Tflops/s, hfu: 25.443 Tflops/s, 296.197 iter/s, 3.376e-03 s/iter, (0.542, 0.001, 0.014) sec
+mfu: 54.516 Tflops/s, hfu: 68.145 Tflops/s, 793.308 iter/s, 1.261e-03 s/iter, (0.118, 0.001, 0.005) sec
+mfu: 52.925 Tflops/s, hfu: 66.156 Tflops/s, 770.160 iter/s, 1.298e-03 s/iter, (0.115, 0.001, 0.005) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 35.011 Tflops/s, hfu: 43.763 Tflops/s, 127.368 iter/s, 7.851e-03 s/iter, (0.020, 0.001, 0.031) sec
+# orchestrated_attn_func
+mfu: 44.313 Tflops/s, hfu: 55.391 Tflops/s, 161.209 iter/s, 6.203e-03 s/iter, (0.132, 0.001, 0.025) sec
+mfu: 44.579 Tflops/s, hfu: 55.724 Tflops/s, 162.179 iter/s, 6.166e-03 s/iter, (0.127, 0.001, 0.025) sec
+mfu: 92.86 Tflops/s, hfu: 116.075 Tflops/s, 337.823 iter/s, 2.960e-03 s/iter, (0.119, 0.001, 0.012) sec
+mfu: 93.077 Tflops/s, hfu: 116.347 Tflops/s, 338.614 iter/s, 2.953e-03 s/iter, (0.119, 0.001, 0.012) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 81.412 Tflops/s, hfu: 101.765 Tflops/s, 74.044 iter/s, 1.351e-02 s/iter, (0.029, 0.001, 0.054) sec
+# orchestrated_attn_func
+mfu: 92.262 Tflops/s, hfu: 115.327 Tflops/s, 83.912 iter/s, 1.192e-02 s/iter, (0.139, 0.001, 0.048) sec
+mfu: 92.442 Tflops/s, hfu: 115.553 Tflops/s, 84.076 iter/s, 1.189e-02 s/iter, (0.450, 0.001, 0.048) sec
+mfu: 128.246 Tflops/s, hfu: 160.308 Tflops/s, 116.639 iter/s, 8.573e-03 s/iter, (0.131, 0.001, 0.034) sec
+mfu: 125.309 Tflops/s, hfu: 156.636 Tflops/s, 113.968 iter/s, 8.774e-03 s/iter, (0.133, 0.001, 0.035) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 91.712 Tflops/s, hfu: 114.639 Tflops/s, 20.853 iter/s, 4.796e-02 s/iter, (0.099, 0.001, 0.192) sec
+# orchestrated_attn_func
+mfu: 95.925 Tflops/s, hfu: 119.906 Tflops/s, 21.811 iter/s, 4.585e-02 s/iter, (0.207, 0.001, 0.183) sec
+mfu: 95.813 Tflops/s, hfu: 119.766 Tflops/s, 21.785 iter/s, 4.590e-02 s/iter, (0.209, 0.001, 0.184) sec
+mfu: 141.818 Tflops/s, hfu: 177.273 Tflops/s, 32.246 iter/s, 3.101e-02 s/iter, (0.178, 0.001, 0.124) sec
+mfu: 141.132 Tflops/s, hfu: 176.415 Tflops/s, 32.090 iter/s, 3.116e-02 s/iter, (0.177, 0.001, 0.125) sec
+da_config: SP=(2,8),Sg=(32768,32768),S=(524288,524288),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 124.875 Tflops/s, hfu: 156.094 Tflops/s, 7.098 iter/s, 1.409e-01 s/iter, (0.288, 0.001, 0.564) sec
+# orchestrated_attn_func
+mfu: 126.887 Tflops/s, hfu: 158.609 Tflops/s, 7.213 iter/s, 1.386e-01 s/iter, (0.400, 0.001, 0.555) sec
+mfu: 126.389 Tflops/s, hfu: 157.986 Tflops/s, 7.184 iter/s, 1.392e-01 s/iter, (0.400, 0.001, 0.557) sec
+mfu: 154.229 Tflops/s, hfu: 192.787 Tflops/s, 8.767 iter/s, 1.141e-01 s/iter, (0.343, 0.001, 0.456) sec
+mfu: 153.517 Tflops/s, hfu: 191.897 Tflops/s, 8.726 iter/s, 1.146e-01 s/iter, (0.346, 0.001, 0.458) sec
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 3.485 Tflops/s, hfu: 4.356 Tflops/s, 101.419 iter/s, 9.860e-03 s/iter, (0.023, 0.001, 0.039) sec
+# orchestrated_attn_func
+mfu: 26.941 Tflops/s, hfu: 33.676 Tflops/s, 784.073 iter/s, 1.275e-03 s/iter, (0.118, 0.001, 0.005) sec
+mfu: 27.214 Tflops/s, hfu: 34.017 Tflops/s, 792.022 iter/s, 1.263e-03 s/iter, (0.117, 0.001, 0.005) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 7.482 Tflops/s, hfu: 9.353 Tflops/s, 54.440 iter/s, 1.837e-02 s/iter, (0.042, 0.001, 0.073) sec
+# orchestrated_attn_func
+mfu: 52.883 Tflops/s, hfu: 66.104 Tflops/s, 384.776 iter/s, 2.599e-03 s/iter, (0.122, 0.001, 0.010) sec
+mfu: 51.36 Tflops/s, hfu: 64.201 Tflops/s, 373.697 iter/s, 2.676e-03 s/iter, (0.121, 0.001, 0.011) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 14.955 Tflops/s, hfu: 18.693 Tflops/s, 27.202 iter/s, 3.676e-02 s/iter, (0.897, 0.002, 0.147) sec
+# orchestrated_attn_func
+mfu: 87.742 Tflops/s, hfu: 109.677 Tflops/s, 159.602 iter/s, 6.266e-03 s/iter, (0.131, 0.001, 0.025) sec
+mfu: 86.613 Tflops/s, hfu: 108.266 Tflops/s, 157.548 iter/s, 6.347e-03 s/iter, (0.129, 0.001, 0.025) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 30.58 Tflops/s, hfu: 38.225 Tflops/s, 13.906 iter/s, 7.191e-02 s/iter, (0.152, 0.003, 0.288) sec
+# orchestrated_attn_func
+mfu: 114.73 Tflops/s, hfu: 143.412 Tflops/s, 52.173 iter/s, 1.917e-02 s/iter, (0.156, 0.001, 0.077) sec
+mfu: 112.764 Tflops/s, hfu: 140.955 Tflops/s, 51.279 iter/s, 1.950e-02 s/iter, (0.157, 0.001, 0.078) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 56.794 Tflops/s, hfu: 70.993 Tflops/s, 6.457 iter/s, 1.549e-01 s/iter, (0.318, 0.001, 0.620) sec
+# orchestrated_attn_func
+mfu: 127.464 Tflops/s, hfu: 159.33 Tflops/s, 14.491 iter/s, 6.901e-02 s/iter, (1.106, 0.001, 0.276) sec
+mfu: 127.653 Tflops/s, hfu: 159.566 Tflops/s, 14.512 iter/s, 6.891e-02 s/iter, (0.257, 0.001, 0.276) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 72.451 Tflops/s, hfu: 90.564 Tflops/s, 2.059 iter/s, 4.856e-01 s/iter, (0.850, 0.002, 1.943) sec
+# orchestrated_attn_func
+mfu: 133.607 Tflops/s, hfu: 167.009 Tflops/s, 3.797 iter/s, 2.633e-01 s/iter, (0.720, 0.001, 1.053) sec
+mfu: 135.079 Tflops/s, hfu: 168.848 Tflops/s, 3.839 iter/s, 2.605e-01 s/iter, (0.634, 0.001, 1.042) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 85.713 Tflops/s, hfu: 107.141 Tflops/s, 0.609 iter/s, 1.642e+00 s/iter, (3.380, 0.003, 6.568) sec
+# orchestrated_attn_func
+mfu: 125.975 Tflops/s, hfu: 157.469 Tflops/s, 0.895 iter/s, 1.117e+00 s/iter, (2.401, 0.002, 4.469) sec
+mfu: 131.056 Tflops/s, hfu: 163.819 Tflops/s, 0.931 iter/s, 1.074e+00 s/iter, (2.331, 0.002, 4.296) sec
+da_config: SP=(2,8),Sg=(32768,32768),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=False,hierarchy=1:
+YXs: [(1, 2), (2, 1)]
+# ring_flash_attn_func, bwd
+mfu: 100.342 Tflops/s, hfu: 125.428 Tflops/s, 0.178 iter/s, 5.610e+00 s/iter, (11.270, 0.003, 22.441) sec
+# orchestrated_attn_func
+mfu: 124.955 Tflops/s, hfu: 156.194 Tflops/s, 0.222 iter/s, 4.505e+00 s/iter, (8.893, 0.001, 18.021) sec
+mfu: 125.294 Tflops/s, hfu: 156.618 Tflops/s, 0.223 iter/s, 4.493e+00 s/iter, (9.040, 0.001, 17.972) sec
++ set +x

@@ -1,0 +1,230 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p a01 -N 3 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w 'g[08-09,11]' -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+Sqkvs: [256, 512, 1024, 2048, 4096, 8192, 16384]
+total_size: 30299652096
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank1]:     main(parse_args())
+[rank1]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank1]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank1]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank1]:     with open(plan_path, 'rb') as fin:
+[rank1]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank2]:     main(parse_args())
+[rank2]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank2]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank2]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank2]:     with open(plan_path, 'rb') as fin:
+[rank2]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank6]: Traceback (most recent call last):
+[rank6]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank6]:     main(parse_args())
+[rank6]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank6]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank6]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank6]:     with open(plan_path, 'rb') as fin:
+[rank6]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank14]: Traceback (most recent call last):
+[rank14]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank14]:     main(parse_args())
+[rank14]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank14]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank14]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank14]:     with open(plan_path, 'rb') as fin:
+[rank14]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank10]: Traceback (most recent call last):
+[rank10]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank10]:     main(parse_args())
+[rank10]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank10]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank10]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank10]:     with open(plan_path, 'rb') as fin:
+[rank10]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank8]: Traceback (most recent call last):
+[rank8]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank8]:     main(parse_args())
+[rank8]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank8]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank8]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank8]:     with open(plan_path, 'rb') as fin:
+[rank8]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank23]: Traceback (most recent call last):
+[rank23]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank23]:     main(parse_args())
+[rank23]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank23]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank23]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank23]:     with open(plan_path, 'rb') as fin:
+[rank23]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank20]: Traceback (most recent call last):
+[rank20]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank20]:     main(parse_args())
+[rank20]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank20]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank20]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank20]:     with open(plan_path, 'rb') as fin:
+[rank20]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank16]: Traceback (most recent call last):
+[rank16]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank16]:     main(parse_args())
+[rank16]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank16]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank16]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank16]:     with open(plan_path, 'rb') as fin:
+[rank16]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank18]: Traceback (most recent call last):
+[rank18]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank18]:     main(parse_args())
+[rank18]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank18]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank18]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank18]:     with open(plan_path, 'rb') as fin:
+[rank18]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank22]: Traceback (most recent call last):
+[rank22]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank22]:     main(parse_args())
+[rank22]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank22]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank22]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank22]:     with open(plan_path, 'rb') as fin:
+[rank22]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank3]:     main(parse_args())
+[rank3]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank3]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank3]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank3]:     with open(plan_path, 'rb') as fin:
+[rank3]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank5]: Traceback (most recent call last):
+[rank5]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank5]:     main(parse_args())
+[rank5]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank5]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank5]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank5]:     with open(plan_path, 'rb') as fin:
+[rank5]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+causal=True, fob=0:
+da_config: SP=(3,8),Sg=(256,256),S=(6144,6144),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+[rank15]: Traceback (most recent call last):
+[rank15]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank15]:     main(parse_args())
+[rank15]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank15]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank15]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank15]:     with open(plan_path, 'rb') as fin:
+[rank15]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank4]: Traceback (most recent call last):
+[rank4]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank4]:     main(parse_args())
+[rank4]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank4]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank4]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank4]:     with open(plan_path, 'rb') as fin:
+[rank4]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank12]: Traceback (most recent call last):
+[rank12]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank12]:     main(parse_args())
+[rank12]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank12]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank12]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank12]:     with open(plan_path, 'rb') as fin:
+[rank12]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank0]:     main(parse_args())
+[rank0]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank0]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank0]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank0]:     with open(plan_path, 'rb') as fin:
+[rank0]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank7]: Traceback (most recent call last):
+[rank7]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank7]:     main(parse_args())
+[rank7]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank7]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank7]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank7]:     with open(plan_path, 'rb') as fin:
+[rank7]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank19]: Traceback (most recent call last):
+[rank19]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank19]:     main(parse_args())
+[rank19]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank19]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank19]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank19]:     with open(plan_path, 'rb') as fin:
+[rank19]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank11]: Traceback (most recent call last):
+[rank11]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank11]:     main(parse_args())
+[rank11]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank11]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank11]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank11]:     with open(plan_path, 'rb') as fin:
+[rank11]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank13]: Traceback (most recent call last):
+[rank13]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank13]:     main(parse_args())
+[rank13]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank13]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank13]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank13]:     with open(plan_path, 'rb') as fin:
+[rank13]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank9]: Traceback (most recent call last):
+[rank9]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank9]:     main(parse_args())
+[rank9]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank9]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank9]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank9]:     with open(plan_path, 'rb') as fin:
+[rank9]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank17]: Traceback (most recent call last):
+[rank17]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank17]:     main(parse_args())
+[rank17]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank17]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank17]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank17]:     with open(plan_path, 'rb') as fin:
+[rank17]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+[rank21]: Traceback (most recent call last):
+[rank21]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank21]:     main(parse_args())
+[rank21]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1472, in main
+[rank21]:     run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+[rank21]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1167, in run_all_inter_attn
+[rank21]:     with open(plan_path, 'rb') as fin:
+[rank21]: FileNotFoundError: [Errno 2] No such file or directory: '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP3_fob=0/S=(6144, 6144)_SP=(3, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl'
+srun: error: g09: task 10: Exited with exit code 1
+srun: Terminating StepId=53350.0
+slurmstepd: error: *** STEP 53350.0 ON g08 CANCELLED AT 2025-01-12T17:09:21 ***
+srun: error: g11: task 18: Exited with exit code 1
+srun: error: g11: task 16: Exited with exit code 1
+srun: error: g09: task 14: Exited with exit code 1
+srun: error: g11: task 23: Exited with exit code 1
+srun: error: g08: task 0: Exited with exit code 1
+srun: error: g09: task 8: Exited with exit code 1
+srun: error: g11: task 21: Exited with exit code 1
+srun: error: g08: task 4: Exited with exit code 1
+srun: error: g09: task 11: Exited with exit code 1
+srun: error: g11: task 20: Exited with exit code 1
+srun: error: g08: task 2: Exited with exit code 1
+srun: error: g09: task 9: Exited with exit code 1
+srun: error: g11: task 19: Exited with exit code 1
+srun: error: g08: task 1: Exited with exit code 1
+srun: error: g09: task 15: Exited with exit code 1
+srun: error: g08: task 6: Exited with exit code 1
+srun: error: g11: task 17: Exited with exit code 1
+srun: error: g08: task 3: Exited with exit code 1
+srun: error: g09: task 13: Exited with exit code 1
+srun: error: g08: task 7: Exited with exit code 1
+srun: error: g11: task 22: Exited with exit code 1
+srun: error: g09: task 12: Exited with exit code 1
+srun: error: g08: task 5: Exited with exit code 1
++ set +x

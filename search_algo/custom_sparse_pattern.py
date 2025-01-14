@@ -87,4 +87,4 @@ def create_block_sparse_pattern(CP: int, ParD: int, pattern_type: str, pattern_s
         raise ValueError(f"Invalid pattern type: {pattern_type}")
     block_config = Block_Attention_Config(CP, ParD, cmap, block_table)
     return block_config
-        
+    

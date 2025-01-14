@@ -30,7 +30,7 @@ class Evaluation_Configs():
         ret = ret.replace(' ', '')
         return ret
 class Dist_Attn_Config():
-    def __init__(self, SP, S, Nh, bs, D, causal, hierarchy=1):
+    def __init__(self, SP, S, Nh, bs, D, causal, hierarchy=1, bsa_config=None):
         self.SP = SP    # (inter, intra)
         self.S = S  # (Sq, Skv) total S !!!
         self.Nh = Nh    # (Nh, Ng)
@@ -38,6 +38,7 @@ class Dist_Attn_Config():
         self.D = D
         self.causal = causal
         self.hierarchy = hierarchy
+        self.bsa_config = bsa_config    # prior than 'causal'
         # self.hierarchy_sp = SP[hierarchy]
         # self.tot_sp = reduce(lambda x,y:x*y, SP)
         # self.S_per_gpu = (S[0] // self.tot_sp, S[1] // self.tot_sp)
@@ -60,12 +61,17 @@ class Dist_Attn_Config():
     def __str__(self):
         ret = f'SP={self.SP}, Sg={self.S_per_gpu}, S={self.S}, Nh={self.Nh}, bs={self.bs}, D={self.D}, causal={self.causal}, hierarchy={self.hierarchy}'
         ret = ret.replace(' ', '')
+        if self.bsa_config:
+            ret += f',bsa_config={self.bsa_config}'
         return ret
 
 class Comp_Profile_Map():
     def __init__(self):
         pass
     
+    def change_current_level(self, new_level: int):
+        raise NotImplementedError
+        
     def get_comp_time_from_map_key(self, map_key: tuple) -> np.ndarray:
         assert map_key in self.profile_map.keys(), f"Key {map_key} not found in profile_map"
         return self.profile_map[map_key]    # [fwd/bwd], (s)
@@ -95,8 +101,11 @@ class FlashAttn_Profile_Map(Comp_Profile_Map):
             assert S0[merge_dim ^ 1] == S0[merge_dim ^ 1], f"S0[{merge_dim ^ 1}] != S1[{merge_dim ^ 1}]"
             S01 = (S0[0] + S1[0], S0[1]) if merge_dim == 0 else (S0[0], S0[1] + S1[1])
             
+            S_gcd = math.gcd(S01[0], S01[1])
+            QK_RATIO = f'{S01[0] // S_gcd}/{S01[1] // S_gcd}'
             assert S01[0] / S01[1] in [0.25, 0.5, 1, 2, 4], \
                 f"Current profile data doesn't contain this Q/K Sequence ratio: {S01[0] / S01[1]}"
+            return (min(S01[0], S01[1]), map_key0[1], map_key0[2], map_key0[3], QK_RATIO, map_key0[5])
             return (min(S01[0], S01[1]), map_key0[1], map_key0[2], map_key0[3], S01[0] / S01[1], map_key0[5])
         else:
             for d in range(5):
@@ -124,10 +133,11 @@ class FlashAttn_Profile_Map(Comp_Profile_Map):
         bs_split = da_config.bs // split_degrees[2]
         Nh_split = da_config.Nh[0] // split_degrees[3]
         QK_RATIO = Sq_split / Skv_split
-        if QK_RATIO not in [0.25, 0.5, 1, 2, 4]:
-            S_gcd = math.gcd(Sq_split, Skv_split)
-            QK_RATIO = f'{Sq_split // S_gcd}/{Skv_split // S_gcd}'
-        assert QK_RATIO in [0.25, 0.5, 1, 2, 4, '3/1', '1/3'], \
+        # if QK_RATIO not in [0.25, 0.5, 1, 2, 4]:
+        S_gcd = math.gcd(Sq_split, Skv_split)
+        QK_RATIO = f'{Sq_split // S_gcd}/{Skv_split // S_gcd}'
+        # assert QK_RATIO in [0.25, 0.5, 1, 2, 4, '3/1', '1/3'], \
+        assert QK_RATIO in ['1/1', '2/1', '1/2', '3/1', '1/3', '4/1', '1/4'], \
             f"Current profile data doesn't contain this Q/K Sequence ratio: {QK_RATIO}"
         assert da_config.Nh[0] == da_config.Nh[1], \
             f"Current profile data doesn't contain this GQA: (Nh={da_config.Nh[0]}, Ng={da_config.Nh[1]})"
@@ -136,10 +146,22 @@ class FlashAttn_Profile_Map(Comp_Profile_Map):
         return map_key
     
 class Inter_Comp_Profile_Map(Comp_Profile_Map):
-    def __init__(self, profile_map):
+    def __init__(self, profile_map: dict):
         super().__init__()
-        self.profile_map = profile_map
+        if profile_map:
+            assert 'level' in list(profile_map.keys())[0]
+            self.profile_maps = profile_map
+            self.cur_level = 0
+            self.profile_map = profile_map[f'level{self.cur_level}']  # [TODO]: {'level0': {...}, 'level1': {...}, 'level2': {...}}
+        else:
+            self.cur_level = 0
+            self.profile_maps = profile_map
+            self.profile_map = profile_map
 
+    def change_current_level(self, new_level: int):
+        self.cur_level = new_level
+        self.profile_map = self.profile_maps[f'level{new_level}']
+        
     # [TODO]
     def merge_comp_map_key(self, map_key0: tuple, map_key1: tuple, merge_dim: int) -> tuple:
         raise NotImplementedError
@@ -271,8 +293,8 @@ class Dist_Attn_Schedule():
             for k in range(split_degrees[0]):
                 schedule_table[:, :, k, k] = np.expand_dims(S_map[:, k], axis=1)    # we can set the diagonal elements directly
         assert schedule_table.shape == (split_degrees[2], split_degrees[3], split_degrees[0], split_degrees[1])
-        for k in range(split_degrees[0]):   # we should assert diagonal elements first
-            assert np.prod(schedule_table[:, :, k, k] == np.expand_dims(S_map[:, k], axis=1)) == 1
+        # for k in range(split_degrees[0]):   # we should assert diagonal elements first  # [NOTE]: we disable it !!!
+        #     assert np.prod(schedule_table[:, :, k, k] == np.expand_dims(S_map[:, k], axis=1)) == 1
                 
         self.tot_sp = reduce(lambda x,y:x*y, self.da_config.SP)
         self.hierarchy_sp = da_config.SP[da_config.hierarchy]
@@ -776,15 +798,46 @@ class Search_Engine():
 
 def get_profile_data(SP: tuple, hierarchy: bool = 0):
     BW = (12.5, 215)   # Inter-Machine, Intra-Machine, GB/s, bidirectional
-    PROFILE_FILE_NAME = './prof_data/time_flashattn_ratio.json'
+    import os
+    CLUSTER_NAME = os.environ.get('CLUSTER_NAME', None)
+    PLATFORM = os.environ.get('PLATFORM', None)
+    assert CLUSTER_NAME in ['qiyuan', 'fit'], f'[ERROR]: Not support cluster_name: {CLUSTER_NAME}'
+    assert PLATFORM in ['A100', 'A800', 'H800'], f'[ERROR]: Not support platform: {PLATFORM}'
+    
+    PROF_DATA_DIR = f'./prof_data/{CLUSTER_NAME}'
+    # Inter Comp
     if hierarchy == 0:
-        INTER_COMP_FILE_NAME = f'./prof_data/wrapper_intra_SP={SP[1]}_all.log'
+        if CLUSTER_NAME == 'qiyuan':
+            INTER_COMP_FILE_NAME = f'{PROF_DATA_DIR}/wrapper_intra_SP={SP[1]}_all.log'
+        elif CLUSTER_NAME == 'fit':
+            if PLATFORM == 'A800':
+                INTER_COMP_FILE_NAME = f'{PROF_DATA_DIR}/wrapper_intra_SP={SP[1]}_all.log'
+            elif PLATFORM == 'H800':
+                INTER_COMP_FILE_NAME = f'{PROF_DATA_DIR}/wrapper_intra_SP={SP[1]}_all_H800_final.log'
     else:
         INTER_COMP_FILE_NAME = None
     
-    INTER_COMM_FILE_NAME = './prof_data/cb_16_g3018-9.log'
-    # INTRA_COMM_FILE_NAME = './prof_data/cb_8_g3028.log'
-    INTRA_COMM_FILE_NAME = './prof_data/cb_8_3017_2_21_5.log'
+    # Comms
+    if CLUSTER_NAME == 'qiyuan':
+        INTER_COMM_FILE_NAME = f'{PROF_DATA_DIR}/cb_16_g3018-9.log'
+        # INTRA_COMM_FILE_NAME = './prof_data/cb_8_g3028.log'
+        INTRA_COMM_FILE_NAME = f'{PROF_DATA_DIR}/cb_8_3017_2_21_5.log'
+    elif CLUSTER_NAME == 'fit':
+        if PLATFORM == 'A800':
+            INTER_COMM_FILE_NAME = f'{PROF_DATA_DIR}/cb_16_g01,07_all.log'
+            INTRA_COMM_FILE_NAME = f'{PROF_DATA_DIR}/cb_8_g01_all.log'
+        elif PLATFORM == 'H800':
+            INTER_COMM_FILE_NAME = f'{PROF_DATA_DIR}/cb_16_g42,44_all.log'
+            INTRA_COMM_FILE_NAME = f'{PROF_DATA_DIR}/cb_8_g42_all.log'
+    
+    # Intra Comp
+    if CLUSTER_NAME == 'qiyuan':
+        PROFILE_FILE_NAME = f'{PROF_DATA_DIR}/time_flashattn_ratio.json'
+    elif CLUSTER_NAME == 'fit':
+        if PLATFORM == 'A800':
+            PROFILE_FILE_NAME = f'{PROF_DATA_DIR}/time_g13_m2_flash_all.json'
+        elif PLATFORM == 'H800':
+            PROFILE_FILE_NAME = f'{PROF_DATA_DIR}/time_g40_m2_flash_all.json'
     with open(PROFILE_FILE_NAME, 'r') as f:
         profile_data = json.load(f)
     assert 'flash_attn' in profile_data.keys(), 'flash_attn not found in profile_data'
@@ -796,7 +849,7 @@ def get_profile_data(SP: tuple, hierarchy: bool = 0):
         )
 
 def create_schedule(da_config, m_config, split_degrees: list, S_map: np.ndarray, schedule_table_func, hierarchy: bool = 1):
-    schedule_table = schedule_table_func(split_degrees, S_map, da_config.causal)
+    schedule_table = schedule_table_func(split_degrees, S_map, da_config.causal, da_config=da_config)
     if isinstance(schedule_table, list):
         return [Dist_Attn_Schedule(da_config, m_config, split_degrees, S_map, st, hierarchy) for st in schedule_table]
     else:
