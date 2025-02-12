@@ -1496,7 +1496,7 @@ def profile_all_intra_BSA(args, ncclcomm_global, gloo_global_group):
     
     use_BSA = False
     use_BSA = True  # prior than 'causal', this will hide 'causal'
-    BSA_patterns = [    # a dict
+    BSA_patterns_dict = [    # a dict
         # # stride_16_4_3 (8x2)
         {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (3, 3), 'global_blocks': (0, 0), 'replicate': 2},
         # stride_16_4_3 (8x4)
@@ -1523,7 +1523,8 @@ def profile_all_intra_BSA(args, ncclcomm_global, gloo_global_group):
     ]
     if use_BSA:
         assert local_size == 8, f'[ERROR]: Now not support for local_size({local_size}) intra-node not equal to 8'
-        BSA_configs = [BSA_Config(**p) for p in BSA_patterns]
+        # BSA_configs = [BSA_Config.from_dict(**p) for p in BSA_patterns_dict]
+        BSA_configs = [BSA_Config.from_dict(p) for p in BSA_patterns_dict]
     
     # experiment variables
     WARMUP, NUM_ITER = 11, 20 # most, best performance for most cases
