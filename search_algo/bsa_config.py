@@ -2,12 +2,14 @@ import numpy as np
 from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction
 from typing import Union, Optional
 import regex as re
+from typing import List, Optional
+from __future__ import annotations
 
 class BSA_Repr():   # OK
     """
     BSA Representation only !!! (without CP-aware)
     """
-    def __init__(self, block_table: np.ndarray, cmap: np.ndarray):
+    def __init__(self, block_table: np.ndarray, cmap: Optional[np.ndarray]):
         assert len(block_table.shape) == 2 and len(cmap.shape) == 1 and \
                cmap.shape[0] == block_table.shape[0] == block_table.shape[1]
         self.block_table = block_table
@@ -116,6 +118,31 @@ class BSA_Repr():   # OK
                 new_cmap[i*rate: (i+1)*rate] = cmap[i]
         return new_block_table, new_cmap
     
+    def split_n(self, n: int) -> List[BSA_Repr]:
+        # [TODO]
+        cur_spt = self.block_table_raw.shape[0]
+        sub_bsa_reprs = []
+        if cur_spt >= n:
+            assert cur_spt % n == 0
+            sub_size = cur_spt // n
+            for i in range(n):
+                for j in range(n):
+                    sub_bsa_reprs.append(BSA_Repr(self.block_table_raw[i*sub_size: (i+1)*sub_size, j*sub_size: (j+1)*sub_size], None))
+        else:
+            assert n % cur_spt == 0
+            sub_block_table, _ = self.complicate(self.block_table_raw, self.cmap_raw, rate=n // cur_spt)
+            for i in range(n):
+                for j in range(n):
+                    sub_bsa_reprs.append(BSA_Repr(self.block_table_raw[i, j], None))
+        # Deduplicate
+        sub_bsa_reprs = list(set(sub_bsa_reprs))
+        return sub_bsa_reprs
+    
+    def __eq__(self, other: BSA_Repr):
+        return np.array_equal(self.block_table_raw, other.block_table_raw)
+    
+    def fingerprint(self):
+        pass
     
 class BSA_Config(): # OK
     """squ
@@ -186,9 +213,10 @@ class BSA_Config(): # OK
         re_pat_s = fr"\(({D}),({D})\)_({D})_({S})_({D})-({D})_({D})&({D})_({D})&({D})_({D})"
         match = re.match(re_pat_s, pat_s)
         if match:
-            CP_intra, CP_inter, Par_D, pattern_type, ps_n, ps_d, lb_l, lb_r, gb_l, gb_r, r  = match.groups()
+            CP_intra, CP_inter, Par_D, pattern_type, ps_n, ps_d, lb_l, lb_r, gb_l, gb_r, r = match.groups()
             self.CP = (int(CP_intra), int(CP_inter))
             self.Par_D = int(Par_D)
+            self.pattern_type = pattern_type
             self.pattern_sparsity = ps_n / ps_d
             self.local_blocks = (int(lb_l), int(lb_r))
             self.global_blocks = (int(gb_l), int(gb_r))
@@ -330,4 +358,8 @@ class BSA_Config(): # OK
         return block_table, cmap
         # block_config = Block_Attention_Config(CP, ParD, cmap, block_table)
         # return block_config
-        
+    
+    def __eq__(self, other: BSA_Config):
+        if self.CP != other.CP:
+            return False
+        return self.bsa_repr == other.bsa_repr

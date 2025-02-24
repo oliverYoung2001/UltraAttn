@@ -382,7 +382,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         assert isinstance(cc_optimal_schedule, list)
         cc_optimal_schedule = cc_optimal_schedule[0]
     print(f'cc_optimal_schedule.schedule_table: \n{cc_optimal_schedule.schedule_table}')
-    d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
+    d_graph = Depende nt_Graph(cc_optimal_schedule, exp_config.fob)
     CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
 
     if da_config.bsa_config:
@@ -404,7 +404,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
             plan_name = execute_plan.get_plan_name()
             if plan_type == 'ablation1':
                 plan_name = f'{plan_name}_{plan_type}'
-            # Dump Execution_Plan:
+            # Dump Execution_Pl   an:
             plan_file = f'{par_dir}/{plan_name}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)

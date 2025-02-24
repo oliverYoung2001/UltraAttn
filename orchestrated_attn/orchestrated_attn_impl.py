@@ -311,7 +311,7 @@ def intra_attn_forward(
         # print_rank_0(f'configuous Q: {inp_row.Q.is_contiguous()}, K: {inp_col.K.is_contiguous()}, V: {inp_col.V.is_contiguous()}, O: {out_row.O.is_contiguous()}')
         # print_rank_0(f'shape Q: {inp_row.Q.shape}, K: {inp_col.K.shape}, V: {inp_col.V.shape}, O: {out_row.O.shape}')
         # print(f'rank{local_rank}, dropout_p: {dropout_p}, softmax_scale: {softmax_scale}, , causal: {causal}, window_size: {window_size}, alibi_slopes: {alibi_slopes}, return_softmax: {True and dropout_p > 0}', flush=True)
-        print_rank_0(f'inp_row.Q: {inp_row.Q.shape}, inp_col.K: {inp_col.K.shape}, inp_col.V: {inp_col.V.shape}')
+        # print_rank_0(f'inp_row.Q: {inp_row.Q.shape}, inp_col.K: {inp_col.K.shape}, inp_col.V: {inp_col.V.shape}')
         O, _, _, _, _, lse, _, _ = _flash_attn_forward(     # O: [mbs, S, Nh, D], lse: [mbs, Nh, S]
             inp_row.Q,
             inp_col.K,

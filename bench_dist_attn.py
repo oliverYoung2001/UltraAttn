@@ -126,7 +126,7 @@ def filter_kwargs(func, kwargs):
     return {k: v for k, v in kwargs.items() if k in sig.parameters}
 
 def calc_flops(mbs, S: tuple, Nh, D, causal=True, fob=0, total_sparsity=1):
-    print(f'total_sparsity: {total_sparsity}')
+    # print(f'total_sparsity: {total_sparsity}')
     flops = 2 * 2 * mbs * S[0] * S[1] * Nh * D * total_sparsity
     if fob == 0:
         m_flops = h_flops = flops
@@ -505,7 +505,7 @@ def benchmark_ops(streams, global_group, device, f, inputs, \
                 # torch.distributed.barrier(group=global_group)   # 64TFlops -> 43TFlops
         else:
             for i in range(3):
-                print_rank_0(f'step{i}:')
+                # print_rank_0(f'step{i}:')
                 event_start = torch.cuda.Event(enable_timing=True)
                 event_end = torch.cuda.Event(enable_timing=True)
                 placeholder_op(stream=main_stream) # [NOTE]: aim to eliminate cpu overhead
@@ -1683,9 +1683,9 @@ def main(args):
     
     # run_all_intra_attn(args, ncclcomm_global, gloo_global_group)
     # return
-    profile_all_intra_BSA(args, ncclcomm_global, gloo_global_group)
+    # profile_all_intra_BSA(args, ncclcomm_global, gloo_global_group)
     # profile_all_intra_attn(args, ncclcomm_global, gloo_global_group)
-    # run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
+    run_all_inter_attn(args, ncclcomm_global, gloo_global_group)    # E2E !!!
     return
 
 

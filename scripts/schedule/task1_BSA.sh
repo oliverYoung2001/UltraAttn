@@ -1,44 +1,10 @@
 #!/bin/bash
 
-export CLUSTER_NAME=qiyuan
-CPU_PER_TASK=16
-# PARTITION=gpu3-2-low
-NNODES=1
-# NNODES=2
-# NNODES=3
-GPUS_PER_NODE=2
-# GPUS_PER_NODE=3
-GPUS_PER_NODE=4
-GPUS_PER_NODE=8
-PARTITION=arch
-HOST="g3025"
-HOST="g3010"
-HOST="g3029"
-# HOST="g3027"
-PARTITION=rag
-# # HOST="g3017,g3018"
-# # HOST="g3017,g3022"
-# HOST="g3015,g3017"
-# HOST="g3015,g3018"
-# # GPU_NUMs="24"
-# HOST="g3015,g3018,g3021"
-# HOST="g3017"
-# HOST="g3018"
-# HOST="g3021"
-# HOST="g3010"
-HOST="g3021"
-HOST="g3015"
-PARTITION=arch
-NNODES=4
-HOST="g3025,g3026,g3027,g3028"
+# set pulp tmp dir
+export TMPDIR=./search_algo/tmp
 
-# PARTITION=hit
-# HOST="g4002"
-# # NNODES=2
-# # HOST="g4004,g4005"
-# NNODES=4
-# HOST="g4001,g4004,g4005,g4007"
-# HOST="g4005,g4006,g4007,g4008"
+# ./scripts/schedule/cpu_task_${CLUSTER_NAME}.sh \
+PYTHON_EXECUBLE=search_algo/task1_bsa.py
 
 export CLUSTER_NAME=fit
 export PLATFORM='A800'
@@ -49,35 +15,10 @@ PARTITION=a01
 NNODES=1
 HOST="g07"
 HOST="g10"
-# HOST="g13"
-NNODES=2
-HOST="g[13-14]"
-# HOST="g[07-08]"
-# HOST="g[15-16]"
-# NNODES=3
-# HOST="g[08-09,11]"
-NNODES=4
-# HOST="g[02,13-15]"  # Not connected each other
-# HOST="g[02-03,13-14]"
-# # HOST="g[08-09,15-16]"
-# # HOST="g[02,08-09,11]"
-HOST="g[13-16]"
-# NNODES=7
-# HOST="g[08-09,11,13-16]"
-# NNODES=8
-# # HOST="g[02,08-09,11,13-16]"
-# HOST="g[07-09,11,13-16]"
 
 # PARTITION=h01
 # NNODES=1
 # HOST="g40"
-# HOST="g42"
-# HOST="g44"
-# # HOST="g46"
-# NNODES=2
-# HOST="g[40,42]"
-# NNODES=4
-# HOST="g[40,42,44,46]"
 
 # HOST=None
 
@@ -140,11 +81,9 @@ set -x
 export CUDA_DEVICE_MAX_CONNECTIONS=32    # [NOTE]: important for cc overlap !!!
 $RUNNER_CMD \
 ./scripts/runtime/bench_dist_attn.sh \
-python bench_dist_attn.py \
+python $PYTHON_EXECUBLE \
     $LOGGING_ARGS \
-
-# -c ${CPU_PER_TASK} \  # make baseline worse on (8, 2) and better on (8, 4) on Fit A800 !!!
-# --exclusive \
+# -c ${CPU_PER_TASK} \  # Don't use it for task1 !!!
 
 set +x
 exit 0
@@ -189,4 +128,5 @@ python bench_dist_attn.py \
     $LOGGING_ARGS \
 
 set +x
+
 

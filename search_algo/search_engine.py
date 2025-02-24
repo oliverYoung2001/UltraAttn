@@ -13,6 +13,7 @@ import copy
 import json
 import math
 from typing import Optional
+from search_algo.bsa_config import BSA_Config
 
 class Evaluation_Configs():
     def __init__(self, plan_type: str, MAX_QUEUE_SIZE: int, fob: bool, plan_path: str = None, hierarchy: bool = 1, transform_mode: str = 'bf', inter_comp_profile_map=None, execution_plan=None):
@@ -29,8 +30,9 @@ class Evaluation_Configs():
         ret = f'fob={self.fob}, plan_type={self.plan_type}, hierarchy={self.hierarchy}, transform_mode={self.transform_mode}, plan_path={self.plan_path}'
         ret = ret.replace(' ', '')
         return ret
+    
 class Dist_Attn_Config():
-    def __init__(self, SP, S, Nh, bs, D, causal, hierarchy=1, bsa_config=None):
+    def __init__(self, SP, S, Nh, bs, D, causal, hierarchy=1, bsa_config: Optional[BSA_Config] = None):
         self.SP = SP    # (inter, intra)
         self.S = S  # (Sq, Skv) total S !!!
         self.Nh = Nh    # (Nh, Ng)
@@ -43,6 +45,11 @@ class Dist_Attn_Config():
         # self.tot_sp = reduce(lambda x,y:x*y, SP)
         # self.S_per_gpu = (S[0] // self.tot_sp, S[1] // self.tot_sp)
     
+    @classmethod
+    def from_bsa_config(cls, bsa_config: BSA_Config, shape_config: dict, hierarchy: int):
+        SP = (bsa_config.CP[1], bsa_config.CP[0])
+        return cls(SP, **shape_config, causal=None, hierarchy=hierarchy, bsa_config=bsa_config)
+        
     @property
     def hierarchy_sp(self):
         return self.SP[self.hierarchy]
