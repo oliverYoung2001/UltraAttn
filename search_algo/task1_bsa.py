@@ -12,8 +12,97 @@ import pickle
 import numpy as np
 from search_algo.bsa_config import BSA_Repr, BSA_Config
 from search_algo.bsa_utils import create_bsa_block_table, split_to_node_configs
+from search_algo.database import Prof_DB
+import torch
+import torch.distributed as dist
+from functools import partial
+import socket
+from tests.distributed.device_communicators.pynccl import PyNcclCommunicator
 
 PLATFORM = os.getenv(f'PLATFORM')
+
+def parse_slurm_tasks_per_node(tasks_per_node):
+    # 4(x2), 8, ...
+    return int(tasks_per_node.split('(')[0])
+
+def get_proc_info():
+    if os.getenv('SLURM_PROCID', None) is not None:    # launch with Slurm
+        rank = int(os.environ['SLURM_PROCID'])
+        local_rank = int(os.environ['SLURM_LOCALID'])
+        world_size = int(os.environ['SLURM_NTASKS'])
+        ip = os.environ['SLURM_STEP_NODELIST']
+        hostname = socket.gethostname()
+        hostip = socket.gethostbyname(hostname)
+        clustername = os.environ['SLURM_CLUSTER_NAME']
+        nodeid = int(os.environ['SLURM_NODEID'])
+        nodename = os.environ['SLURMD_NODENAME']
+        tasks_per_node = parse_slurm_tasks_per_node(os.environ['SLURM_TASKS_PER_NODE'])
+        
+    elif os.getenv('OMPI_COMM_WORLD_RANK', None) is not None: # launch with OpenMPI
+        rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
+        local_rank = int(os.environ['OMPI_COMM_WORLD_LOCAL_RANK'])
+        world_size = int(os.environ['OMPI_COMM_WORLD_SIZE'])
+        # ip = os.environ['SLURM_STEP_NODELIST']
+        ip = None
+        hostname = socket.gethostname()
+        hostip = socket.gethostbyname(hostname)
+        clustername = os.getenv('CLUSTER_NAME', 'Unknown Cluster')
+        # nodeid = int(os.environ['SLURM_NODEID'])
+        # nodename = os.environ['SLURMD_NODENAME']
+        nodename = None
+        # tasks_per_node = os.environ['SLURM_TASKS_PER_NODE']
+        tasks_per_node = int(os.environ['OMPI_COMM_WORLD_LOCAL_SIZE'])
+        nodeid = rank // tasks_per_node
+        
+    else:
+        raise Exception("Unknown Launcher !!!")
+    proc_info = {
+        'clustername': clustername,
+        'hostname': hostname,
+        'nodename': nodename,
+        'nodeid': nodeid,
+        'world_size': world_size,
+        'tasks_per_node': tasks_per_node,
+        'rank': rank,
+        'local_rank': local_rank,
+        'hostip': hostip,
+        'ip': ip,
+        'deviceid': local_rank,
+    }
+    proc_info['node_num'] = world_size // tasks_per_node
+    # print(f'proc_info: {proc_info}')
+    return proc_info
+
+def initialize_distribution():
+    global PROC_INFO
+    PROC_INFO = get_proc_info()
+    # print(f'PROC_INFO: {PROC_INFO}')
+    
+    MASTER_ADDR = os.getenv('MASTER_ADDR', None)
+    # MASTER_ADDR = 'localhost'
+    MASTER_PORT = os.getenv('MASTER_PORT', None)
+    init_method = f'tcp://[{MASTER_ADDR}]:{MASTER_PORT}'
+    dist.init_process_group(
+        backend="nccl", 
+        # init_method=init_method, 
+        rank=PROC_INFO['rank'], 
+        world_size=PROC_INFO['world_size'])
+    gloo_global_group = dist.new_group(ranks=list(range(PROC_INFO['world_size'])), backend='gloo')
+    ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+    # [NOTE]: we create a gloo global group because we use it to barrier in benchmark_orchestrate to prevent cudagraph overlapped with nccl ops !!!
+    rank = dist.get_rank()
+    world_size = dist.get_world_size()
+    # print(f'rank{rank}, world_size{world_size}, hostname: {socket.gethostname()}')
+    # initialize_distributed()    # used by lightseq
+
+    device = torch.device(f"cuda:{PROC_INFO['deviceid']}")
+    torch.cuda.set_device(device)
+    
+    # preprocess placeholder_op
+    global placeholder_op
+    SYNC_SIZE = 8 * pow(1024, 3) # 8GB
+    sync_tensor = torch.empty((SYNC_SIZE), dtype=torch.int8, device=device)
+    placeholder_op = partial(ncclcomm_global.all_reduce, sync_tensor)
 
 def get_exp_configs():
     # plan_type = 'automatic'
@@ -157,11 +246,17 @@ def get_configs():
     }
     return global_bsa_configs, intra_node_bsa_configs, shape_configs
 
-def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config):
+def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB):
     # [TODO]: 
     exp_config.hierarchy = da_config.hierarchy = 1
     m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
+    prof_db.update_m_config(m_config)
+    # Calc optimal schedule !
+    
+    # End
     cc_optimal_schedule = get_cc_optimal_schedule(da_config, m_config)
+    # [TODO]: replace `hardcode` with `workload_partition.py`
+    
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
         cc_optimal_schedule = cc_optimal_schedule[0]
@@ -188,7 +283,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
             plan_name = execute_plan.get_plan_name()
             if plan_type == 'ablation1':
                 plan_name = f'{plan_name}_{plan_type}'
-            # Dump Execution_Pl   an:
+            # Dump Execution_Plan:
             plan_file = f'{par_dir}/{plan_name}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
@@ -207,33 +302,42 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         plan_file = f'{par_dir}/{plan_name}.pkl'
         with open(plan_file, 'wb') as f:
             pickle.dump(execute_plan, f)
- 
+
 def main():
+    initialize_distribution()
+    
     # Step0: top-> down; need only 1 cpu; (w/o cache/bypass)✅
-    global_bsa_configs, intra_node_bsa_configs, shape_configs = get_configs()
-    exp_configs = get_exp_configs()
-    if isinstance(exp_configs, Evaluation_Configs):
-        exp_configs = [exp_configs]
+    if torch.distributed.get_rank() == 0:
+        global_bsa_configs, intra_node_bsa_configs, shape_configs = get_configs()
+        exp_configs = get_exp_configs()
+        if isinstance(exp_configs, Evaluation_Configs):
+            exp_configs = [exp_configs]
     #   [NOTE]: total exp space is (global_bsa_configs/intra_node_bsa_configs) x shape_configs x exp_configs
     # Step1: Generate the intra-BSA; need all cpus on one node; (w cache/bypass)
-    for exp_config in exp_configs:
-        for intra_node_bsa_config in intra_node_bsa_configs:
-            for Nh in shape_configs['Nhs']:
-                for S in shape_configs['Ss']:
-                    for bs in shape_configs['BSs']:
-                        for D in shape_configs['Ds']:
-                            shape_config = {
-                                'Nh': (Nh, Nh),
-                                'S': (S, S),
-                                'bs': bs,
-                                'D': D,
-                            }
-                            da_config = Dist_Attn_Config.from_bsa_config(
-                                intra_node_bsa_config, 
-                                shape_config=shape_config,
-                                hierarchy=1,
-                            )
-                            generate_intra_execution_plans(exp_config, da_config)
+    #   Initialize Profile_DataBase
+    if torch.distributed.get_rank() == 0:
+        prof_db = Prof_DB()
+        for exp_config in exp_configs:
+            for intra_node_bsa_config in intra_node_bsa_configs:
+                for Nh in shape_configs['Nhs']:
+                    for S in shape_configs['Ss']:
+                        for bs in shape_configs['BSs']:
+                            for D in shape_configs['Ds']:
+                                shape_config = {
+                                    'Nh': (Nh, Nh),
+                                    'S': (S, S),
+                                    'bs': bs,
+                                    'D': D,
+                                }
+                                da_config = Dist_Attn_Config.from_bsa_config(
+                                    intra_node_bsa_config, 
+                                    shape_config=shape_config,
+                                    hierarchy=1,
+                                )
+                                generate_intra_execution_plans(exp_config, da_config, prof_db)
+    # [TODO]: sync all ranks
+    # [TODO]: prepare prof_db with cache on dick !!!
+    
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
     # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)  [TODO]
     pass
