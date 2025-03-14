@@ -872,6 +872,14 @@ def get_cc_optimal_schedule(da_config, m_config):
     S_map = np.empty((split_degrees[2], min(split_degrees[0], split_degrees[1])), dtype=np.int32)
     S_map[:] = np.arange(sp)
     return create_schedule(da_config, m_config, split_degrees, S_map, get_cc_optimal_schedule_table, da_config.hierarchy)
+
+def get_cc_optimal_schedule_from_table(da_config, m_config, schedule_table) -> Dist_Attn_Schedule:
+    sp = da_config.SP[da_config.hierarchy]
+    split_degrees = [sp, sp, 1, 1]
+    S_map = np.empty((split_degrees[2], min(split_degrees[0], split_degrees[1])), dtype=np.int32)
+    S_map[:] = np.arange(sp)
+    return Dist_Attn_Schedule(da_config, m_config, split_degrees, S_map, \
+                                schedule_table, da_config.hierarchy)
     
 def get_init_schedule_list(da_config, m_config):
     # [NOTE]: 

@@ -177,6 +177,7 @@ class BSA_Config(): # OK
             self.block_table = self.bsa_repr.block_table
             self.cmap = self.bsa_repr.cmap
             self.CP = pat_bsa_repr['CP']
+            # [NOTE]: No ParD here !!!
         else:
             raise Exception(f'[ERROR]: Unknown BSA_Config __init__ !!!')
         # self.print_block_table()

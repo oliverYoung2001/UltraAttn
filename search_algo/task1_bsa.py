@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir)))
 from search_algo.search_engine import Search_Engine, Dist_Attn_Schedule, Dist_Attn_Config, Evaluation_Configs, \
-                                      get_profile_data, get_init_schedule_list, get_cc_optimal_schedule
+                                      get_profile_data, get_init_schedule_list, get_cc_optimal_schedule, get_cc_optimal_schedule_from_table
 from search_algo.dependent_graph import Dependent_Graph
 from search_algo.graph_transformation_engine import Graph_Transformation_Engine
 from search_algo.execute_plan import Execution_Plan
@@ -18,6 +18,7 @@ import torch.distributed as dist
 from functools import partial
 import socket
 from tests.distributed.device_communicators.pynccl import PyNcclCommunicator
+from search_algo.workload_partition import solve_sparse_from_bsa
 
 PLATFORM = os.getenv(f'PLATFORM')
 
@@ -252,10 +253,10 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
     prof_db.update_m_config(m_config)
     # Calc optimal schedule !
-    
+    cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, solve_sparse_from_bsa(da_config.bsa_config))
     # End
-    cc_optimal_schedule = get_cc_optimal_schedule(da_config, m_config)
-    # [TODO]: replace `hardcode` with `workload_partition.py`
+    # cc_optimal_schedule = get_cc_optimal_schedule(da_config, m_config)  # Dist_Attn_Schedule(np.array)
+    # [TODO]: replace `hardcode with `workload_partition.py`
     
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
