@@ -406,7 +406,7 @@ def solve_custom_sparse():
     # 1.1 for stride(1/16, 4, 3) 8x8 (?/1)
     CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 4, 3, 0, 2
     # # 1.2 for stride(1/16, 4, 3) 8x4 (?/1)
-    # CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 4, 3, 0
+    # CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 4, 3, 0, 1
     # # 1.3 for stride(1/16, 4, 3) 8x8 (?/3)
     # CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 2, 2, 0, 1  # full
     # CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 2, (2, 1), 0, 1  # lower triangle
@@ -429,6 +429,8 @@ def solve_custom_sparse():
     # CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 2, 0, (0, 1), 1
     # CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 8, 8, "local_global", 1 / 2, 1, 0, 1
     
+    # Overview
+    CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate = 4, 8, "local_global", 1 / 4, 3, 0, 1
     block_config = create_block_sparse_pattern(CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate)
     Quad_LP_GUROBI_from_block_config(block_config)
 
