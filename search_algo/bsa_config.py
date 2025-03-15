@@ -1,20 +1,21 @@
+from __future__ import annotations
 import numpy as np
-from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction
+from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction, unique_list
 from typing import Union, Optional
 import regex as re
 from typing import List, Optional
-from __future__ import annotations
 
 class BSA_Repr():   # OK
     """
     BSA Representation only !!! (without CP-aware)
     """
     def __init__(self, block_table: np.ndarray, cmap: Optional[np.ndarray]):
-        assert len(block_table.shape) == 2 and len(cmap.shape) == 1 and \
-               cmap.shape[0] == block_table.shape[0] == block_table.shape[1]
+        # [NOTE]: cmap can be None
+        assert len(block_table.shape) == 2 and block_table.shape[0] == block_table.shape[1]
         self.block_table = block_table
         self.cmap = cmap
         self.block_table_raw, self.cmap_raw = self.simplify(self.block_table, self.cmap)
+        self.minimum_Par_D = self.block_table_raw.shape[0]
     
     def merge_blocks(self, sub_table: np.ndarray) -> Optional[Block_Type]:  # OK
         sub_par_d = sub_table.shape[0]
@@ -135,7 +136,7 @@ class BSA_Repr():   # OK
                 for j in range(n):
                     sub_bsa_reprs.append(BSA_Repr(self.block_table_raw[i, j], None))
         # Deduplicate
-        sub_bsa_reprs = list(set(sub_bsa_reprs))
+        sub_bsa_reprs = unique_list(sub_bsa_reprs)
         return sub_bsa_reprs
     
     def __eq__(self, other: BSA_Repr):

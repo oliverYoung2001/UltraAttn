@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# set pulp tmp dir
-export TMPDIR=./search_algo/tmp
+# # set pulp tmp dir; [TODO]: `TMPDIR` is used by both pulp and openmpi
+export PULP_TMPDIR=./search_algo/tmp
+# export TMPDIR=search_algo/tmp
 
 # ./scripts/schedule/cpu_task_${CLUSTER_NAME}.sh \
 PYTHON_EXECUBLE=search_algo/task1_bsa.py
@@ -70,6 +71,58 @@ export NCCL_NET_GDR_LEVEL=5
 export NCCL_IB_DISABLE=0
 export NCCL_DEBUG_SUBSYS=NET
 
+
+
+
+# Run with MPI
+# salloc -N 1 -n 128 --gres=gpu:8 --cpus-per-task=??? --exclusive -p rag
+# salloc -N 1 --gres=gpu:8 --cpus-per-task=104 --exclusive -p a01 -w g10
+
+# Qiyuan
+GPU_NUM=16
+HOST_CONFIG="g3021:8,g3022:8"
+GPU_NUM=8
+HOST_CONFIG="g3017:8"
+GPU_NUM=4
+HOST_CONFIG="g3017:4"
+HOST_CONFIG="g4008:4"
+# HOST_CONFIG="g3029:4"
+# HOST_CONFIG="g3027:2,g4003:2"
+# HOST_CONFIG="g3021:2,g3022:2"
+
+# Fit
+GPU_NUM=8
+HOST_CONFIG="g10:8"
+
+export MASTER_ADDR=$(echo ${HOST_CONFIG} | awk -F: '{print $1}')
+RUNNER_CMD="mpirun --prefix $(dirname `which mpirun`)/../ \
+    -x MASTER_ADDR -x MASTER_PORT \
+    -x LD_LIBRARY_PATH -x PATH \
+    -x TRACE_NAME \
+    -x NCCL_DEBUG \
+    -x NCCL_NET_GDR_LEVEL \
+    -x NCCL_DEBUG_SUBSYS \
+    -x NCCL_IB_DISABLE \
+    -x CLUSTER_NAME \
+    -x PLATFORM \
+    -x TMPDIR=$PULP_TMPDIR \
+    --map-by ppr:8:numa --bind-to core --report-bindings \
+    -np $GPU_NUM --host $HOST_CONFIG"
+NSIGHT_CMD="nsys profile --mpi-impl=openmpi -o ${NSYS_DIR}/${TRACE_NAME}_w${GPU_NUM}_$(date "+%Y%m%d-%H%M%S")"
+NSIGHT_CMD=""
+set -x
+# export CUDA_LAUNCH_BLOCKING=1 # for debugging
+# export CUDA_DEVICE_MAX_CONNECTIONS=1    # [NOTE]: important for cc overlap !!!
+$NSIGHT_CMD \
+$RUNNER_CMD \
+./scripts/runtime/bench_dist_attn.sh \
+python $PYTHON_EXECUBLE \
+    $LOGGING_ARGS \
+    
+set +x
+exit 0
+
+
 # # Run with Slurm
 RUNNER_CMD="srun $SLURM_ARGS"
 
@@ -87,45 +140,6 @@ python $PYTHON_EXECUBLE \
 
 set +x
 exit 0
-
-# Run with MPI
-# salloc -N 1 -n 128 --gres=gpu:8 --exclusive -p rag
-# salloc -N 1 -n 128 --gres=gpu:8 --exclusive -p xl
-# salloc -p arch -w g3029 -N 1 -n 128 -t 3600
-# salloc -p rag -w g3013 -N 1 -n 128 -t 3600
-# salloc -p hit -w g4008 -N 1 -n 128 -t 3600
-
-GPU_NUM=16
-HOST_CONFIG="g3021:8,g3022:8"
-GPU_NUM=8
-HOST_CONFIG="g3017:8"
-GPU_NUM=4
-HOST_CONFIG="g3017:4"
-HOST_CONFIG="g4008:4"
-# HOST_CONFIG="g3029:4"
-# HOST_CONFIG="g3027:2,g4003:2"
-# HOST_CONFIG="g3021:2,g3022:2"
-export MASTER_ADDR=$(echo ${HOST_CONFIG} | awk -F: '{print $1}')
-RUNNER_CMD="mpirun --prefix $(dirname `which mpirun`)/../ \
-    -x MASTER_ADDR -x MASTER_PORT \
-    -x LD_LIBRARY_PATH -x PATH \
-    -x TRACE_NAME \
-    -x NCCL_DEBUG \
-    -x NCCL_NET_GDR_LEVEL \
-    -x NCCL_DEBUG_SUBSYS \
-    -x NCCL_IB_DISABLE \
-    --map-by ppr:4:numa --bind-to core --report-bindings \
-    -np $GPU_NUM --host $HOST_CONFIG"
-NSIGHT_CMD="nsys profile --mpi-impl=openmpi -o ${NSYS_DIR}/${TRACE_NAME}_w${GPU_NUM}_$(date "+%Y%m%d-%H%M%S")"
-NSIGHT_CMD=""
-set -x
-# export CUDA_LAUNCH_BLOCKING=1 # for debugging
-# export CUDA_DEVICE_MAX_CONNECTIONS=1    # [NOTE]: important for cc overlap !!!
-$NSIGHT_CMD \
-$RUNNER_CMD \
-./scripts/runtime/bench_dist_attn.sh \
-python bench_dist_attn.py \
-    $LOGGING_ARGS \
 
 set +x
 

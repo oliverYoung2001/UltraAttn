@@ -13,6 +13,23 @@ from typing import Optional
 import torch
 from fractions import Fraction
 
+def convert_block_table_to_value(block_table):
+    block_table_value = np.array([v.value for v in block_table.flatten()]).reshape(block_table.shape)
+    return block_table_value
+        
+def combine_list_to_0(l0, l1):
+    for x in l1:
+        if x not in l0:
+            l0.append(x)
+    return l0
+
+def unique_list(l):
+    u_l = []
+    for x in l:
+        if x not in u_l:
+            u_l.append(x)
+    return u_l
+
 def closest_fraction(x, max_denominator=1000):
     return Fraction(x).limit_denominator(max_denominator)
 
@@ -38,7 +55,8 @@ class Block_Attention_Config():
         self.ParD = ParD
         self.cmap = cmap
         self.block_table = block_table
-        block_table_value = np.array([v.value for v in block_table.flatten()]).reshape(block_table.shape)
+        block_table_value = convert_block_table_to_value(block_table)
+        # block_table_value = np.array([v.value for v in block_table.flatten()]).reshape(block_table.shape)
         print(f'block_table_value:\n{block_table_value}')
     
     @classmethod

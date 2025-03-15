@@ -1,7 +1,7 @@
 import pulp
 import time
 import math
-import cvxpy as cp
+# import cvxpy as cp
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
@@ -267,8 +267,11 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     Vars = dict()
     # Var_cat_default = 'Integer'
     
-    ParD = block_config.ParD    # Workload partition degree
-    CP = block_config.CP
+    CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
+    print(f'CP: {CP}', flush=True)
+    ParD = max(CP, block_config.block_table.shape[0]) # Workload partition degree
+    if hasattr(block_config, 'ParD'):
+        assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
     cmap = block_config.cmap
     
     block_ids = []  # block_ids to be scheduled

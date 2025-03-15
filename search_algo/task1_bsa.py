@@ -12,6 +12,7 @@ import pickle
 import numpy as np
 from search_algo.bsa_config import BSA_Repr, BSA_Config
 from search_algo.bsa_utils import create_bsa_block_table, split_to_node_configs
+from search_algo.utils import combine_list_to_0, convert_block_table_to_value
 from search_algo.database import Prof_DB
 import torch
 import torch.distributed as dist
@@ -145,7 +146,6 @@ def get_configs():
     # # # # SP0, SP1 = 6, 8
     # SP0, SP1 = 8, 8 # 512K (global) -> 8K (S per gpu)
     # # SP0, SP1 = 16, 8
-    
     if PLATFORM == 'A800':
         CPs = [
             (8, 1),
@@ -225,20 +225,27 @@ def get_configs():
     # [TODO]: Create global_bsa_configs from global_bsa_reprs   ✅
     # [TODO]: break global_bsa_reprs down to node-level bsa_repr&bsa_configs !!! ✅
     global_bsa_configs = []
-    intra_node_bsa_configs = set()
+    # intra_node_bsa_configs = set()
+    intra_node_bsa_configs = []
     for i, gbr in enumerate(global_bsa_reprs):
         global_bsa_configs.append({})
         for CP in CPs:
+            # print(f'CP: {CP}', flush=True)
+            # print(f'gbr.minimum_Par_D: {gbr.minimum_Par_D}', flush=True)    # 16
             global_bsa_config = BSA_Config(
+                None, None,
                 {
                     'bsa_repr': gbr,
                     'CP': CP,
                 }
             )
-            global_bsa_configs[CP] = global_bsa_config
+            global_bsa_configs[-1][CP] = global_bsa_config
             node_bsa_configs = split_to_node_configs(global_bsa_config)
-            intra_node_bsa_configs |= node_bsa_configs
-    
+            # intra_node_bsa_configs |= node_bsa_configs
+            combine_list_to_0(intra_node_bsa_configs, node_bsa_configs)
+    for intra_node_bsa_config in intra_node_bsa_configs:
+        block_table_value = convert_block_table_to_value(intra_node_bsa_config.block_table)
+        print(f'CP: {intra_node_bsa_config.CP}, minimum_Par_D: {intra_node_bsa_config.bsa_repr.minimum_Par_D}\n{block_table_value}', flush=True)
     shape_configs = {
         'Nhs': Nhs,
         'Ss': Ss,
