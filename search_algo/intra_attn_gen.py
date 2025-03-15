@@ -15,12 +15,12 @@ from functools import partial
 def get_configs():
     SP0, SP1 = 1, 1
     Sq = Skv = 1 * 1024   # 2k
-    # SP0, SP1 = 1, 2
-    # Sq = Skv = 2 * 1024   # 2k
-    # SP0, SP1 = 1, 4
-    # Sq = Skv = 4 * 1024   # 4k
-    # SP0, SP1 = 1, 8
-    # Sq = Skv = 16 * 1024   # 16k
+    SP0, SP1 = 1, 2
+    Sq = Skv = 2 * 1024   # 2k
+    SP0, SP1 = 1, 4
+    Sq = Skv = 4 * 1024   # 4k
+    SP0, SP1 = 1, 8
+    Sq = Skv = 16 * 1024   # 16k
     # Sq = Skv = 8 * 1024   # 8k
     
     Nhq = Ng = 32
@@ -48,6 +48,7 @@ def get_block_schedule_table(split_degrees: list, S_map: np.ndarray, causal: boo
     return block_schedule_table
 
 def create_plan(da_config: Dist_Attn_Config, m_config: Machine_Config, X, fob, first_dim) -> Execution_Plan:
+    # **Not fused** with manually cc schedule !!!
     tot_sp = da_config.tot_sp
     # Create Schedule:
     split_degrees = [tot_sp, tot_sp, 1, 1]
@@ -76,6 +77,10 @@ def write_plan(execute_plan: Execution_Plan, prefix: str):
     execute_plan_loaded.print_lp_result()
 
 def main():
+    CLUSTER_NAME = os.environ.get('CLUSTER_NAME', None)
+    PLATFORM = os.environ.get(f'PLATFORM', None)
+    assert CLUSTER_NAME in ['qiyuan', 'fit'], f'[ERROR]: Not support CLUSTER_NAME: {CLUSTER_NAME}'
+    assert PLATFORM in ['A100', 'A800', 'H800'], f'[ERROR]: Not support PLATFORM: {PLATFORM}'
     fobs = [
         0,
         1,
@@ -84,7 +89,7 @@ def main():
     m_config = get_profile_data(da_config.SP, da_config.hierarchy)
     tot_sp = da_config.SP[0] * da_config.SP[1]
     for fob in fobs:
-        par_dir = f'{os.path.dirname(__file__)}/execution_plans/intra_SP{da_config.SP[1]}_fob={fob}'
+        par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{da_config.SP[1]}_fob={fob}'
         os.makedirs(par_dir, exist_ok=True)
         for X in range(1, tot_sp + 1):
             if tot_sp % X != 0:

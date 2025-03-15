@@ -4,9 +4,9 @@ from flash_attn.flash_attn_interface import (
     _flash_attn_varlen_backward,
 )
 from .utils import (
-    RingComm,
     update_out_and_lse,
 )
+from comm_lib.comm_utils import RingComm
 
 try:
     from .triton_utils import (

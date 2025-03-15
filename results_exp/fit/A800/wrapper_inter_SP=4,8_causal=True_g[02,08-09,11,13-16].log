@@ -1,0 +1,138 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p a01 -N 4 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w 'g[02,08-09,11]' -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+[rank24]: Traceback (most recent call last):
+[rank24]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank24]:     main(parse_args())
+[rank24]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank24]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank24]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank24]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank24]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank24]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank24]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank24]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank24]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank26]: Traceback (most recent call last):
+[rank26]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank26]:     main(parse_args())
+[rank26]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank26]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank26]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank26]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank26]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank26]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank26]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank26]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank26]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank25]: Traceback (most recent call last):
+[rank25]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank25]:     main(parse_args())
+[rank25]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank25]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank25]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank25]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank25]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank25]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank25]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank25]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank25]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank27]: Traceback (most recent call last):
+[rank27]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank27]:     main(parse_args())
+[rank27]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank27]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank27]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank27]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank27]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank27]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank27]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank27]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank27]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank29]: Traceback (most recent call last):
+[rank29]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank29]:     main(parse_args())
+[rank29]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank29]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank29]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank29]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank29]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank29]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank29]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank29]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank29]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank31]: Traceback (most recent call last):
+[rank31]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank31]:     main(parse_args())
+[rank31]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank31]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank31]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank31]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank31]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank31]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank31]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank31]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank31]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank30]: Traceback (most recent call last):
+[rank30]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank30]:     main(parse_args())
+[rank30]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank30]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank30]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank30]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank30]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank30]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank30]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank30]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank30]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+[rank28]: Traceback (most recent call last):
+[rank28]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1624, in <module>
+[rank28]:     main(parse_args())
+[rank28]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/bench_dist_attn.py", line 1446, in main
+[rank28]:     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=list(range(PROC_INFO['world_size'])), device=PROC_INFO['local_rank'])
+[rank28]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl.py", line 191, in __init__
+[rank28]:     self.comm: ncclComm_t = self.nccl.ncclCommInitRank(
+[rank28]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 271, in ncclCommInitRank
+[rank28]:     self.NCCL_CHECK(self._funcs["ncclCommInitRank"](ctypes.byref(comm),
+[rank28]:   File "/home/fit/zhaijd/yhy/llm/UltraAttn/tests/distributed/device_communicators/pynccl_wrapper.py", line 250, in NCCL_CHECK
+[rank28]:     raise RuntimeError(f"NCCL error: {error_str}")
+[rank28]: RuntimeError: NCCL error: unhandled system error (run with NCCL_DEBUG=INFO for details)
+srun: error: g11: tasks 24,26: Exited with exit code 1
+srun: Terminating StepId=53343.0
+slurmstepd: error: *** STEP 53343.0 ON g02 CANCELLED AT 2025-01-12T17:05:26 ***
+srun: error: g11: task 31: Exited with exit code 1
+srun: error: g09: task 21: Terminated
+srun: error: g02: task 1: Terminated
+srun: error: g09: task 17: Terminated
+srun: error: g11: task 25: Exited with exit code 1
+srun: error: g02: task 2: Terminated
+srun: error: g09: task 18: Terminated
+srun: error: g08: task 8: Terminated
+srun: error: g02: task 3: Terminated
+srun: error: g09: task 16: Terminated
+srun: error: g11: task 27: Exited with exit code 1
+srun: error: g08: task 11: Terminated
+srun: error: g11: task 29: Exited with exit code 1
+srun: error: g02: task 0: Terminated
+srun: error: g09: task 23: Terminated
+srun: error: g02: task 7: Terminated
+srun: error: g09: task 20: Terminated
+srun: error: g11: task 30: Exited with exit code 1
+srun: error: g08: task 12: Terminated
+srun: error: g02: task 4: Terminated
+srun: error: g09: task 19: Terminated
+srun: error: g08: task 13: Terminated
+srun: error: g11: task 28: Exited with exit code 1
+srun: error: g02: task 5: Terminated
+srun: error: g08: task 14: Terminated
+srun: error: g09: task 22: Terminated
+srun: error: g08: task 9: Terminated
+srun: error: g08: task 10: Terminated
+srun: error: g08: task 15: Terminated
+srun: error: g02: task 6: Terminated
+srun: Force Terminated StepId=53343.0
++ set +x

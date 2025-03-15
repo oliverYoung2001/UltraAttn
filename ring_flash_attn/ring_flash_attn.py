@@ -1,8 +1,8 @@
 import torch
 import torch.distributed as dist
 from flash_attn.flash_attn_interface import _flash_attn_forward, _flash_attn_backward
-from .utils import RingComm, update_out_and_lse
-
+from .utils import update_out_and_lse
+from comm_lib.comm_utils import RingComm
 
 def ring_flash_attn_forward(
     process_group,

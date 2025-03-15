@@ -61,7 +61,8 @@ def execute_kernel_old(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_fun
 def execute_kernel(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_func, comm: IntraComm, buf_dict: dict, causal):
     rank = PROC_INFO['rank']
     local_rank = PROC_INFO['local_rank']
-    # print(f'rank{local_rank}, execute_kernel: {kernel.key}', flush=True)
+    # if rank == 0:
+    #     print(f'rank{rank}, execute_intra_kernel: {kernel.key}', flush=True)
     # get cuda stream on which kernel is executed
     with torch.cuda.stream(kernel.stream):
         with torch.cuda.nvtx.range(f'{kernel.key}'):
@@ -86,11 +87,11 @@ def execute_kernel(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_func, c
                 )
                 # print(f'rank{local_rank}, causal: {kernel_causal}, rid: {rid}, cid: {cid}', flush=True)
                 # out = comp_func(data_dict[(bid, hid, rid, 'i', 'r')], data_dict[(bid, hid, cid, 'i', 'c')], causal=kernel_causal)
-                # out = comp_func(
-                #     buf_dict[(('i', 'r'), low_bds[0])], buf_dict[(('i', 'c'), low_bds[1])],
-                #     buf_dict[(('o', 'r'), low_bds[0])], buf_dict[(('o', 'c'), low_bds[1])],
-                #     kernel_causal
-                # )
+                out = comp_func(
+                    buf_dict[(('i', 'r'), low_bds[0])], buf_dict[(('i', 'c'), low_bds[1])],
+                    buf_dict[(('o', 'r'), low_bds[0])], buf_dict[(('o', 'c'), low_bds[1])],
+                    kernel_causal
+                )
                 # o_keys = (bid, hid, rid, 'o', 'r'), (bid, hid, cid, 'o', 'c')   # (or, oc)
                 # for t in range(2):  # 0 -> r, 1 -> c
                 #     if o_keys[t] in data_dict.keys():
@@ -121,7 +122,8 @@ def execute_inter_kernel(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_f
     rank = PROC_INFO['rank']
     # local_rank = PROC_INFO['local_rank']
     node_id = PROC_INFO['nodeid']
-    # print(f'rank{local_rank}, execute_kernel: {kernel.key}', flush=True)
+    # if rank == 0:
+    #     print(f'rank{rank}, execute_inter_kernel: {kernel.key}', flush=True)
     # get cuda stream on which kernel is executed
     # with torch.cuda.stream(kernel.stream):
     if True:
@@ -309,6 +311,7 @@ def intra_attn_forward(
         # print_rank_0(f'configuous Q: {inp_row.Q.is_contiguous()}, K: {inp_col.K.is_contiguous()}, V: {inp_col.V.is_contiguous()}, O: {out_row.O.is_contiguous()}')
         # print_rank_0(f'shape Q: {inp_row.Q.shape}, K: {inp_col.K.shape}, V: {inp_col.V.shape}, O: {out_row.O.shape}')
         # print(f'rank{local_rank}, dropout_p: {dropout_p}, softmax_scale: {softmax_scale}, , causal: {causal}, window_size: {window_size}, alibi_slopes: {alibi_slopes}, return_softmax: {True and dropout_p > 0}', flush=True)
+        # print_rank_0(f'inp_row.Q: {inp_row.Q.shape}, inp_col.K: {inp_col.K.shape}, inp_col.V: {inp_col.V.shape}')
         O, _, _, _, _, lse, _, _ = _flash_attn_forward(     # O: [mbs, S, Nh, D], lse: [mbs, Nh, S]
             inp_row.Q,
             inp_col.K,

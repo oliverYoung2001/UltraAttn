@@ -1,0 +1,390 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p h01 -N 2 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w 'g[40,42]' -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+GpuFreq=control_disabled
+Sqkvs: [256, 512, 1024, 2048, 4096, 8192, 16384]
+total_size: 30299652096
+[rank9]:[W113 02:32:03.875691020 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 9]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank2]:[W113 02:32:03.005300884 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+causal=True, fob=0:
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+[rank0]:[W113 02:32:03.056829203 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank4]:[W113 02:32:03.069117241 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 4]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank6]:[W113 02:32:03.080099061 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 6]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank7]:[W113 02:32:03.080798323 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 7]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank1]:[W113 02:32:03.082221713 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank3]:[W113 02:32:03.082234578 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank11]:[W113 02:32:03.958663426 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 11]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank13]:[W113 02:32:03.958680450 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 13]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank8]:[W113 02:32:03.958758715 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 8]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank10]:[W113 02:32:03.958751665 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 10]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank14]:[W113 02:32:03.958803249 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 14]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank15]:[W113 02:32:03.958679042 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 15]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank12]:[W113 02:32:03.959393404 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 12]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank5]:[W113 02:32:03.083915889 ProcessGroupNCCL.cpp:4563] [PG ID 0 PG GUID 0 Rank 5]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+# ring_flash_attn_func, fwd
+mfu: 0.036 Tflops/s, hfu: 0.036 Tflops/s, 132.838 iter/s, 7.528e-03 s/iter, (7.733, 0.004, 0.030) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 0.071 Tflops/s, hfu: 0.071 Tflops/s, 263.539 iter/s, 3.795e-03 s/iter, (0.018, 0.001, 0.015) sec
+# stripe_flash_attn_func, fwd
+mfu: 0.036 Tflops/s, hfu: 0.036 Tflops/s, 133.961 iter/s, 7.465e-03 s/iter, (0.040, 0.003, 0.030) sec
+# orchestrated_attn_func
+mfu: 0.737 Tflops/s, hfu: 0.737 Tflops/s, 2743.876 iter/s, 3.644e-04 s/iter, (30.720, 0.001, 0.001) sec
+mfu: 0.94 Tflops/s, hfu: 0.94 Tflops/s, 3502.971 iter/s, 2.855e-04 s/iter, (4.354, 0.001, 0.001) sec
+mfu: 0.825 Tflops/s, hfu: 0.825 Tflops/s, 3073.745 iter/s, 3.253e-04 s/iter, (0.112, 0.001, 0.001) sec
+mfu: 0.874 Tflops/s, hfu: 0.874 Tflops/s, 3254.869 iter/s, 3.072e-04 s/iter, (0.103, 0.001, 0.001) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 0.166 Tflops/s, hfu: 0.166 Tflops/s, 154.730 iter/s, 6.463e-03 s/iter, (0.015, 0.001, 0.026) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 0.285 Tflops/s, hfu: 0.285 Tflops/s, 265.866 iter/s, 3.761e-03 s/iter, (0.010, 0.003, 0.015) sec
+# stripe_flash_attn_func, fwd
+mfu: 0.123 Tflops/s, hfu: 0.123 Tflops/s, 114.609 iter/s, 8.725e-03 s/iter, (0.021, 0.003, 0.035) sec
+# orchestrated_attn_func
+mfu: 3.503 Tflops/s, hfu: 3.503 Tflops/s, 3262.430 iter/s, 3.065e-04 s/iter, (0.104, 0.001, 0.001) sec
+mfu: 3.137 Tflops/s, hfu: 3.137 Tflops/s, 2921.516 iter/s, 3.423e-04 s/iter, (2.745, 0.001, 0.001) sec
+mfu: 3.243 Tflops/s, hfu: 3.243 Tflops/s, 3020.564 iter/s, 3.311e-04 s/iter, (0.103, 0.001, 0.001) sec
+mfu: 3.175 Tflops/s, hfu: 3.175 Tflops/s, 2956.830 iter/s, 3.382e-04 s/iter, (0.099, 0.001, 0.001) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 0.585 Tflops/s, hfu: 0.585 Tflops/s, 136.283 iter/s, 7.338e-03 s/iter, (0.015, 0.001, 0.029) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 1.304 Tflops/s, hfu: 1.304 Tflops/s, 303.691 iter/s, 3.293e-03 s/iter, (0.008, 0.001, 0.013) sec
+# stripe_flash_attn_func, fwd
+mfu: 0.498 Tflops/s, hfu: 0.498 Tflops/s, 116.058 iter/s, 8.616e-03 s/iter, (0.015, 0.002, 0.034) sec
+# orchestrated_attn_func
+mfu: 13.602 Tflops/s, hfu: 13.602 Tflops/s, 3167.043 iter/s, 3.158e-04 s/iter, (0.102, 0.001, 0.001) sec
+mfu: 13.813 Tflops/s, hfu: 13.813 Tflops/s, 3216.179 iter/s, 3.109e-04 s/iter, (0.099, 0.001, 0.001) sec
+mfu: 14.035 Tflops/s, hfu: 14.035 Tflops/s, 3267.718 iter/s, 3.060e-04 s/iter, (0.100, 0.001, 0.001) sec
+mfu: 10.796 Tflops/s, hfu: 10.796 Tflops/s, 2513.725 iter/s, 3.978e-04 s/iter, (0.099, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 2.642 Tflops/s, hfu: 2.642 Tflops/s, 153.808 iter/s, 6.502e-03 s/iter, (0.018, 0.001, 0.026) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 4.829 Tflops/s, hfu: 4.829 Tflops/s, 281.076 iter/s, 3.558e-03 s/iter, (0.008, 0.003, 0.014) sec
+# stripe_flash_attn_func, fwd
+mfu: 1.852 Tflops/s, hfu: 1.852 Tflops/s, 107.820 iter/s, 9.275e-03 s/iter, (0.016, 0.003, 0.037) sec
+# orchestrated_attn_func
+mfu: 32.935 Tflops/s, hfu: 32.935 Tflops/s, 1917.060 iter/s, 5.216e-04 s/iter, (0.103, 0.001, 0.002) sec
+mfu: 44.161 Tflops/s, hfu: 44.161 Tflops/s, 2570.536 iter/s, 3.890e-04 s/iter, (0.100, 0.001, 0.002) sec
+mfu: 36.381 Tflops/s, hfu: 36.381 Tflops/s, 2117.639 iter/s, 4.722e-04 s/iter, (0.099, 0.001, 0.002) sec
+mfu: 39.375 Tflops/s, hfu: 39.375 Tflops/s, 2291.938 iter/s, 4.363e-04 s/iter, (0.099, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 17.793 Tflops/s, hfu: 17.793 Tflops/s, 258.921 iter/s, 3.862e-03 s/iter, (0.011, 0.001, 0.015) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 23.571 Tflops/s, hfu: 23.571 Tflops/s, 342.997 iter/s, 2.915e-03 s/iter, (0.005, 0.002, 0.012) sec
+# stripe_flash_attn_func, fwd
+mfu: 9.942 Tflops/s, hfu: 9.942 Tflops/s, 144.674 iter/s, 6.912e-03 s/iter, (0.015, 0.001, 0.028) sec
+# orchestrated_attn_func
+mfu: 77.385 Tflops/s, hfu: 77.385 Tflops/s, 1126.096 iter/s, 8.880e-04 s/iter, (0.102, 0.001, 0.004) sec
+mfu: 88.926 Tflops/s, hfu: 88.926 Tflops/s, 1294.049 iter/s, 7.728e-04 s/iter, (0.100, 0.001, 0.003) sec
+mfu: 81.242 Tflops/s, hfu: 81.242 Tflops/s, 1182.223 iter/s, 8.459e-04 s/iter, (0.101, 0.002, 0.003) sec
+mfu: 84.784 Tflops/s, hfu: 84.784 Tflops/s, 1233.764 iter/s, 8.105e-04 s/iter, (0.099, 0.001, 0.003) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 54.735 Tflops/s, hfu: 54.735 Tflops/s, 199.126 iter/s, 5.022e-03 s/iter, (0.010, 0.001, 0.020) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 91.375 Tflops/s, hfu: 91.375 Tflops/s, 332.420 iter/s, 3.008e-03 s/iter, (0.009, 0.001, 0.012) sec
+# stripe_flash_attn_func, fwd
+mfu: 36.364 Tflops/s, hfu: 36.364 Tflops/s, 132.292 iter/s, 7.559e-03 s/iter, (0.016, 0.001, 0.030) sec
+# orchestrated_attn_func
+mfu: 107.134 Tflops/s, hfu: 107.134 Tflops/s, 389.751 iter/s, 2.566e-03 s/iter, (0.108, 0.003, 0.010) sec
+mfu: 148.088 Tflops/s, hfu: 148.088 Tflops/s, 538.740 iter/s, 1.856e-03 s/iter, (0.105, 0.001, 0.007) sec
+mfu: 109.685 Tflops/s, hfu: 109.685 Tflops/s, 399.033 iter/s, 2.506e-03 s/iter, (0.103, 0.001, 0.010) sec
+mfu: 139.405 Tflops/s, hfu: 139.405 Tflops/s, 507.151 iter/s, 1.972e-03 s/iter, (0.103, 0.002, 0.008) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 118.523 Tflops/s, hfu: 118.523 Tflops/s, 107.796 iter/s, 9.277e-03 s/iter, (0.024, 0.001, 0.037) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 167.573 Tflops/s, hfu: 167.573 Tflops/s, 152.407 iter/s, 6.561e-03 s/iter, (0.014, 0.001, 0.026) sec
+# stripe_flash_attn_func, fwd
+mfu: 122.912 Tflops/s, hfu: 122.912 Tflops/s, 111.788 iter/s, 8.946e-03 s/iter, (0.019, 0.001, 0.036) sec
+# orchestrated_attn_func
+mfu: 124.988 Tflops/s, hfu: 124.988 Tflops/s, 113.676 iter/s, 8.797e-03 s/iter, (0.118, 0.001, 0.035) sec
+mfu: 162.173 Tflops/s, hfu: 162.173 Tflops/s, 147.495 iter/s, 6.780e-03 s/iter, (0.116, 0.003, 0.027) sec
+mfu: 125.049 Tflops/s, hfu: 125.049 Tflops/s, 113.731 iter/s, 8.793e-03 s/iter, (0.116, 0.001, 0.035) sec
+mfu: 164.268 Tflops/s, hfu: 164.268 Tflops/s, 149.401 iter/s, 6.693e-03 s/iter, (0.113, 0.003, 0.027) sec
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 2.278 Tflops/s, hfu: 2.278 Tflops/s, 265.191 iter/s, 3.771e-03 s/iter, (0.010, 0.001, 0.015) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 2.588 Tflops/s, hfu: 2.588 Tflops/s, 301.258 iter/s, 3.319e-03 s/iter, (0.007, 0.001, 0.013) sec
+# stripe_flash_attn_func, fwd
+mfu: 1.275 Tflops/s, hfu: 1.275 Tflops/s, 148.409 iter/s, 6.738e-03 s/iter, (0.016, 0.001, 0.027) sec
+# orchestrated_attn_func
+mfu: 15.416 Tflops/s, hfu: 15.416 Tflops/s, 1794.713 iter/s, 5.572e-04 s/iter, (0.102, 0.001, 0.002) sec
+mfu: 15.1 Tflops/s, hfu: 15.1 Tflops/s, 1757.840 iter/s, 5.689e-04 s/iter, (0.100, 0.001, 0.002) sec
+mfu: 14.277 Tflops/s, hfu: 14.277 Tflops/s, 1662.035 iter/s, 6.017e-04 s/iter, (0.101, 0.001, 0.002) sec
+mfu: 13.639 Tflops/s, hfu: 13.639 Tflops/s, 1587.806 iter/s, 6.298e-04 s/iter, (0.100, 0.000, 0.003) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 5.854 Tflops/s, hfu: 5.854 Tflops/s, 170.371 iter/s, 5.870e-03 s/iter, (0.015, 0.001, 0.023) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 5.927 Tflops/s, hfu: 5.927 Tflops/s, 172.503 iter/s, 5.797e-03 s/iter, (0.013, 0.001, 0.023) sec
+# stripe_flash_attn_func, fwd
+mfu: 4.918 Tflops/s, hfu: 4.918 Tflops/s, 143.121 iter/s, 6.987e-03 s/iter, (0.019, 0.002, 0.028) sec
+# orchestrated_attn_func
+mfu: 37.775 Tflops/s, hfu: 37.775 Tflops/s, 1099.404 iter/s, 9.096e-04 s/iter, (0.101, 0.001, 0.004) sec
+mfu: 36.113 Tflops/s, hfu: 36.113 Tflops/s, 1051.030 iter/s, 9.514e-04 s/iter, (0.103, 0.001, 0.004) sec
+mfu: 35.135 Tflops/s, hfu: 35.135 Tflops/s, 1022.570 iter/s, 9.779e-04 s/iter, (0.179, 0.001, 0.004) sec
+mfu: 36.765 Tflops/s, hfu: 36.765 Tflops/s, 1069.995 iter/s, 9.346e-04 s/iter, (0.101, 0.000, 0.004) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 12.22 Tflops/s, hfu: 12.22 Tflops/s, 88.912 iter/s, 1.125e-02 s/iter, (0.027, 0.001, 0.045) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 12.475 Tflops/s, hfu: 12.475 Tflops/s, 90.769 iter/s, 1.102e-02 s/iter, (0.023, 0.001, 0.044) sec
+# stripe_flash_attn_func, fwd
+mfu: 12.078 Tflops/s, hfu: 12.078 Tflops/s, 87.880 iter/s, 1.138e-02 s/iter, (0.024, 0.001, 0.046) sec
+# orchestrated_attn_func
+mfu: 77.059 Tflops/s, hfu: 77.059 Tflops/s, 560.676 iter/s, 1.784e-03 s/iter, (0.102, 0.001, 0.007) sec
+mfu: 77.406 Tflops/s, hfu: 77.406 Tflops/s, 563.205 iter/s, 1.776e-03 s/iter, (0.103, 0.001, 0.007) sec
+mfu: 78.411 Tflops/s, hfu: 78.411 Tflops/s, 570.518 iter/s, 1.753e-03 s/iter, (0.102, 0.001, 0.007) sec
+mfu: 79.288 Tflops/s, hfu: 79.288 Tflops/s, 576.896 iter/s, 1.733e-03 s/iter, (0.103, 0.002, 0.007) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 23.776 Tflops/s, hfu: 23.776 Tflops/s, 43.248 iter/s, 2.312e-02 s/iter, (0.051, 0.001, 0.092) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 24.938 Tflops/s, hfu: 24.938 Tflops/s, 45.362 iter/s, 2.204e-02 s/iter, (0.047, 0.001, 0.088) sec
+# stripe_flash_attn_func, fwd
+mfu: 24.412 Tflops/s, hfu: 24.412 Tflops/s, 44.405 iter/s, 2.252e-02 s/iter, (0.046, 0.001, 0.090) sec
+# orchestrated_attn_func
+mfu: 116.231 Tflops/s, hfu: 116.231 Tflops/s, 211.423 iter/s, 4.730e-03 s/iter, (0.109, 0.001, 0.019) sec
+mfu: 110.313 Tflops/s, hfu: 110.313 Tflops/s, 200.658 iter/s, 4.984e-03 s/iter, (0.108, 0.003, 0.020) sec
+mfu: 118.478 Tflops/s, hfu: 118.478 Tflops/s, 215.510 iter/s, 4.640e-03 s/iter, (0.110, 0.003, 0.019) sec
+mfu: 116.66 Tflops/s, hfu: 116.66 Tflops/s, 212.203 iter/s, 4.712e-03 s/iter, (0.109, 0.001, 0.019) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 43.757 Tflops/s, hfu: 43.757 Tflops/s, 19.899 iter/s, 5.025e-02 s/iter, (0.103, 0.001, 0.201) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 46.968 Tflops/s, hfu: 46.968 Tflops/s, 21.359 iter/s, 4.682e-02 s/iter, (0.096, 0.001, 0.187) sec
+# stripe_flash_attn_func, fwd
+mfu: 46.219 Tflops/s, hfu: 46.219 Tflops/s, 21.018 iter/s, 4.758e-02 s/iter, (0.097, 0.001, 0.190) sec
+# orchestrated_attn_func
+mfu: 175.438 Tflops/s, hfu: 175.438 Tflops/s, 79.780 iter/s, 1.253e-02 s/iter, (0.132, 0.004, 0.050) sec
+mfu: 174.11 Tflops/s, hfu: 174.11 Tflops/s, 79.176 iter/s, 1.263e-02 s/iter, (0.126, 0.002, 0.051) sec
+mfu: 173.651 Tflops/s, hfu: 173.651 Tflops/s, 78.967 iter/s, 1.266e-02 s/iter, (0.128, 0.004, 0.051) sec
+mfu: 172.591 Tflops/s, hfu: 172.591 Tflops/s, 78.485 iter/s, 1.274e-02 s/iter, (0.126, 0.003, 0.051) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 74.331 Tflops/s, hfu: 74.331 Tflops/s, 8.450 iter/s, 1.183e-01 s/iter, (0.233, 0.001, 0.473) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 85.43 Tflops/s, hfu: 85.43 Tflops/s, 9.712 iter/s, 1.030e-01 s/iter, (0.207, 0.001, 0.412) sec
+# stripe_flash_attn_func, fwd
+mfu: 83.717 Tflops/s, hfu: 83.717 Tflops/s, 9.517 iter/s, 1.051e-01 s/iter, (0.208, 0.001, 0.420) sec
+# orchestrated_attn_func
+mfu: 208.781 Tflops/s, hfu: 208.781 Tflops/s, 23.736 iter/s, 4.213e-02 s/iter, (0.190, 0.003, 0.169) sec
+mfu: 201.007 Tflops/s, hfu: 201.007 Tflops/s, 22.852 iter/s, 4.376e-02 s/iter, (0.187, 0.004, 0.175) sec
+mfu: 202.269 Tflops/s, hfu: 202.269 Tflops/s, 22.995 iter/s, 4.349e-02 s/iter, (0.187, 0.001, 0.174) sec
+mfu: 206.329 Tflops/s, hfu: 206.329 Tflops/s, 23.457 iter/s, 4.263e-02 s/iter, (0.190, 0.003, 0.171) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=0/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=0_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, fwd
+mfu: 113.371 Tflops/s, hfu: 113.371 Tflops/s, 3.222 iter/s, 3.103e-01 s/iter, (0.632, 0.003, 1.241) sec
+# zigzag_ring_flash_attn_func, fwd
+mfu: 142.514 Tflops/s, hfu: 142.514 Tflops/s, 4.050 iter/s, 2.469e-01 s/iter, (0.496, 0.003, 0.988) sec
+# stripe_flash_attn_func, fwd
+mfu: 145.404 Tflops/s, hfu: 145.404 Tflops/s, 4.133 iter/s, 2.420e-01 s/iter, (0.502, 0.003, 0.968) sec
+# orchestrated_attn_func
+mfu: 204.51 Tflops/s, hfu: 204.51 Tflops/s, 5.813 iter/s, 1.720e-01 s/iter, (0.441, 0.003, 0.688) sec
+mfu: 208.056 Tflops/s, hfu: 208.056 Tflops/s, 5.913 iter/s, 1.691e-01 s/iter, (0.453, 0.004, 0.676) sec
+mfu: 207.535 Tflops/s, hfu: 207.535 Tflops/s, 5.899 iter/s, 1.695e-01 s/iter, (0.424, 0.002, 0.678) sec
+mfu: 202.655 Tflops/s, hfu: 202.655 Tflops/s, 5.760 iter/s, 1.736e-01 s/iter, (0.452, 0.003, 0.694) sec
+causal=True, fob=1:
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 0.094 Tflops/s, hfu: 0.117 Tflops/s, 174.780 iter/s, 5.721e-03 s/iter, (0.015, 0.001, 0.023) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 0.053 Tflops/s, hfu: 0.066 Tflops/s, 98.313 iter/s, 1.017e-02 s/iter, (0.021, 0.002, 0.041) sec
+# stripe_flash_attn_func, bwd
+mfu: 0.06 Tflops/s, hfu: 0.075 Tflops/s, 111.265 iter/s, 8.988e-03 s/iter, (0.026, 0.003, 0.036) sec
+# orchestrated_attn_func
+mfu: 0.865 Tflops/s, hfu: 1.081 Tflops/s, 1610.264 iter/s, 6.210e-04 s/iter, (3.109, 0.001, 0.002) sec
+mfu: 1.582 Tflops/s, hfu: 1.977 Tflops/s, 2946.098 iter/s, 3.394e-04 s/iter, (0.105, 0.001, 0.001) sec
+mfu: 0.906 Tflops/s, hfu: 1.132 Tflops/s, 1686.909 iter/s, 5.928e-04 s/iter, (0.103, 0.001, 0.002) sec
+mfu: 1.379 Tflops/s, hfu: 1.724 Tflops/s, 2569.003 iter/s, 3.893e-04 s/iter, (0.102, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 0.248 Tflops/s, hfu: 0.31 Tflops/s, 115.584 iter/s, 8.652e-03 s/iter, (0.019, 0.001, 0.035) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 0.213 Tflops/s, hfu: 0.266 Tflops/s, 98.968 iter/s, 1.010e-02 s/iter, (0.030, 0.003, 0.040) sec
+# stripe_flash_attn_func, bwd
+mfu: 0.167 Tflops/s, hfu: 0.208 Tflops/s, 77.658 iter/s, 1.288e-02 s/iter, (0.024, 0.003, 0.052) sec
+# orchestrated_attn_func
+mfu: 2.651 Tflops/s, hfu: 3.314 Tflops/s, 1234.568 iter/s, 8.100e-04 s/iter, (0.105, 0.001, 0.003) sec
+mfu: 3.963 Tflops/s, hfu: 4.954 Tflops/s, 1845.427 iter/s, 5.419e-04 s/iter, (0.102, 0.001, 0.002) sec
+mfu: 2.829 Tflops/s, hfu: 3.536 Tflops/s, 1317.370 iter/s, 7.591e-04 s/iter, (0.105, 0.001, 0.003) sec
+mfu: 4.79 Tflops/s, hfu: 5.987 Tflops/s, 2230.390 iter/s, 4.484e-04 s/iter, (0.102, 0.001, 0.002) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 1.211 Tflops/s, hfu: 1.513 Tflops/s, 140.943 iter/s, 7.095e-03 s/iter, (0.014, 0.001, 0.028) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 0.84 Tflops/s, hfu: 1.05 Tflops/s, 97.814 iter/s, 1.022e-02 s/iter, (0.023, 0.001, 0.041) sec
+# stripe_flash_attn_func, bwd
+mfu: 0.983 Tflops/s, hfu: 1.229 Tflops/s, 114.434 iter/s, 8.739e-03 s/iter, (0.014, 0.001, 0.035) sec
+# orchestrated_attn_func
+mfu: 7.03 Tflops/s, hfu: 8.788 Tflops/s, 818.400 iter/s, 1.222e-03 s/iter, (0.104, 0.001, 0.005) sec
+mfu: 12.778 Tflops/s, hfu: 15.972 Tflops/s, 1487.546 iter/s, 6.722e-04 s/iter, (0.100, 0.000, 0.003) sec
+mfu: 7.354 Tflops/s, hfu: 9.193 Tflops/s, 856.129 iter/s, 1.168e-03 s/iter, (0.106, 0.001, 0.005) sec
+mfu: 11.947 Tflops/s, hfu: 14.934 Tflops/s, 1390.867 iter/s, 7.190e-04 s/iter, (0.180, 0.001, 0.003) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 3.386 Tflops/s, hfu: 4.232 Tflops/s, 98.542 iter/s, 1.015e-02 s/iter, (0.023, 0.003, 0.041) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 3.218 Tflops/s, hfu: 4.023 Tflops/s, 93.662 iter/s, 1.068e-02 s/iter, (0.022, 0.003, 0.043) sec
+# stripe_flash_attn_func, bwd
+mfu: 3.099 Tflops/s, hfu: 3.874 Tflops/s, 90.196 iter/s, 1.109e-02 s/iter, (0.032, 0.002, 0.044) sec
+# orchestrated_attn_func
+mfu: 17.194 Tflops/s, hfu: 21.492 Tflops/s, 500.398 iter/s, 1.998e-03 s/iter, (0.112, 0.001, 0.008) sec
+mfu: 25.638 Tflops/s, hfu: 32.048 Tflops/s, 746.175 iter/s, 1.340e-03 s/iter, (2.534, 0.001, 0.005) sec
+mfu: 17.004 Tflops/s, hfu: 21.254 Tflops/s, 494.869 iter/s, 2.021e-03 s/iter, (0.109, 0.001, 0.008) sec
+mfu: 28.376 Tflops/s, hfu: 35.47 Tflops/s, 825.840 iter/s, 1.211e-03 s/iter, (0.105, 0.001, 0.005) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 13.865 Tflops/s, hfu: 17.331 Tflops/s, 100.881 iter/s, 9.913e-03 s/iter, (0.024, 0.002, 0.040) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 12.887 Tflops/s, hfu: 16.108 Tflops/s, 93.764 iter/s, 1.067e-02 s/iter, (0.032, 0.005, 0.043) sec
+# stripe_flash_attn_func, bwd
+mfu: 10.533 Tflops/s, hfu: 13.166 Tflops/s, 76.635 iter/s, 1.305e-02 s/iter, (0.022, 0.002, 0.052) sec
+# orchestrated_attn_func
+mfu: 37.644 Tflops/s, hfu: 47.055 Tflops/s, 273.895 iter/s, 3.651e-03 s/iter, (0.112, 0.001, 0.015) sec
+mfu: 59.646 Tflops/s, hfu: 74.558 Tflops/s, 433.984 iter/s, 2.304e-03 s/iter, (0.107, 0.001, 0.009) sec
+mfu: 37.034 Tflops/s, hfu: 46.292 Tflops/s, 269.458 iter/s, 3.711e-03 s/iter, (0.112, 0.001, 0.015) sec
+mfu: 59.294 Tflops/s, hfu: 74.118 Tflops/s, 431.421 iter/s, 2.318e-03 s/iter, (0.104, 0.000, 0.009) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 57.161 Tflops/s, hfu: 71.451 Tflops/s, 103.975 iter/s, 9.618e-03 s/iter, (0.022, 0.001, 0.038) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 46.748 Tflops/s, hfu: 58.435 Tflops/s, 85.034 iter/s, 1.176e-02 s/iter, (0.027, 0.004, 0.047) sec
+# stripe_flash_attn_func, bwd
+mfu: 53.222 Tflops/s, hfu: 66.528 Tflops/s, 96.811 iter/s, 1.033e-02 s/iter, (0.021, 0.001, 0.041) sec
+# orchestrated_attn_func
+mfu: 78.611 Tflops/s, hfu: 98.264 Tflops/s, 142.993 iter/s, 6.993e-03 s/iter, (0.115, 0.001, 0.028) sec
+mfu: 100.892 Tflops/s, hfu: 126.115 Tflops/s, 183.522 iter/s, 5.449e-03 s/iter, (0.112, 0.001, 0.022) sec
+mfu: 77.443 Tflops/s, hfu: 96.804 Tflops/s, 140.868 iter/s, 7.099e-03 s/iter, (0.118, 0.001, 0.028) sec
+mfu: 103.224 Tflops/s, hfu: 129.03 Tflops/s, 187.764 iter/s, 5.326e-03 s/iter, (0.113, 0.000, 0.021) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(1,1),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(1, 1)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 108.796 Tflops/s, hfu: 135.996 Tflops/s, 49.475 iter/s, 2.021e-02 s/iter, (0.044, 0.001, 0.081) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 117.318 Tflops/s, hfu: 146.648 Tflops/s, 53.350 iter/s, 1.874e-02 s/iter, (0.039, 0.002, 0.075) sec
+# stripe_flash_attn_func, bwd
+mfu: 121.843 Tflops/s, hfu: 152.303 Tflops/s, 55.408 iter/s, 1.805e-02 s/iter, (0.041, 0.001, 0.072) sec
+# orchestrated_attn_func
+mfu: 97.22 Tflops/s, hfu: 121.525 Tflops/s, 44.211 iter/s, 2.262e-02 s/iter, (0.167, 0.001, 0.090) sec
+mfu: 121.483 Tflops/s, hfu: 151.853 Tflops/s, 55.244 iter/s, 1.810e-02 s/iter, (0.138, 0.002, 0.072) sec
+mfu: 94.132 Tflops/s, hfu: 117.665 Tflops/s, 42.806 iter/s, 2.336e-02 s/iter, (0.150, 0.001, 0.093) sec
+mfu: 124.529 Tflops/s, hfu: 155.661 Tflops/s, 56.629 iter/s, 1.766e-02 s/iter, (0.137, 0.001, 0.071) sec
+da_config: SP=(2,8),Sg=(256,256),S=(4096,4096),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(4096, 4096)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 1.852 Tflops/s, hfu: 2.315 Tflops/s, 107.821 iter/s, 9.275e-03 s/iter, (0.021, 0.001, 0.037) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 1.66 Tflops/s, hfu: 2.075 Tflops/s, 96.641 iter/s, 1.035e-02 s/iter, (0.020, 0.001, 0.041) sec
+# stripe_flash_attn_func, bwd
+mfu: 1.528 Tflops/s, hfu: 1.91 Tflops/s, 88.961 iter/s, 1.124e-02 s/iter, (0.028, 0.001, 0.045) sec
+# orchestrated_attn_func
+mfu: 18.158 Tflops/s, hfu: 22.697 Tflops/s, 1056.930 iter/s, 9.461e-04 s/iter, (0.101, 0.001, 0.004) sec
+mfu: 18.329 Tflops/s, hfu: 22.912 Tflops/s, 1066.908 iter/s, 9.373e-04 s/iter, (0.103, 0.001, 0.004) sec
+mfu: 17.459 Tflops/s, hfu: 21.824 Tflops/s, 1016.268 iter/s, 9.840e-04 s/iter, (0.104, 0.000, 0.004) sec
+mfu: 16.524 Tflops/s, hfu: 20.655 Tflops/s, 961.842 iter/s, 1.040e-03 s/iter, (0.105, 0.001, 0.004) sec
+da_config: SP=(2,8),Sg=(512,512),S=(8192,8192),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(8192, 8192)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 3.887 Tflops/s, hfu: 4.859 Tflops/s, 56.564 iter/s, 1.768e-02 s/iter, (0.039, 0.001, 0.071) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 3.888 Tflops/s, hfu: 4.86 Tflops/s, 56.576 iter/s, 1.768e-02 s/iter, (0.037, 0.001, 0.071) sec
+# stripe_flash_attn_func, bwd
+mfu: 3.884 Tflops/s, hfu: 4.855 Tflops/s, 56.523 iter/s, 1.769e-02 s/iter, (0.039, 0.001, 0.071) sec
+# orchestrated_attn_func
+mfu: 38.198 Tflops/s, hfu: 47.748 Tflops/s, 555.857 iter/s, 1.799e-03 s/iter, (0.105, 0.001, 0.007) sec
+mfu: 39.053 Tflops/s, hfu: 48.816 Tflops/s, 568.295 iter/s, 1.760e-03 s/iter, (0.102, 0.001, 0.007) sec
+mfu: 39.617 Tflops/s, hfu: 49.522 Tflops/s, 576.507 iter/s, 1.735e-03 s/iter, (0.109, 0.000, 0.007) sec
+mfu: 39.703 Tflops/s, hfu: 49.629 Tflops/s, 577.754 iter/s, 1.731e-03 s/iter, (0.103, 0.001, 0.007) sec
+da_config: SP=(2,8),Sg=(1024,1024),S=(16384,16384),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(16384, 16384)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 7.969 Tflops/s, hfu: 9.961 Tflops/s, 28.989 iter/s, 3.450e-02 s/iter, (0.075, 0.001, 0.138) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 7.982 Tflops/s, hfu: 9.978 Tflops/s, 29.039 iter/s, 3.444e-02 s/iter, (0.070, 0.001, 0.138) sec
+# stripe_flash_attn_func, bwd
+mfu: 7.92 Tflops/s, hfu: 9.9 Tflops/s, 28.811 iter/s, 3.471e-02 s/iter, (0.070, 0.001, 0.139) sec
+# orchestrated_attn_func
+mfu: 70.043 Tflops/s, hfu: 87.554 Tflops/s, 254.814 iter/s, 3.924e-03 s/iter, (0.108, 0.001, 0.016) sec
+mfu: 71.715 Tflops/s, hfu: 89.644 Tflops/s, 260.899 iter/s, 3.833e-03 s/iter, (0.107, 0.001, 0.015) sec
+mfu: 72.28 Tflops/s, hfu: 90.351 Tflops/s, 262.955 iter/s, 3.803e-03 s/iter, (0.110, 0.001, 0.015) sec
+mfu: 71.134 Tflops/s, hfu: 88.918 Tflops/s, 258.785 iter/s, 3.864e-03 s/iter, (0.108, 0.001, 0.015) sec
+da_config: SP=(2,8),Sg=(2048,2048),S=(32768,32768),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(32768, 32768)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 16.095 Tflops/s, hfu: 20.118 Tflops/s, 14.638 iter/s, 6.831e-02 s/iter, (0.143, 0.001, 0.273) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 16.135 Tflops/s, hfu: 20.168 Tflops/s, 14.674 iter/s, 6.815e-02 s/iter, (0.138, 0.001, 0.273) sec
+# stripe_flash_attn_func, bwd
+mfu: 16.088 Tflops/s, hfu: 20.11 Tflops/s, 14.632 iter/s, 6.834e-02 s/iter, (0.138, 0.001, 0.273) sec
+# orchestrated_attn_func
+mfu: 100.562 Tflops/s, hfu: 125.702 Tflops/s, 91.460 iter/s, 1.093e-02 s/iter, (0.136, 0.002, 0.044) sec
+mfu: 97.668 Tflops/s, hfu: 122.085 Tflops/s, 88.828 iter/s, 1.126e-02 s/iter, (0.124, 0.001, 0.045) sec
+mfu: 103.688 Tflops/s, hfu: 129.61 Tflops/s, 94.303 iter/s, 1.060e-02 s/iter, (0.126, 0.001, 0.042) sec
+mfu: 98.772 Tflops/s, hfu: 123.465 Tflops/s, 89.832 iter/s, 1.113e-02 s/iter, (0.123, 0.001, 0.045) sec
+da_config: SP=(2,8),Sg=(4096,4096),S=(65536,65536),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(65536, 65536)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 32.31 Tflops/s, hfu: 40.388 Tflops/s, 7.347 iter/s, 1.361e-01 s/iter, (0.278, 0.001, 0.544) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 32.327 Tflops/s, hfu: 40.409 Tflops/s, 7.350 iter/s, 1.360e-01 s/iter, (0.274, 0.001, 0.544) sec
+# stripe_flash_attn_func, bwd
+mfu: 32.047 Tflops/s, hfu: 40.058 Tflops/s, 7.287 iter/s, 1.372e-01 s/iter, (0.275, 0.001, 0.549) sec
+# orchestrated_attn_func
+mfu: 123.057 Tflops/s, hfu: 153.821 Tflops/s, 27.980 iter/s, 3.574e-02 s/iter, (0.215, 0.003, 0.143) sec
+mfu: 118.778 Tflops/s, hfu: 148.473 Tflops/s, 27.007 iter/s, 3.703e-02 s/iter, (0.181, 0.003, 0.148) sec
+mfu: 122.884 Tflops/s, hfu: 153.605 Tflops/s, 27.941 iter/s, 3.579e-02 s/iter, (0.175, 0.001, 0.143) sec
+mfu: 123.862 Tflops/s, hfu: 154.827 Tflops/s, 28.163 iter/s, 3.551e-02 s/iter, (0.173, 0.001, 0.142) sec
+da_config: SP=(2,8),Sg=(8192,8192),S=(131072,131072),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(131072, 131072)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 57.644 Tflops/s, hfu: 72.055 Tflops/s, 3.277 iter/s, 3.052e-01 s/iter, (0.619, 0.002, 1.221) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 64.179 Tflops/s, hfu: 80.224 Tflops/s, 3.648 iter/s, 2.741e-01 s/iter, (0.550, 0.002, 1.096) sec
+# stripe_flash_attn_func, bwd
+mfu: 63.748 Tflops/s, hfu: 79.685 Tflops/s, 3.624 iter/s, 2.760e-01 s/iter, (0.554, 0.001, 1.104) sec
+# orchestrated_attn_func
+mfu: 136.566 Tflops/s, hfu: 170.707 Tflops/s, 7.763 iter/s, 1.288e-01 s/iter, (0.436, 0.003, 0.515) sec
+mfu: 134.969 Tflops/s, hfu: 168.711 Tflops/s, 7.672 iter/s, 1.303e-01 s/iter, (0.370, 0.004, 0.521) sec
+mfu: 132.666 Tflops/s, hfu: 165.832 Tflops/s, 7.541 iter/s, 1.326e-01 s/iter, (0.373, 0.001, 0.530) sec
+mfu: 135.503 Tflops/s, hfu: 169.378 Tflops/s, 7.702 iter/s, 1.298e-01 s/iter, (0.373, 0.001, 0.519) sec
+da_config: SP=(2,8),Sg=(16384,16384),S=(262144,262144),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1:
+plan_paths: ['/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_ablation1.pkl', '/home/fit/zhaijd/yhy/llm/UltraAttn/search_algo/execution_plans/fit/A800/inter_SP2_fob=1/S=(262144, 262144)_SP=(2, 8)_causal=True_fob=1_b=1_Nh=(32, 32)_D=128_fused_ablation1.pkl']
+# ring_flash_attn_func, bwd
+mfu: 77.915 Tflops/s, hfu: 97.393 Tflops/s, 1.107 iter/s, 9.032e-01 s/iter, (1.782, 0.004, 3.613) sec
+# zigzag_ring_flash_attn_func, bwd
+mfu: 110.845 Tflops/s, hfu: 138.557 Tflops/s, 1.575 iter/s, 6.348e-01 s/iter, (1.277, 0.003, 2.539) sec
+# stripe_flash_attn_func, bwd
+mfu: 108.62 Tflops/s, hfu: 135.775 Tflops/s, 1.544 iter/s, 6.478e-01 s/iter, (1.288, 0.002, 2.591) sec
+# orchestrated_attn_func
+mfu: 135.03 Tflops/s, hfu: 168.787 Tflops/s, 1.919 iter/s, 5.211e-01 s/iter, (1.142, 0.003, 2.085) sec
+mfu: 129.884 Tflops/s, hfu: 162.355 Tflops/s, 1.846 iter/s, 5.418e-01 s/iter, (1.161, 0.003, 2.167) sec
+mfu: 135.571 Tflops/s, hfu: 169.464 Tflops/s, 1.927 iter/s, 5.191e-01 s/iter, (1.203, 0.001, 2.076) sec
+mfu: 134.72 Tflops/s, hfu: 168.4 Tflops/s, 1.914 iter/s, 5.223e-01 s/iter, (1.139, 0.002, 2.089) sec
++ set +x

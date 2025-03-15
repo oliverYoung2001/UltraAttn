@@ -1,0 +1,5 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p a01 -N 1 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w g10 -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+srun: Required node not available (down, drained or reserved)
+srun: job 53703 queued and waiting for resources

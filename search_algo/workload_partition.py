@@ -1,7 +1,7 @@
 import pulp
 import time
 import math
-import cvxpy as cp
+# import cvxpy as cp
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Union
 from utils import Block_Comp_Volume, Block_Type, Block_Attention_Config
 from custom_sparse_pattern import create_block_sparse_pattern
+from search_algo.bsa_config import BSA_Config
 
 TIME_BUDGET = 5 * 60 * 60   # 5 hours
     
@@ -266,8 +267,11 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     Vars = dict()
     # Var_cat_default = 'Integer'
     
-    ParD = block_config.ParD
-    CP = block_config.CP
+    CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
+    print(f'CP: {CP}', flush=True)
+    ParD = max(CP, block_config.block_table.shape[0]) # Workload partition degree
+    if hasattr(block_config, 'ParD'):
+        assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
     cmap = block_config.cmap
     
     block_ids = []  # block_ids to be scheduled
@@ -386,8 +390,7 @@ def solve_global_causal():
     cmap = np.array([i // (Par_D // CP) for i in range(Par_D)]) # (0, 0, 1, 1, ..., CP-1, CP-1)
     block_config = Block_Attention_Config.from_causal(CP, Par_D, cmap)
     Quad_LP_GUROBI_from_block_config(block_config)
-    
-    
+  
 def solve_custom_sparse():
     # # star
     # CP, Par_D = 4, 8
@@ -434,6 +437,8 @@ def solve_custom_sparse():
     block_config = create_block_sparse_pattern(CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate)
     Quad_LP_GUROBI_from_block_config(block_config)
 
+def solve_sparse_from_bsa(block_config: BSA_Config):
+    Quad_LP_GUROBI_from_block_config(block_config)
   
 def main():
     # solve_global_causal()

@@ -1,0 +1,86 @@
++ export CUDA_DEVICE_MAX_CONNECTIONS=32
++ CUDA_DEVICE_MAX_CONNECTIONS=32
++ srun -p h01 -N 1 --ntasks-per-node=8 --gres=gpu:8 --mem 256G -K -w g40 -c 13 ./scripts/runtime/bench_dist_attn.sh python bench_dist_attn.py
+GpuFreq=control_disabled
+Sqs: [65536]
+Skvs: [65536]
+fob=0
+da_config: SP=(1,8),Sg=(65536,65536),S=(524288,524288),Nh=(32,32),bs=1,D=128,causal=True,hierarchy=1,bsa_config=8_8_lg_1-4_3&3_0&0_1
+# orchestrated_attn_func
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step0:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step1:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step2:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+total_sparsity: 0.875
+mfu: 5631.104 Tflops/s, hfu: 5631.104 Tflops/s, 11.432 iter/s, 8.748e-02 s/iter, (0.357, 0.001, 0.350) sec
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step0:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step1:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step2:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+total_sparsity: 0.875
+mfu: 5655.594 Tflops/s, hfu: 5655.594 Tflops/s, 11.482 iter/s, 8.710e-02 s/iter, (7.124, 0.001, 0.348) sec
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step0:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step1:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step2:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+total_sparsity: 0.875
+mfu: 5654.53 Tflops/s, hfu: 5654.53 Tflops/s, 11.479 iter/s, 8.711e-02 s/iter, (8.720, 0.001, 0.348) sec
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step0:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step1:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+step2:
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+inp_row.Q: torch.Size([1, 65536, 32, 128]), inp_col.K: torch.Size([1, 65536, 32, 128]), inp_col.V: torch.Size([1, 65536, 32, 128])
+total_sparsity: 0.875
+mfu: 5658.183 Tflops/s, hfu: 5658.183 Tflops/s, 11.487 iter/s, 8.706e-02 s/iter, (10.313, 0.000, 0.348) sec
++ set +x

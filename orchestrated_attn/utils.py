@@ -177,6 +177,10 @@ class Input_Row_Bwd(Integrated_Data):
         lse_numel = math.prod(lse_shape)
         tot_numel = Q_numel * 2 + lse_numel * (2 + 1)
         data = buf[: tot_numel]
+        # print_rank_0(f'buf: {buf.shape}')
+        # print_rank_0(f'tot_numel: {tot_numel}')
+        # print_rank_0(f'data: {data.shape}')
+        # print_rank_0(f'Q_numel: {Q_numel}, Q_shape: {Q_shape}')
         Q = data[: Q_numel].view(Q_shape)
         dO = data[Q_numel: Q_numel * 2].view(Q_shape)
         D = data[Q_numel * 2: - lse_numel].view(FULL_DTYPE).view(lse_shape)

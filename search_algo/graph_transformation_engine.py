@@ -259,7 +259,7 @@ class Graph_Transformation_Engine():    # batch engine
             # print selected trans
             if len(selected_trans) == 0:
                 print(f'No Transformations Selected !!!', flush=True)
-                return None
+                # return None
             execute_plan = self.apply_transformations(selected_trans)
             return execute_plan
         else:
