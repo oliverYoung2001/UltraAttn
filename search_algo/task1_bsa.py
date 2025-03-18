@@ -264,6 +264,13 @@ def get_configs():
             node_bsa_configs = split_to_node_configs(global_bsa_config)
             # intra_node_bsa_configs |= node_bsa_configs
             combine_list_to_0(intra_node_bsa_configs, node_bsa_configs)
+    
+    # filter out all empty configs
+    filtered_configs = []
+    for c in intra_node_bsa_configs:
+        if not c.bsa_repr.check_empty():
+            filtered_configs.append(c)
+    intra_node_bsa_configs = filtered_configs
     for intra_node_bsa_config in intra_node_bsa_configs:
         block_table_value = convert_block_table_to_value(intra_node_bsa_config.block_table)
         print(f'CP: {intra_node_bsa_config.CP}, minimum_Par_D: {intra_node_bsa_config.bsa_repr.minimum_Par_D}\n{block_table_value}', flush=True)
@@ -283,7 +290,7 @@ def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config:
         with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
             json.dump({}, f)
     key = f'fob={exp_config.fob}_bsa_config={{{da_config.bsa_config}}}'  # [TODO]
-    
+    print(f'intra_bsa_allocation_key: {key}', flush=True)
     with open(f'{INTRA_BSA_ALLOCATION_DB}', 'r') as f:
         intra_bsa_allocation_dict = json.load(f)
     if key in intra_bsa_allocation_dict.keys():
@@ -321,7 +328,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     exp_config.hierarchy = da_config.hierarchy = 1
     m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
     prof_db.update_m_config(m_config)
-    
+    print(f'da_config.shape_config: {da_config.shape_config}', flush=True)
     cc_optimal_schedule = get_intra_bsa_cc_optimal_schedule(exp_config, da_config, m_config)
     # exit(0)
     
@@ -367,9 +374,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         key = f'{key_preffix}{key_suffix}'
         if key not in intra_bsa_exe_plans_dict.keys():
             gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
-            print(f'LABEL1', flush=True)
             execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
-            print(f'LABEL2', flush=True)
             if execute_plan is None:    # No feasible transformations
                 assert False
                 continue
@@ -399,6 +404,7 @@ def main():
     #   [NOTE]: total exp space is (global_bsa_configs/intra_node_bsa_configs) x shape_configs x exp_configs
     # Step1: Generate the intra-BSA; need all cpus on one node; (w cache/bypass)
     #   Initialize Profile_DataBase
+    intra_plan_id = 0
     if torch.distributed.get_rank() == 0:
         prof_db = Prof_DB()
         for exp_config in exp_configs:
@@ -418,8 +424,10 @@ def main():
                                     shape_config=shape_config,
                                     hierarchy=1,
                                 )
+                                print(f'intra_plan_id: {intra_plan_id}', flush=True)
                                 generate_intra_execution_plans(exp_config, da_config, prof_db)
-                                exit(0)
+                                intra_plan_id += 1
+                                # exit(0)
     # [TODO]: sync all ranks
     # [TODO]: prepare prof_db with cache on dick !!!
     

@@ -38,6 +38,7 @@ class Dist_Attn_Config():
         self.Nh = Nh    # (Nh, Ng)
         self.bs = bs
         self.D = D
+        self.shape_config = {'S': S, 'Nh': Nh, 'bs': bs, 'D': D}
         self.causal = causal
         self.hierarchy = hierarchy
         self.bsa_config = bsa_config    # prior than 'causal'
@@ -888,7 +889,6 @@ def get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results: di
     schedule_table = schedule_results['table']
     while len(schedule_table.shape) < 4:
         schedule_table = np.expand_dims(schedule_table, axis=0)
-    print(f'schedule_table: \n{schedule_table}', flush=True)
     return Dist_Attn_Schedule(da_config, m_config, split_degrees, S_map, \
                                 schedule_table, da_config.hierarchy)
     

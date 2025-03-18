@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction, unique_list
+from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction, unique_list, convert_block_table_to_value
 from typing import Union, Optional
 import regex as re
 from typing import List, Optional
@@ -15,8 +15,22 @@ class BSA_Repr():   # OK
         self.block_table = block_table
         self.cmap = cmap
         self.block_table_raw, self.cmap_raw = self.simplify(self.block_table, self.cmap)
+        block_table_value = convert_block_table_to_value(self.block_table)
+        block_table_raw_value = convert_block_table_to_value(self.block_table_raw)
+        # print(f'block_table_value: \n{block_table_value}')
+        # print(f'block_table_raw_value: \n{block_table_raw_value}', flush=True)
+        # print(f'')
         self.minimum_Par_D = self.block_table_raw.shape[0]
     
+    def check_empty(self):
+        for i in range(self.block_table_raw.shape[0]):
+            for j in range(self.block_table_raw.shape[1]):
+                # print(f'self.block_table_raw[i, j]: {self.block_table_raw[i, j]}, {self.block_table_raw[i, j] != Block_Type.EMPTY}')
+                # print(f'Block_Type.EMPTY != Block_Type.EMPTY: {Block_Type.EMPTY != Block_Type.EMPTY}')
+                if self.block_table_raw[i, j].value != Block_Type.EMPTY.value:
+                    return False
+        return True
+        
     def merge_blocks(self, sub_table: np.ndarray) -> Optional[Block_Type]:  # OK
         sub_par_d = sub_table.shape[0]
         
@@ -24,14 +38,14 @@ class BSA_Repr():   # OK
         for ij in range(pow(sub_par_d, 2)):
             i, j = ij // sub_par_d, ij % sub_par_d
             # 1 Identify empty
-            if sub_table[i, j] != Block_Type.EMPTY:
+            if sub_table[i, j].value != Block_Type.EMPTY.value:
                 is_empty = False
             # 2 Identify full
-            if sub_table[i, j] != Block_Type.FULL:
+            if sub_table[i, j].value != Block_Type.FULL.value:
                 is_full = False
             # 3 Identify causal
             causal_target = Block_Type.CAUSAL if i == j else (Block_Type.FULL if i > j else Block_Type.EMPTY)
-            if sub_table[i, j] != causal_target:
+            if sub_table[i, j].value != causal_target.value:
                 is_causal = False
 
         if is_empty:
@@ -82,15 +96,15 @@ class BSA_Repr():   # OK
 
     def complicate_block(self, sub_table: np.ndarray, block_type: Block_Type, rate: int) -> np.ndarray:    # OK
         # sub_table = np.zeros((rate, rate), dtype=Block_Type)
-        if block_type == Block_Type.EMPTY:
+        if block_type.value == Block_Type.EMPTY.value:
             for i in range(rate):
                 for j in range(rate):
                     sub_table[i, j] = Block_Type.EMPTY
-        elif block_type == Block_Type.FULL:
+        elif block_type.value == Block_Type.FULL.value:
             for i in range(rate):
                 for j in range(rate):
                     sub_table[i, j] = Block_Type.FULL
-        elif block_type == Block_Type.CAUSAL:
+        elif block_type.value == Block_Type.CAUSAL.value:
             for i in range(rate):
                 for j in range(rate):
                     causal_target = Block_Type.CAUSAL if i == j else (Block_Type.FULL if i > j else Block_Type.EMPTY)
@@ -120,7 +134,6 @@ class BSA_Repr():   # OK
         return new_block_table, new_cmap
     
     def split_n(self, n: int) -> List[BSA_Repr]:
-        # [TODO]
         cur_spt = self.block_table_raw.shape[0]
         sub_bsa_reprs = []
         if cur_spt >= n:

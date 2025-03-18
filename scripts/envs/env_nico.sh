@@ -6,8 +6,7 @@ spack load gcc@11.2.0%gcc@=12.2.0
 spack load cudnn@8.8.0.121-12.0
 spack load cuda@12.1.1
 # conda activate vllm
-conda deactivate && conda deactivate && conda deactivate
-conda activate mg
+conda deactivate && conda deactivate && conda deactivate && conda activate yhy_ultra
 
 # set GUROBI licence env
 export GRB_LICENSE_FILE=/home/yhy/.local/gurobi/gurobi.lic
