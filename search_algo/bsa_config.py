@@ -1,4 +1,5 @@
 from __future__ import annotations
+import torch
 import numpy as np
 from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction, unique_list, convert_block_table_to_value
 from typing import Union, Optional
@@ -15,18 +16,12 @@ class BSA_Repr():   # OK
         self.block_table = block_table
         self.cmap = cmap
         self.block_table_raw, self.cmap_raw = self.simplify(self.block_table, self.cmap)
-        block_table_value = convert_block_table_to_value(self.block_table)
-        block_table_raw_value = convert_block_table_to_value(self.block_table_raw)
-        # print(f'block_table_value: \n{block_table_value}')
-        # print(f'block_table_raw_value: \n{block_table_raw_value}', flush=True)
-        # print(f'')
+        self.block_table_Par_D, self.cmap_Par_D = None, None
         self.minimum_Par_D = self.block_table_raw.shape[0]
     
     def check_empty(self):
         for i in range(self.block_table_raw.shape[0]):
             for j in range(self.block_table_raw.shape[1]):
-                # print(f'self.block_table_raw[i, j]: {self.block_table_raw[i, j]}, {self.block_table_raw[i, j] != Block_Type.EMPTY}')
-                # print(f'Block_Type.EMPTY != Block_Type.EMPTY: {Block_Type.EMPTY != Block_Type.EMPTY}')
                 if self.block_table_raw[i, j].value != Block_Type.EMPTY.value:
                     return False
         return True
@@ -121,8 +116,7 @@ class BSA_Repr():   # OK
         for i in range(par_d):
             for j in range(par_d):
                 # [WARN]: check correctness
-                self.complicate_block(new_block_table[i*rate: (i+1)*rate, j*rate, \
-                                                     (j+1)*rate], block_table[i, j], rate)
+                self.complicate_block(new_block_table[i*rate: (i+1)*rate, j*rate: (j+1)*rate], block_table[i, j], rate)
         
         # complicate cmap
         if cmap is None:
@@ -132,6 +126,10 @@ class BSA_Repr():   # OK
             for i in range(par_d):
                 new_cmap[i*rate: (i+1)*rate] = cmap[i]
         return new_block_table, new_cmap
+    
+    def complicate_to(self, block_table: np.ndarray, cmap: np.ndarray, r_tar: int):    # OK
+        assert block_table.shape[0] <= r_tar
+        return self.complicate(block_table, cmap, rate=r_tar // block_table.shape[0])
     
     def split_n(self, n: int) -> List[BSA_Repr]:
         cur_spt = self.block_table_raw.shape[0]

@@ -7,7 +7,7 @@ from gurobipy import GRB
 import numpy as np
 from enum import Enum
 from typing import Union
-from utils import Block_Comp_Volume, Block_Type, Block_Attention_Config
+from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config
 from custom_sparse_pattern import create_block_sparse_pattern
 from search_algo.bsa_config import BSA_Config
 from search_algo.global_vars import TASK_STATUS
@@ -291,6 +291,9 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
     # print(f'CP: {CP}', flush=True)
     ParD = max(CP, block_config.block_table.shape[0]) # Workload partition degree
+    block_config.bsa_repr.block_table_Par_D, block_config.bsa_repr.cmap_Par_D = \
+        block_config.bsa_repr.complicate_to(block_config.bsa_repr.block_table_raw, block_config.bsa_repr.cmap_raw, ParD)
+    cur_block_table = block_config.bsa_repr.block_table_Par_D
     if hasattr(block_config, 'ParD'):
         assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
     cmap = block_config.cmap
@@ -301,14 +304,14 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     # Check whether diagonal line is full
     diagonal_full = True    # [NOTE]: haven't consider imbalanced workload on diagonal line in load balance !!!
     for i in range(ParD):
-        if block_config.block_table[i, i] == Block_Type.EMPTY:
+        if cur_block_table[i, i].value == Block_Type.EMPTY.value:
             diagonal_full = False
             break
     for i in range(ParD):
         for j in range(ParD):
             if i == j and diagonal_full:  # schedule block on diagonal line to cmap[i] by default
                 continue
-            if block_config.block_table[i, j] != Block_Type.EMPTY:
+            if cur_block_table[i, j].value != Block_Type.EMPTY.value:
                 block_ids.append((i, j))
     
     for i, j in block_ids:
@@ -378,7 +381,14 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     
     # # 4. Load Balance
     if LOAD_BALANCE:
-        COMP_TOTAL = sum([Block_Comp_Volume[block_config.block_table[i, j]] for i, j in block_ids])
+        # for i, j in block_ids:
+        #     print(f'{i}, {j}', flush=True)
+        #     # print(f'{block_config.block_table[i, j]}, {cur_block_table[i, j]}', flush=True)
+        #     print(f'{hex(id(block_config.block_table[i, j]))}, {hex(id(cur_block_table[i, j]))}, {hex(id(Block_Type(cur_block_table[i, j].value)))}', flush=True)
+        #     comp_v = Block_Comp_Volume[cur_block_table[i, j]]
+        #     comp_v = Block_Comp_Volume[block_config.block_table[i, j]]
+        #     print(f'{i}, {j}: {comp_v}', flush=True)
+        COMP_TOTAL = sum([Block_Comp_Volume[cur_block_table[i, j]] for i, j in block_ids])
         COMP_UB = int(math.ceil(COMP_TOTAL / CP))
         for g in range(CP):
             # mylp += pulp.lpSum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB

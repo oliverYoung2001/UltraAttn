@@ -1,5 +1,13 @@
 import numpy as np
-from utils import Block_Type, unique_list
+import inspect
+from search_algo.utils import unique_list, Block_Comp_Volume
+# from utils import Block_Type    # [ERROR]
+# print(f'Block_Type in bsa_utils: {hex(id(Block_Type))}', flush=True)
+# print(f'{inspect.getfile(Block_Type)}', flush=True)
+from search_algo.utils import Block_Type
+# print(f'Block_Type in bsa_utils: {hex(id(Block_Type))}', flush=True)
+# print(f'{inspect.getfile(Block_Type)}', flush=True)
+
 from bsa_config import BSA_Repr, BSA_Config
 from typing import List, Set
 
