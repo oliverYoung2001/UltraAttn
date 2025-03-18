@@ -873,11 +873,22 @@ def get_cc_optimal_schedule(da_config, m_config):
     S_map[:] = np.arange(sp)
     return create_schedule(da_config, m_config, split_degrees, S_map, get_cc_optimal_schedule_table, da_config.hierarchy)
 
-def get_cc_optimal_schedule_from_table(da_config, m_config, schedule_table) -> Dist_Attn_Schedule:
+def get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results: dict) -> Dist_Attn_Schedule:
     sp = da_config.SP[da_config.hierarchy]
-    split_degrees = [sp, sp, 1, 1]
+    Par_D = schedule_results['table'].shape[-1]
+    split_degrees = [Par_D, Par_D, 1, 1]
     S_map = np.empty((split_degrees[2], min(split_degrees[0], split_degrees[1])), dtype=np.int32)
-    S_map[:] = np.arange(sp)
+    # S_map[:] = np.arange(sp)
+    if 'cmap' not in schedule_results.keys() or schedule_results['cmap'] is None:
+        CP = schedule_results['CP'][1 if schedule_results['CP'][1] > 1 else 0]
+        cmap = np.array([i // (Par_D // CP) for i in range(Par_D)])
+    else:
+        cmap = schedule_results['cmap']
+    S_map[:] = cmap
+    schedule_table = schedule_results['table']
+    while len(schedule_table.shape) < 4:
+        schedule_table = np.expand_dims(schedule_table, axis=0)
+    print(f'schedule_table: \n{schedule_table}', flush=True)
     return Dist_Attn_Schedule(da_config, m_config, split_degrees, S_map, \
                                 schedule_table, da_config.hierarchy)
     

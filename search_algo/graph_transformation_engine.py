@@ -209,19 +209,21 @@ class Graph_Transformation_Engine():    # batch engine
         # self.print_trans()
     
     def apply_transformations(self, selected_trans: list):
+        print(f'LABEL1.2.0', flush=True)
         new_d_graph = copy.deepcopy(self.d_graph)   # apply transformations on new_d_graph
         # # Print trans
         # print(f'Selected Transformations: ', end='', flush=True)
         # for tran in selected_trans:
         #     print(f'{tuple(tran.ids_tuple)} ', end='', flush=True)
         # print(flush=True)
-
+        print(f'LABEL1.2.1', flush=True)
         # Apply transformations on d_graph
         for tran in selected_trans:
             tran.apply_on_d_graph(new_d_graph)
-        
+        print(f'LABEL1.2.2', flush=True)
         # Assess performance of new d_graph
         execute_plan = Execution_Plan(new_d_graph, self.exp_config.fob, plan_type=self.plan_type)
+        print(f'LABEL1.2.3', flush=True)
         execute_plan.print_lp_result()
         return execute_plan
             
@@ -245,7 +247,9 @@ class Graph_Transformation_Engine():    # batch engine
     def transform(self, d_graph: Dependent_Graph, mode: str = 'bf', plan_type: str = 'automatic'):
         self.d_graph = d_graph
         self.plan_type = plan_type
+        print(f'LABEL1.0', flush=True)
         self.get_all_transformations()
+        print(f'LABEL1.1', flush=True)
         if mode == 'bf':
             self.dfs_trans(0, [], set())
         elif mode == 'greedy':
@@ -260,7 +264,9 @@ class Graph_Transformation_Engine():    # batch engine
             if len(selected_trans) == 0:
                 print(f'No Transformations Selected !!!', flush=True)
                 # return None
+            print(f'LABEL1.2', flush=True)
             execute_plan = self.apply_transformations(selected_trans)
+            print(f'LABEL1.3', flush=True)
             return execute_plan
         else:
             raise Exception(f'Error: mode {mode} not supported !!!')

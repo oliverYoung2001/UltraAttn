@@ -12,6 +12,15 @@ conda activate mg
 # set GUROBI licence env
 export GRB_LICENSE_FILE=/home/yhy/.local/gurobi/gurobi.lic
 
+# Openmpi
+export OPENMPI_HOME=/home/yhy/.local/openmpi-4.1.6
+export PATH="$OPENMPI_HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$OPENMPI_HOME/lib/:$LD_LIBRARY_PATH"
+
+export C_INCLUDE_PATH="$(dirname `which mpicxx`)/../include:$C_INCLUDE_PATH"  # for #include <mpi.h>
+export CPLUS_INCLUDE_PATH="$(dirname `which mpicxx`)/../include:$CPLUS_INCLUDE_PATH"  # for #include <mpi.h>
+export LD_LIBRARY_PATH="$(dirname `which nvcc`)/../lib64:$LD_LIBRARY_PATH"  # for -lcudart
+
 # export http_proxy="http://127.0.0.1:8901"
 # export https_proxy="http://127.0.0.1:8901"
 

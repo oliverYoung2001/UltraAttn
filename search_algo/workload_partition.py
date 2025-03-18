@@ -10,6 +10,7 @@ from typing import Union
 from utils import Block_Comp_Volume, Block_Type, Block_Attention_Config
 from custom_sparse_pattern import create_block_sparse_pattern
 from search_algo.bsa_config import BSA_Config
+from search_algo.global_vars import TASK_STATUS
 
 TIME_BUDGET = 5 * 60 * 60   # 5 hours
     
@@ -58,6 +59,25 @@ def print_lp_result(CP: int, ParD: int, Vars: dict, v_attr: str, cmap: Union[Non
             print(f'{max_kid}{" " if max_kid < 10 else ""}', end=' ')
         print(f'')
 
+def convert_result_to_np(CP: int, ParD: int, Vars: dict, v_attr: str, cmap: Union[None, np.ndarray] = None, diagonal_full = True):
+    ret = np.full((ParD, ParD), fill_value=TASK_STATUS.EMPTY.value, dtype=np.int32)
+    for i in range(ParD):
+        for j in range(ParD):
+            if i == j and diagonal_full:
+                ret[i, j] = cmap[i]
+                continue
+            if f'x_{i}_{j}_{0}' not in Vars.keys(): # [NOTE]: error for lagency code !!!
+                continue
+            max_v = 0
+            max_kid = -1
+            for k in range(CP):
+                cur_v = getattr(Vars[f'x_{i}_{j}_{k}'], v_attr)
+                if cur_v > max_v:
+                    max_v = cur_v
+                    max_kid = k
+            ret[i, j] = max_kid
+    return ret
+    
 def ILP(N: int):
     # causal = True, fwd
     mylp = pulp.LpProblem(f"Workload_Partition_Allocation_ILP", pulp.LpMinimize)
@@ -260,6 +280,7 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     
     # LP Problem
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
+    mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
     # Variables & Bound
     constraints = []
     # Quad_Bound = 1 / (N * N)
@@ -268,11 +289,13 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     # Var_cat_default = 'Integer'
     
     CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
-    print(f'CP: {CP}', flush=True)
+    # print(f'CP: {CP}', flush=True)
     ParD = max(CP, block_config.block_table.shape[0]) # Workload partition degree
     if hasattr(block_config, 'ParD'):
         assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
     cmap = block_config.cmap
+    if cmap is None:
+        cmap = np.array([i // (ParD // CP) for i in range(ParD)])
     
     block_ids = []  # block_ids to be scheduled
     # Check whether diagonal line is full
@@ -345,7 +368,7 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
         mylp.addConstr(Vars[f'D_{g}'] == gp.quicksum([Vars[f'b_{k}_{j}'] for j in range(ParD) if cmap[j] == g for k in range(CP) if k != g]))
     
     # 3. Communication Volume (In/Out)
-    for g in range(CP):
+    for g in range(CP): # [TODO]: only for forward now, support backward later !!!
         # mylp += Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 <= Vars[f'Comm_Volume']
         # mylp += Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 <= Vars[f'Comm_Volume']
         mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 == Vars[f'Cin_{g}'])
@@ -373,7 +396,12 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     # # print_lp_result
     if mylp.status == gp.GRB.OPTIMAL:
         print(f"Optimal value: {mylp.objVal}")
-    print_lp_result(CP, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
+    # print_lp_result(CP, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
+    return {
+        'Par_D': ParD,
+        'cmap': cmap,
+        'table': convert_result_to_np(CP, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
+    }
 
     # causal = True, fwd
 
@@ -438,7 +466,7 @@ def solve_custom_sparse():
     Quad_LP_GUROBI_from_block_config(block_config)
 
 def solve_sparse_from_bsa(block_config: BSA_Config):
-    Quad_LP_GUROBI_from_block_config(block_config)
+    return Quad_LP_GUROBI_from_block_config(block_config)
   
 def main():
     # solve_global_causal()

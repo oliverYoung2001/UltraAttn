@@ -139,6 +139,17 @@ class BSA_Repr():   # OK
         sub_bsa_reprs = unique_list(sub_bsa_reprs)
         return sub_bsa_reprs
     
+    def __str__(self):
+        ret = ''
+        ret += f'['
+        for i in range(self.block_table_raw.shape[0]):
+            ret += f'['
+            for j in range(self.block_table_raw.shape[1]):
+                ret += f'{self.block_table_raw[i, j].value}'
+            ret += f']'
+        ret += f']'
+        return ret
+        
     def __eq__(self, other: BSA_Repr):
         return np.array_equal(self.block_table_raw, other.block_table_raw)
     
@@ -205,7 +216,6 @@ class BSA_Config(): # OK
         return f'{self.CP}_{self.Par_D}_{self.pattern_type}_{numerator}-{denominator}_' \
                f'{self.local_blocks[0]}&{self.local_blocks[1]}_{self.global_blocks[0]}&{self.global_blocks[1]}_' \
                f'{self.replicate}'
-               
     
     def convert_string_to_dict(self, pat_s: Optional[str]) -> Optional[dict]:   # OK
         if pat_s is None:
@@ -245,10 +255,13 @@ class BSA_Config(): # OK
     #     # return {'CP': self.CP, 'Par_D': self.Par_D, 'pattern_type': self.pattern_type, 
     #     #         'pattern_sparsity': self.pattern_sparsity, 'local_blocks': self.local_blocks, 
     #     #         'global_blocks': self.global_blocks, 'replicate': self.replicate}
-        
+    
     def to_string(self):    # OK
-        return self.convert_dict_to_string(self.pat_dict)
-               
+        if self.pat_s is not None:
+            return self.convert_dict_to_string(self.pat_dict)
+        else:
+            return f'CP={self.CP}_repr={self.bsa_repr}' # [NOTE]: No cmap now
+    
     def __str__(self):  # OK
         return self.to_string()
         

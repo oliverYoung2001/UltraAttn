@@ -6,6 +6,12 @@ export PULP_TMPDIR=./search_algo/tmp
 
 # ./scripts/schedule/cpu_task_${CLUSTER_NAME}.sh \
 PYTHON_EXECUBLE=search_algo/task1_bsa.py
+if [[ $(hostname) == *nico* ]]; then
+    EXE_MODE="CPUS"
+else
+    EXE_MODE="GPUS"
+fi
+# echo "EXE_MODE: ${EXE_MODE}"
 
 export CLUSTER_NAME=fit
 export PLATFORM='A800'
@@ -91,10 +97,16 @@ HOST_CONFIG="g4008:4"
 # HOST_CONFIG="g3021:2,g3022:2"
 
 # Fit
-GPU_NUM=8
-HOST_CONFIG="g10:8"
+if [[ $EXE_MODE == 'CPUS' ]]; then
+    NUM_TASKS=8
+    HOST_CONFIG="$(hostname):${NUM_TASKS}"
+    export MASTER_ADDR=$(hostname)
+else
+    NUM_TASKS=8
+    HOST_CONFIG="g10:8"
+    export MASTER_ADDR=$(echo ${HOST_CONFIG} | awk -F: '{print $1}')
+fi
 
-export MASTER_ADDR=$(echo ${HOST_CONFIG} | awk -F: '{print $1}')
 RUNNER_CMD="mpirun --prefix $(dirname `which mpirun`)/../ \
     -x MASTER_ADDR -x MASTER_PORT \
     -x LD_LIBRARY_PATH -x PATH \
@@ -107,7 +119,13 @@ RUNNER_CMD="mpirun --prefix $(dirname `which mpirun`)/../ \
     -x PLATFORM \
     -x TMPDIR=$PULP_TMPDIR \
     --map-by ppr:8:numa --bind-to core --report-bindings \
-    -np $GPU_NUM --host $HOST_CONFIG"
+    -np $NUM_TASKS --host $HOST_CONFIG"
+# if [[ $EXE_MODE == 'GPUS' ]]; then
+#     RUNNER_CMD="$RUNNER_CMD \
+#         --host $HOST_CONFIG \
+#     "
+# fi
+
 NSIGHT_CMD="nsys profile --mpi-impl=openmpi -o ${NSYS_DIR}/${TRACE_NAME}_w${GPU_NUM}_$(date "+%Y%m%d-%H%M%S")"
 NSIGHT_CMD=""
 set -x

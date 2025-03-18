@@ -1,8 +1,8 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir)))
-from search_algo.search_engine import Search_Engine, Dist_Attn_Schedule, Dist_Attn_Config, Evaluation_Configs, \
+from search_algo.search_engine import Search_Engine, Dist_Attn_Schedule, Dist_Attn_Config, Evaluation_Configs, Machine_Config, \
                                       get_profile_data, get_init_schedule_list, get_cc_optimal_schedule, get_cc_optimal_schedule_from_table
 from search_algo.dependent_graph import Dependent_Graph
 from search_algo.graph_transformation_engine import Graph_Transformation_Engine
@@ -18,10 +18,11 @@ import torch
 import torch.distributed as dist
 from functools import partial
 import socket
+import tests
 from tests.distributed.device_communicators.pynccl import PyNcclCommunicator
 from search_algo.workload_partition import solve_sparse_from_bsa
-
-PLATFORM = os.getenv(f'PLATFORM')
+import json
+import random
 
 def parse_slurm_tasks_per_node(tasks_per_node):
     # 4(x2), 8, ...
@@ -56,8 +57,23 @@ def get_proc_info():
         tasks_per_node = int(os.environ['OMPI_COMM_WORLD_LOCAL_SIZE'])
         nodeid = rank // tasks_per_node
         
-    else:
-        raise Exception("Unknown Launcher !!!")
+    else:   # [NOTE]: assume that execute from python
+        clustername = os.getenv('CLUSTER_NAME', 'Unknown Cluster')
+        hostname = socket.gethostname()
+        nodename = None
+        nodeid = 0
+        world_size = 1
+        tasks_per_node = 1
+        rank = 0
+        local_rank = 0
+        hostip = socket.gethostbyname(hostname)
+        ip = None
+        print(f'hostip: {hostip}')
+        os.environ['MASTER_ADDR'] = hostip
+        os.environ['MASTER_PORT'] = str(random.randint(0, 12000) + 10000)
+        os.environ['CLUSTER_NAME'] = 'fit'
+        os.environ['PLATFORM'] = 'A800'
+        # raise Exception("Unknown Launcher !!!")
     proc_info = {
         'clustername': clustername,
         'hostname': hostname,
@@ -84,8 +100,9 @@ def initialize_distribution():
     # MASTER_ADDR = 'localhost'
     MASTER_PORT = os.getenv('MASTER_PORT', None)
     init_method = f'tcp://[{MASTER_ADDR}]:{MASTER_PORT}'
+    BACKEND = 'nccl' if torch.cuda.is_available() else 'gloo'
     dist.init_process_group(
-        backend="nccl", 
+        backend=BACKEND,
         # init_method=init_method, 
         rank=PROC_INFO['rank'], 
         world_size=PROC_INFO['world_size'])
@@ -97,8 +114,11 @@ def initialize_distribution():
     # print(f'rank{rank}, world_size{world_size}, hostname: {socket.gethostname()}')
     # initialize_distributed()    # used by lightseq
 
-    device = torch.device(f"cuda:{PROC_INFO['deviceid']}")
-    torch.cuda.set_device(device)
+    if torch.cuda.is_available():
+        device = torch.device(f"cuda:{PROC_INFO['deviceid']}")
+        torch.cuda.set_device(device)
+    else:
+        device = 'cpu'
     
     # preprocess placeholder_op
     global placeholder_op
@@ -146,6 +166,7 @@ def get_configs():
     # # # # SP0, SP1 = 6, 8
     # SP0, SP1 = 8, 8 # 512K (global) -> 8K (S per gpu)
     # # SP0, SP1 = 16, 8
+    PLATFORM = os.getenv(f'PLATFORM')
     if PLATFORM == 'A800':
         CPs = [
             (8, 1),
@@ -254,62 +275,117 @@ def get_configs():
     }
     return global_bsa_configs, intra_node_bsa_configs, shape_configs
 
-def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB):
-    # [TODO]: 
-    exp_config.hierarchy = da_config.hierarchy = 1
-    m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
-    prof_db.update_m_config(m_config)
-    # Calc optimal schedule !
-    cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, solve_sparse_from_bsa(da_config.bsa_config))
-    # End
-    # cc_optimal_schedule = get_cc_optimal_schedule(da_config, m_config)  # Dist_Attn_Schedule(np.array)
-    # [TODO]: replace `hardcode with `workload_partition.py`
+def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config) -> Dist_Attn_Config:
+    DATABASE_ROOT = get_global_var('DATABASE_ROOT')
+    INTRA_BSA_ALLOCATION_DB = f'{DATABASE_ROOT}/intra_bsa_allocation.json'
+    # os.makedirs(INTRA_BSA_ALLOCATION_DB, exist_ok=True)
+    if not os.path.exists(f'{INTRA_BSA_ALLOCATION_DB}'):
+        with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
+            json.dump({}, f)
+    key = f'fob={exp_config.fob}_bsa_config={{{da_config.bsa_config}}}'  # [TODO]
+    
+    with open(f'{INTRA_BSA_ALLOCATION_DB}', 'r') as f:
+        intra_bsa_allocation_dict = json.load(f)
+    if key in intra_bsa_allocation_dict.keys():
+        value = intra_bsa_allocation_dict[key]
+        schedule_table = np.array(value['schedule_table'], dtype=np.int32)
+        assert value['Par_D'] == schedule_table.shape[-1]
+        schedule_results = {
+            'CP': da_config.bsa_config.CP,
+            # 'cmap': da_config.bsa_config.cmap,
+            'table': schedule_table,
+        }
+        # print(f'cmap: {da_config.bsa_config.cmap}', flush=True) # None !!!
+    else:
+        schedule_results = solve_sparse_from_bsa(da_config.bsa_config)
+        schedule_table = schedule_results['table']
+        # print(f'schedule_table: {schedule_table.dtype}', flush=True)    # int32
+        value = {
+            'Par_D': schedule_table.shape[-1],
+            'schedule_table': schedule_table.tolist(),
+        }
+        intra_bsa_allocation_dict[key] = value
+        with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
+            json.dump(intra_bsa_allocation_dict, f)
+    
+    cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results)
     
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
         cc_optimal_schedule = cc_optimal_schedule[0]
     print(f'cc_optimal_schedule.schedule_table: \n{cc_optimal_schedule.schedule_table}')
-    d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
+    return cc_optimal_schedule
+    
+def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB):
+    # [TODO]: 
+    exp_config.hierarchy = da_config.hierarchy = 1
+    m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
+    prof_db.update_m_config(m_config)
+    
+    cc_optimal_schedule = get_intra_bsa_cc_optimal_schedule(exp_config, da_config, m_config)
+    # exit(0)
+    
     CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
 
-    if da_config.bsa_config:
-        print(f'bsa_config_string: {da_config.bsa_config.to_string()}')
-        par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{da_config.hierarchy_sp}_fob={exp_config.fob}_{da_config.bsa_config}'
-    else:
-        par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{da_config.hierarchy_sp}_fob={exp_config.fob}_causal={da_config.causal}'
-    print(f'par_dir: {par_dir}')
-    os.makedirs(par_dir, exist_ok=True)
-    # return
+    DATABASE_ROOT = get_global_var('DATABASE_ROOT')
+    INTRA_BSA_EXE_PLANS_DIR = f'{DATABASE_ROOT}/{CLUSTER_NAME}/{PLATFORM}/intra_bsa_exe_plans'
+    INTRA_BSA_EXE_PLANS_KV = f'{DATABASE_ROOT}/intra_bsa_exe_plans_kv.json'
+    os.makedirs(INTRA_BSA_EXE_PLANS_DIR, exist_ok=True)
+    if not os.path.exists(f'{INTRA_BSA_EXE_PLANS_KV}'):
+        with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
+            json.dump({}, f)
+    with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'r') as f:
+        intra_bsa_exe_plans_dict = json.load(f)
+    
+    # Generate Dependent_Graph:
+    d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
+    
+    # Generate 4 types of Execution_Plans for ablations:
+    key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_bsa_config={{{da_config.bsa_config}}}'
     plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
     for plan_type in plan_types:
-        # Raw Execution_Plan:
-        print(f'Raw, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)
-        # if not plan_type == 'automatic':
-        if True:
+        KERNEL_SCHEDULE_TYPE = "ILP" if plan_type == "automatic" else "Flexflow"
+        # w/o Kernel Tile Execution_Plan:
+        KERNEL_TILE_TYPE = 'w/o_kernel_tile'
+        print(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:', flush=True)
+        key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
+        key = f'{key_preffix}{key_suffix}'
+        if key not in intra_bsa_exe_plans_dict.keys():
             execute_plan = Execution_Plan(d_graph, exp_config.fob, plan_type=plan_type)
             execute_plan.print_lp_result()
-            plan_name = execute_plan.get_plan_name()
-            if plan_type == 'ablation1':
-                plan_name = f'{plan_name}_{plan_type}'
             # Dump Execution_Plan:
-            plan_file = f'{par_dir}/{plan_name}.pkl'
+            plan_id = max(intra_bsa_exe_plans_dict.values()) + 1 if intra_bsa_exe_plans_dict else 0
+            intra_bsa_exe_plans_dict[key] = plan_id
+            plan_file = f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
         
-        # Transformed Execution_Plans:
-        print(f'Fused, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)
-        gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
-        execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
-        if execute_plan is None:    # No feasible transformations
-            continue
-        assert isinstance(execute_plan, Execution_Plan)
-        plan_name = f'{execute_plan.get_plan_name()}_fused'
-        if plan_type == 'ablation1':
-            plan_name = f'{plan_name}_{plan_type}'
-        # Dump Execution_Plan:
-        plan_file = f'{par_dir}/{plan_name}.pkl'
-        with open(plan_file, 'wb') as f:
-            pickle.dump(execute_plan, f)
+        # w Kernel Tile Execution_Plans:
+        KERNEL_TILE_TYPE = 'w_kernel_tile'
+        print(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:', flush=True)
+        key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
+        key = f'{key_preffix}{key_suffix}'
+        if key not in intra_bsa_exe_plans_dict.keys():
+            gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
+            print(f'LABEL1', flush=True)
+            execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
+            print(f'LABEL2', flush=True)
+            if execute_plan is None:    # No feasible transformations
+                assert False
+                continue
+            assert isinstance(execute_plan, Execution_Plan)
+            
+            plan_name = f'{execute_plan.get_plan_name()}_fused'
+            if plan_type == 'ablation1':
+                plan_name = f'{plan_name}_{plan_type}'
+            # Dump Execution_Plan:
+            plan_id = max(intra_bsa_exe_plans_dict.values()) + 1 if intra_bsa_exe_plans_dict else 0
+            intra_bsa_exe_plans_dict[key] = plan_id
+            plan_file = f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
+            with open(plan_file, 'wb') as f:
+                pickle.dump(execute_plan, f)
+    with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
+        json.dump(intra_bsa_exe_plans_dict, f)
 
 def main():
     initialize_distribution()
@@ -343,6 +419,7 @@ def main():
                                     hierarchy=1,
                                 )
                                 generate_intra_execution_plans(exp_config, da_config, prof_db)
+                                exit(0)
     # [TODO]: sync all ranks
     # [TODO]: prepare prof_db with cache on dick !!!
     
