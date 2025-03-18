@@ -277,6 +277,7 @@ def get_configs():
 
 def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config) -> Dist_Attn_Config:
     DATABASE_ROOT = get_global_var('DATABASE_ROOT')
+    os.makedirs(DATABASE_ROOT, exist_ok=True)
     INTRA_BSA_ALLOCATION_DB = f'{DATABASE_ROOT}/intra_bsa_allocation.json'
     # os.makedirs(INTRA_BSA_ALLOCATION_DB, exist_ok=True)
     if not os.path.exists(f'{INTRA_BSA_ALLOCATION_DB}'):

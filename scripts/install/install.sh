@@ -33,7 +33,7 @@ git clone <repo_name> && cd flash-attention && git submodule update --init --rec
 # git submodule add <branch!!!> https://github.com/NVIDIA/cutlass.git csrc/cutlass # Add submodule, If you find the output of `git submodule` is empty
 git checkout v2.5.7_burst
 # build and install flash-attention
-salloc -p a01 -w g01 -N 1 --gres=gpu:8 --cpus-per-task=104 --exclusive
+salloc -p a01 -w g11 -N 1 --gres=gpu:8 --cpus-per-task=104 --exclusive
 ssh g01
 MAX_JOBS=104 pip install -e . # Firstly run on login node to pip install dependencies. Secondly run on gpu node to compile highly concurrently
 exit
