@@ -13,7 +13,8 @@ from search_algo.bsa_config import BSA_Config
 from search_algo.global_vars import TASK_STATUS
 
 TIME_BUDGET = 5 * 60 * 60   # 5 hours
-    
+TIME_BUDGET = 5 * 60   # 5 mins
+
 # def print_lp_result_ILP(N: int, Vars: dict):
 #     print(f'LP result:', flush=True)
 #     for k, v in Vars.items():
@@ -281,6 +282,8 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     # LP Problem
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
     mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
+    mylp.setParam('Threads', 90)
+    mylp.setParam('TimeLimit', TIME_BUDGET)
     # Variables & Bound
     constraints = []
     # Quad_Bound = 1 / (N * N)
@@ -381,13 +384,6 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     
     # # 4. Load Balance
     if LOAD_BALANCE:
-        # for i, j in block_ids:
-        #     print(f'{i}, {j}', flush=True)
-        #     # print(f'{block_config.block_table[i, j]}, {cur_block_table[i, j]}', flush=True)
-        #     print(f'{hex(id(block_config.block_table[i, j]))}, {hex(id(cur_block_table[i, j]))}, {hex(id(Block_Type(cur_block_table[i, j].value)))}', flush=True)
-        #     comp_v = Block_Comp_Volume[cur_block_table[i, j]]
-        #     comp_v = Block_Comp_Volume[block_config.block_table[i, j]]
-        #     print(f'{i}, {j}: {comp_v}', flush=True)
         COMP_TOTAL = sum([Block_Comp_Volume[cur_block_table[i, j]] for i, j in block_ids])
         COMP_UB = int(math.ceil(COMP_TOTAL / CP))
         for g in range(CP):

@@ -12,7 +12,7 @@ import pickle
 import numpy as np
 from search_algo.bsa_config import BSA_Repr, BSA_Config
 from search_algo.bsa_utils import create_bsa_block_table, split_to_node_configs
-from search_algo.utils import combine_list_to_0, convert_block_table_to_value
+from search_algo.utils import combine_list_to_0, convert_block_table_to_value, parse_args
 from search_algo.database import Prof_DB
 import torch
 import torch.distributed as dist
@@ -125,6 +125,7 @@ def initialize_distribution():
     SYNC_SIZE = 8 * pow(1024, 3) # 8GB
     sync_tensor = torch.empty((SYNC_SIZE), dtype=torch.int8, device=device)
     placeholder_op = partial(ncclcomm_global.all_reduce, sync_tensor)
+    return ncclcomm_global, gloo_global_group
 
 def get_exp_configs():
     # plan_type = 'automatic'
@@ -332,6 +333,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     cc_optimal_schedule = get_intra_bsa_cc_optimal_schedule(exp_config, da_config, m_config)
     # exit(0)
     
+    # Generate Intra_Execution_Plans:
     CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
 
     DATABASE_ROOT = get_global_var('DATABASE_ROOT')
@@ -344,11 +346,11 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'r') as f:
         intra_bsa_exe_plans_dict = json.load(f)
     
-    # Generate Dependent_Graph:
+    #   1. Generate Dependent_Graph:
     d_graph = Dependent_Graph(cc_optimal_schedule, exp_config.fob)
     
-    # Generate 4 types of Execution_Plans for ablations:
-    key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_bsa_config={{{da_config.bsa_config}}}'
+    #   2. Generate 4 types of Execution_Plans for ablations:
+    key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_shape_config={{{da_config.get_shape_config_str()}}}_bsa_config={{{da_config.bsa_config}}}'
     # [TODO]: add Nhs and Ss to key_preffix !!!
     plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
     for plan_type in plan_types:
@@ -358,6 +360,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         print(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:', flush=True)
         key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
         key = f'{key_preffix}{key_suffix}'
+        print(f'intra_bsa_exe_plan_key: {key}', flush=True)
         if key not in intra_bsa_exe_plans_dict.keys():
             execute_plan = Execution_Plan(d_graph, exp_config.fob, plan_type=plan_type)
             execute_plan.print_lp_result()
@@ -373,6 +376,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         print(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:', flush=True)
         key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
         key = f'{key_preffix}{key_suffix}'
+        print(f'intra_bsa_exe_plan_key: {key}', flush=True)
         if key not in intra_bsa_exe_plans_dict.keys():
             gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
             execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
@@ -393,8 +397,198 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
         json.dump(intra_bsa_exe_plans_dict, f)
 
+def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, ncclcomm_global, gloo_global_group):
+    global PROC_INFO
+    # baseline_funcs = [
+    #     ring_flash_attn_func,
+    #     zigzag_ring_flash_attn_func,      # baseline
+        
+    #     # zigzag_ring_flash_attn_func_opt,  # sol1
+    #     stripe_flash_attn_func,
+        
+    #     # lightseq_attn_func,
+    #     # flash_attn_func,
+    #     # hierarchy_attn_func,                # one case
+    #     # overlapped_hierarchy_attn_func,     # another case
+    # ]
+    
+    world_size = PROC_INFO['world_size']
+    local_size = PROC_INFO['tasks_per_node']
+    node_num = PROC_INFO['node_num']
+    rank = PROC_INFO['rank']
+    assert node_num == 1 # and local_size == 8
+    
+    # fix configs:
+    bs = 1
+    D = 128
+    causals = [
+        False,
+        # True,
+    ]
+    SPs = (node_num, local_size)
+    
+    # variable configs:
+    fobs = [
+        0,    # [DEBUG]
+        # 1,
+    ]
+    Nhs = [
+        # 1,
+        32, 
+    ]
+    
+    use_BSA = False
+    use_BSA = True  # prior than 'causal', this will hide 'causal'
+    BSA_patterns_dict = [    # a dict
+        # # stride_16_4_3 (8x2)
+        {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (3, 3), 'global_blocks': (0, 0), 'replicate': 2},
+        # stride_16_4_3 (8x4)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (3, 3), 'global_blocks': (0, 0), 'replicate': 1},
+        # # stride_16_4_3 (8x8)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (2, 2), 'global_blocks': (0, 0), 'replicate': 1},  # full
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (1, 2), 'global_blocks': (0, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (2, 1), 'global_blocks': (0, 0), 'replicate': 1},
+        # # lg_16_1_1 (8x2)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (0, 0), 'global_blocks': (0, 1), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (0, 0), 'global_blocks': (1, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (1, 1), 'global_blocks': (0, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/8, 'local_blocks': (1, 1), 'global_blocks': (1, 1), 'replicate': 1},
+        # # lg_16_1_1 (8x4)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (0, 0), 'global_blocks': (0, 1), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (0, 0), 'global_blocks': (1, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (1, 1), 'global_blocks': (0, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/4, 'local_blocks': (1, 1), 'global_blocks': (1, 1), 'replicate': 1},
+        # # lg_16_1_1 (8x8)
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (2, 2), 'global_blocks': (0, 0), 'replicate': 1},  # full
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (0, 0), 'global_blocks': (0, 1), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (0, 0), 'global_blocks': (1, 0), 'replicate': 1},
+        # {'CP': 8, 'Par_D': 8, 'pattern_type': 'lg', 'pattern_sparsity': 1/2, 'local_blocks': (1, 1), 'global_blocks': (0, 0), 'replicate': 1},
+    ]
+    if use_BSA:
+        assert local_size == 8, f'[ERROR]: Now not support for local_size({local_size}) intra-node not equal to 8'
+        # BSA_configs = [BSA_Config.from_dict(**p) for p in BSA_patterns_dict]
+        BSA_configs = [BSA_Config.from_dict(p) for p in BSA_patterns_dict]
+    
+    # experiment variables
+    WARMUP, NUM_ITER = 11, 20 # most, best performance for most cases
+    WARMUP, NUM_ITER = 4, 4 # most, best performance for most cases
+    WARMUP, NUM_ITER = 2, 4 # intermediate, best performance for some cases !!!
+    # WARMUP, NUM_ITER = 1, 2 # later, bad performance
+    # WARMUP, NUM_ITER = 0, 1 # [DEBUG]
+    
+    S_BOUND = [256, 64 * 1024]  # lower-bound and upper-bound of S per GPU, for (1, 8)
+    # S_BOUND = [256, 16 * 1024] # for debug
+    # S_BOUND = [16 * 1024, 16 * 1024] # for debug
+    S_BOUND = [64 * 1024, 64 * 1024]
+
+    MAX_NH = max(max(Nhs), 32)  # [NOTE]: Hidden danger !!!
+    # pre-allocated buffer:
+    # Nh=32, max_batch_degrees = (2, 3) (q, do, D, lse), (k, v, dk, dv)
+    tensor_buf = torch.empty(
+        (bs * S_BOUND[1] * MAX_NH * D * 4) * 3                       # k, v, dk, dv
+    + (bs * S_BOUND[1] * MAX_NH * (D * 3) + (1 * (2 + 1))) * 2     # q, do, D, lse, dq
+    + (bs * S_BOUND[1] * MAX_NH * (D * 2) + (1 * (2 + 1))) * 2,    # q, do, D, lse (for inp_row_extra_buf because of bugs of bwd of FA)
+        device=torch.cuda.current_device(), dtype=DTYPE, requires_grad=False
+    )   # 6 * 512MB = 3GB
+    # print_rank_0(f'tensor_buf: {tensor_buf.numel() * 2} B')
+    inter_comp_profile_map = None
+    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
+    for fob in fobs:
+        inter_ablation_suffixes = ['']            # for SP0 = 1, i.e. profile
+        plan_types = ['automatic']  # for profile is OK
+        exp_configs = []
+        par_dir = f'{os.path.dirname(__file__)}/search_algo/execution_plans/{CLUSTER_NAME}/{PLATFORM}/inter_SP{node_num}_fob={fob}' # Dummy !!!
+        plan_paths = []
+    
+        # Create exp_configs
+        dummy_da_config = Dist_Attn_Config(SP=SPs, S=(256 * world_size, 256 * world_size), Nh=(1, 1), D=D, bs=bs, causal=True)
+        plan_name_prefix = dummy_da_config.get_plan_name(fob=fob)
+        for suffix in inter_ablation_suffixes:
+            plan_paths.append(f'{par_dir}/{plan_name_prefix}{suffix}.pkl')
+        for plan_type in plan_types:
+            for plan_path in plan_paths:
+                exp_config = Evaluation_Configs(
+                        plan_type=plan_type,
+                        MAX_QUEUE_SIZE=0,
+                        fob=fob,
+                        plan_path=plan_path,
+                        inter_comp_profile_map=inter_comp_profile_map,
+                    )
+                exp_configs.append(exp_config)
+        # print_rank_0(f'plan_type: {plan_type}')
+        # print_rank_0(f'plan_paths: {plan_paths}')
+        # print_rank_0(f'exp_configs: {exp_configs}')
+        # for causal in causals:
+        for bsa_config in BSA_configs:
+            S_base = [1 << logS for logS in range(int(math.log2(S_BOUND[0])), int(math.log2(S_BOUND[1])) + 1)]
+            multiplying_powers = [1]
+            Sqkvs = [S * power for S in S_base for power in multiplying_powers if S * power <= S_BOUND[1]]
+            Sqkvs = sorted(list(set(Sqkvs)))    # Sq per GPU
+            Sqs = Skvs = Sqkvs
+            # # [Debug]: da_config: SP=(1,8),Sg=(1280,28672),S=(10240,229376),Nh=(1,1),bs=1,D=128,causal=False,hierarchy=1:    Error
+            # Sqs = [1280]
+            # Skvs = [28672]
+            # Nhs = [1]
+            # Sqs = [327680 // world_size]
+            # Sqkvs = [256, 512]  # for debug
+            # Sqkvs = [1 * 1024, 2 * 1024, 4 * 1024, 8 * 1024]  # for debug
+            # Sqkvs = [1 * 1024]  # for debug
+            # Sqkvs = [64 * 1024]
+            # print_rank_0(f'Sqkvs: {Sqkvs}')
+            # Sqs, Skvs = [256], [49152]    # 256,49152
+            print_rank_0(f'Sqs: {Sqs}')
+            print_rank_0(f'Skvs: {Skvs}')
+            print_rank_0(f'fob={fob}')  # [NOTE]: Necessary
+                  
+            for Nh in Nhs:
+                for Sq in Sqs: # S per GPU
+                    for Skv in Skvs: # S per GPU
+                        if Sq != Skv:
+                            continue
+                        # print(f'bsa_config: {bsa_config}')
+                        da_config = Dist_Attn_Config(SP=SPs, S=(Sq * world_size, Skv * world_size), Nh=(Nh, Nh), D=D, bs=bs, causal=True, bsa_config=bsa_config)
+                        print_rank_0(f'da_config: {da_config}')
+                        
+                        # Create all inter_comp_plans for profiling for BSA
+                        inter_comp_plans_dicts = []
+                        # 2 * 2 = 4 types (2: ILP, Flexflow; 2: non-fused, fused)
+                        intra_ablation_suffixes = ['', '_fused', '_ablation1', '_fused_ablation1']
+                        # intra_ablation_suffixes = ['', '_ablation1']
+                        # intra_ablation_suffixes = ['']  # for torch.profiler
+                        # intra_ablation_suffixes = []
+                        par_dir = f'{os.path.dirname(__file__)}/search_algo/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{local_size}_fob={fob}_{bsa_config}'
+                        # print(f'BSA par_dir: {par_dir}')
+                        plan_name_prefix = da_config.get_plan_name(fob=fob)
+                        # load intra plans
+                        for suffix in intra_ablation_suffixes:
+                            plan_path = f'{par_dir}/{plan_name_prefix}{suffix}.pkl'
+                            with open(plan_path, 'rb') as fin:
+                                cur_execution_plan: Execution_Plan = pickle.load(fin)
+                                inter_comp_plans_dict = {
+                                    ((1, 1), bsa_config.to_string()): cur_execution_plan,
+                                }
+                                # print_rank_0(f'plan_path: {plan_path}')
+                                # if rank == 0:
+                                #     cur_execution_plan.print_lp_result()
+                                inter_comp_plans_dicts.append(inter_comp_plans_dict)
+                    
+                        # assert len(inter_comp_plans_dicts) == 4 if (causal or (Nh > 1)) else 8
+                        
+                        # Execution:
+                        # 1 baselines
+                        # None
+                        
+                        # 2 orchestrated_attn_func:
+                        benchmark_op = partial(benchmark_orchestrate,
+                            args, orchestrated_attn_func, da_config, tensor_buf, log=True, exp_configs=exp_configs, 
+                            global_group=gloo_global_group, ncclcomm_global=ncclcomm_global,
+                            warmup=WARMUP, num_iter=NUM_ITER, mode='profile', inter_comp_plans_dicts=inter_comp_plans_dicts,
+                        )
+                        benchmark_op(use_cudagraph=False)          
+
+
 def main():
-    initialize_distribution()
+    ncclcomm_global, gloo_global_group = initialize_distribution()
     
     # Step0: top-> down; need only 1 cpu; (w/o cache/bypass)✅
     if torch.distributed.get_rank() == 0:
@@ -403,9 +597,11 @@ def main():
         if isinstance(exp_configs, Evaluation_Configs):
             exp_configs = [exp_configs]
     #   [NOTE]: total exp space is (global_bsa_configs/intra_node_bsa_configs) x shape_configs x exp_configs
+    
     # Step1: Generate the intra-BSA; need all cpus on one node; (w cache/bypass)
     #   Initialize Profile_DataBase
     intra_plan_id = 0
+    intra_da_configs = []
     if torch.distributed.get_rank() == 0:
         prof_db = Prof_DB()
         for exp_config in exp_configs:
@@ -425,14 +621,21 @@ def main():
                                     shape_config=shape_config,
                                     hierarchy=1,
                                 )
+                                intra_da_configs.append(da_config)
                                 print(f'intra_plan_id: {intra_plan_id}', flush=True)
                                 generate_intra_execution_plans(exp_config, da_config, prof_db)
                                 intra_plan_id += 1
-                                # exit(0)
-    # [TODO]: sync all ranks
-    # [TODO]: prepare prof_db with cache on dick !!!
+                                
+    torch.distributed.barrier()
     
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
+    if not torch.cuda.is_available():   # [TODO]: currently only support for cuda
+        exit(0)
+    args = parse_args()
+    for exp_config in exp_configs:
+        for da_config in intra_da_configs:
+            profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group)
+    
     # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)  [TODO]
     pass
 

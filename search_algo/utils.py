@@ -13,6 +13,15 @@ from typing import Optional
 import torch
 from fractions import Fraction
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--attn-mode", type=str, choices=['zigzag_ring', 'lightseq', 'local_flash'], default="flash")
+    parser.add_argument('--profiler-with-tensorboard', action='store_true', default=False, help='whether to profile with tensorboard')
+    parser.add_argument('--tb-dir', default=None, type=str, help='where to storage tensorboard files')
+
+    args = parser.parse_args()
+    return args
+
 def convert_block_table_to_value(block_table):
     block_table_value = np.array([v.value for v in block_table.flatten()]).reshape(block_table.shape)
     return block_table_value

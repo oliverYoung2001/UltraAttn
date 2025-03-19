@@ -66,6 +66,9 @@ class Dist_Attn_Config():
     def get_plan_name(self, fob=1):
         return f'S={self.S}_SP={self.SP}_causal={self.causal}_fob={fob}_b={self.bs}_Nh={self.Nh}_D={self.D}'
     
+    def get_shape_config_str(self):
+        return f'S={self.S}_Nh={self.Nh}_bs={self.bs}_D={self.D}'
+        
     def __str__(self):
         ret = f'SP={self.SP}, Sg={self.S_per_gpu}, S={self.S}, Nh={self.Nh}, bs={self.bs}, D={self.D}, causal={self.causal}, hierarchy={self.hierarchy}'
         ret = ret.replace(' ', '')
