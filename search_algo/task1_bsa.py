@@ -309,6 +309,7 @@ def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config:
     with open(f'{INTRA_BSA_ALLOCATION_DB}', 'r') as f:
         intra_bsa_allocation_dict = json.load(f)
     if key in intra_bsa_allocation_dict.keys():
+        print(f'Bypassed !!!', flush=True)
         value = intra_bsa_allocation_dict[key]
         schedule_table = np.array(value['schedule_table'], dtype=np.int32)
         assert value['Par_D'] == schedule_table.shape[-1]
@@ -319,6 +320,7 @@ def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config:
         }
         # print(f'cmap: {da_config.bsa_config.cmap}', flush=True) # None !!!
     else:
+        print(f'Not bypass !!!', flush=True)
         schedule_results = solve_sparse_from_bsa(da_config.bsa_config)
         schedule_table = schedule_results['table']
         # print(f'schedule_table: {schedule_table.dtype}', flush=True)    # int32
@@ -369,7 +371,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     plan_types = ['ILP', 'Flexflow']
     for plan_type in plan_types:
         # KERNEL_SCHEDULE_TYPE = "ILP" if plan_type == "automatic" else "Flexflow"
-        KERNEL_SCHEDULE_TYPE = plan_types
+        KERNEL_SCHEDULE_TYPE = plan_type
         # w/o Kernel Tile Execution_Plan:
         KERNEL_TILE_TYPE = 'w/o_kernel_tile'
         print(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:', flush=True)
@@ -377,6 +379,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         key = f'{key_preffix}{key_suffix}'
         print(f'intra_bsa_exe_plan_key: {key}', flush=True)
         if key not in intra_bsa_exe_plans_dict.keys():
+            print(f'Not bypass !!!', flush=True)
             execute_plan = Execution_Plan(d_graph, exp_config.fob, plan_type=plan_type)
             execute_plan.print_lp_result()
             # Dump Execution_Plan:
@@ -385,6 +388,8 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
             plan_file = f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
+        else:
+            print(f'Bypassed !!!', flush=True)
         
         # w Kernel Tile Execution_Plans:
         KERNEL_TILE_TYPE = 'w_kernel_tile'
@@ -393,6 +398,7 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         key = f'{key_preffix}{key_suffix}'
         print(f'intra_bsa_exe_plan_key: {key}', flush=True)
         if key not in intra_bsa_exe_plans_dict.keys():
+            print(f'Not bypass !!!', flush=True)
             gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
             execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
             if execute_plan is None:    # No feasible transformations
@@ -409,6 +415,9 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
             plan_file = f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
+        else:
+            print(f'Bypassed !!!', flush=True)
+            
     with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
         json.dump(intra_bsa_exe_plans_dict, f)
 
@@ -631,27 +640,26 @@ def main():
     torch.distributed.barrier()
     
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
-    if not torch.cuda.is_available():   # [TODO]: currently only support for cuda
-        exit(0)
-    MAX_S, MAX_NH, MAX_D, MAX_bs = 0, 0, 0, 0
-    for da_config in intra_da_configs:
-        MAX_S = max(MAX_S, max(da_config.shape_config['S']))
-        MAX_NH = max(MAX_NH, max(da_config.shape_config['Nh']))
-        MAX_D = max(MAX_D, da_config.shape_config['D'])
-        MAX_bs = max(MAX_bs, da_config.shape_config['bs'])
-    print_rank_0(f'MAX_S={MAX_S}; MAX_NH={MAX_NH}; MAX_D={MAX_D}; MAX_bs={MAX_bs}')
-    print_rank_0(f'tensor_buf: {tensor_buf.numel() * 2} B')
-
-    tensor_buf = torch.empty(
-        (MAX_bs * MAX_S * MAX_NH * MAX_D * 4) * 3                       # k, v, dk, dv
-    + (MAX_bs * MAX_S * MAX_NH * (MAX_D * 3) + (1 * (2 + 1))) * 2     # q, do, D, lse, dq
-    + (MAX_bs * MAX_S * MAX_NH * (MAX_D * 2) + (1 * (2 + 1))) * 2,    # q, do, D, lse (for inp_row_extra_buf because of bugs of bwd of FA)
-        device=torch.cuda.current_device(), dtype=DTYPE, requires_grad=False
-    )   # 6 * 512MB = 3GB
-    args = parse_args()
-    for exp_config in exp_configs:  # fobs
+    if torch.cuda.is_available():
+        MAX_S, MAX_NH, MAX_D, MAX_bs = 0, 0, 0, 0
         for da_config in intra_da_configs:
-            profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf)
+            MAX_S = max(MAX_S, max(da_config.shape_config['S']))
+            MAX_NH = max(MAX_NH, max(da_config.shape_config['Nh']))
+            MAX_D = max(MAX_D, da_config.shape_config['D'])
+            MAX_bs = max(MAX_bs, da_config.shape_config['bs'])
+        print_rank_0(f'MAX_S={MAX_S}; MAX_NH={MAX_NH}; MAX_D={MAX_D}; MAX_bs={MAX_bs}')
+        print_rank_0(f'tensor_buf: {tensor_buf.numel() * 2} B')
+
+        tensor_buf = torch.empty(
+            (MAX_bs * MAX_S * MAX_NH * MAX_D * 4) * 3                       # k, v, dk, dv
+        + (MAX_bs * MAX_S * MAX_NH * (MAX_D * 3) + (1 * (2 + 1))) * 2     # q, do, D, lse, dq
+        + (MAX_bs * MAX_S * MAX_NH * (MAX_D * 2) + (1 * (2 + 1))) * 2,    # q, do, D, lse (for inp_row_extra_buf because of bugs of bwd of FA)
+            device=torch.cuda.current_device(), dtype=DTYPE, requires_grad=False
+        )   # 6 * 512MB = 3GB
+        args = parse_args()
+        for exp_config in exp_configs:  # fobs
+            for da_config in intra_da_configs:
+                profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf)
     
     # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)  [TODO]
     pass

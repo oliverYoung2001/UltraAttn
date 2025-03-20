@@ -282,7 +282,9 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     # LP Problem
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
     mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
-    mylp.setParam('Threads', 90)
+    CPUS_NUM = 90   # nico0
+    CPUS_NUM = 208   # zhipu
+    mylp.setParam('Threads', CPUS_NUM)
     mylp.setParam('TimeLimit', TIME_BUDGET)
     # Variables & Bound
     constraints = []

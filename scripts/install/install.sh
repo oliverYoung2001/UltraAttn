@@ -1,15 +1,19 @@
 #!/bin/bash
 
-CPUS_PER_NODE=104
-
-# Cluster Profiling
+# Clone repo
 pushd ~/yhy/llm
-#   comp profiling
-
-#   comm profiling
-git clone 
-
+git clone https://github.com/oliverYoung2001/UltraAttn.git --recurse-submodules
+or
+git clone https://github.com/oliverYoung2001/UltraAttn.git && cd UltraAttn && git submodule update --init --recursive
+# build nccl v2.21.5-1
+cd ./UltraAttn/third_party/comm_test/third_party/nccl
+NVCC_GENCODE="-gencode=arch=compute_80,code=sm_80 \
+              -gencode=arch=compute_90,code=sm_90"
+make -j src.build NVCC_GENCODE="$NVCC_GENCODE"
 popd
+# End
+
+CPUS_PER_NODE=104
 
 # Install Openmpi
 export OPENMPI_HOME=/home/fit/zhaijd/yhy/.local/openmpi
@@ -50,9 +54,11 @@ exit
 popd
 
 # GUROBI free academic license
+# On fit
 # /home/zhaijidong/yhy/Software/licensetools12.0.0_linux64/grbgetkey 79171a71-14ae-4ab7-9dec-675e7026e2c6
-# pip install gurobipy
 # save GUROBI license in: /home/fit/zhaijd/yhy/.local/gurobi/gurobi.lic
+# /home/yhy/mnt/llm/Software/grbgetkey 475d4a64-1498-49d5-affe-2db848705ca0
+# save GUROBI license in: /home/yhy/mnt/.local/gurobi/gurobi.lic
 
 # On qiyuan
 # install pytorch nightly for flexattn in yhy_pt_nightly envs

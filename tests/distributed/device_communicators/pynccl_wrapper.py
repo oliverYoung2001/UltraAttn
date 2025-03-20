@@ -19,6 +19,7 @@
 # changing the environment variable `VLLM_NCCL_SO_PATH`, or the `so_file`
 # variable in the code.
 
+import os
 import ctypes
 import platform
 from dataclasses import dataclass
@@ -206,6 +207,7 @@ class NCCLLibrary:
         so_file = '/home/zhaijidong/miniconda3/envs/yhy_easycontext/lib/python3.10/site-packages/nvidia/nccl/lib/libnccl.so.2'  # 2.20.5, failed with cudagraph
         so_file = '/home/zhaijidong/yhy/llm/comm_test/third_party/nccl/build/lib/libnccl.so.2'  # 2.21.5, passed with cudagraph
         so_file = '/home/fit/zhaijd/yhy/llm/comm_test/third_party/nccl/build/lib/libnccl.so.2'    # for Fit, 2.21.5, passed with cudagraph `strings build/lib/libnccl.so.2 | grep -i version` -> NCCL version 2.21.5+cuda12.4
+        so_file = f'{os.path.dirname(__file__)}/../../../third_party/comm_test/third_party/nccl/build/lib/libnccl.so.2' # General, v2.21.5-1
         so_file = so_file or find_nccl_library()
         # print(f'so_file: {so_file}')
         try:

@@ -1,3 +1,16 @@
+
+# Cluster Profiling [TODO]
+pushd ~/yhy/llm
+#   comp profiling
+
+#   comm profiling
+git clone 
+
+popd
+
+
+
+
 export PLATFORM='A800'
 export PLATFORM='H800'
 
