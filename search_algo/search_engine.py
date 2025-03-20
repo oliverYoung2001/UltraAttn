@@ -17,7 +17,8 @@ from search_algo.bsa_config import BSA_Config
 
 class Evaluation_Configs():
     def __init__(self, plan_type: str, MAX_QUEUE_SIZE: int, fob: bool, plan_path: str = None, hierarchy: bool = 1, transform_mode: str = 'bf', inter_comp_profile_map=None, execution_plan=None):
-        self.plan_type = plan_type  # 'automatic', 'manual', 'ablation1'
+        self.plan_type = plan_type  # 'ILP', 'manual', 'Flexflow'
+        assert plan_type in ['ILP', 'manual', 'Flexflow']
         self.MAX_QUEUE_SIZE = MAX_QUEUE_SIZE
         self.fob = fob
         self.plan_path = plan_path

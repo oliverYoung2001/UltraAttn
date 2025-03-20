@@ -2,13 +2,14 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
-from search_algo.dependent_graph import Dependent_Graph, Cuda_Kernel
+from search_algo.dependent_graph import Dependent_Graph, Cuda_Kernel, Comp_Kernel
 import pulp
 import regex as re
 import random
 import json
 import time
 from heapq import heappush, heappop, heappushpop
+import numpy as np
 
 class Fused_Execution_Plan():
     def __init__(self, Y: int, X: int, time: float, causal: bool, fob: bool, ):
@@ -25,29 +26,55 @@ class Fused_Execution_Plan():
         return ret
         
 class Execution_Plan(): # input: kernel streams of gpus
-    def __init__(self, d_graph: Dependent_Graph, fob: bool, plan_type: str):
+    def __init__(self, d_graph: Dependent_Graph, fob: bool, plan_type: str, is_hack: bool = False):
         # self.stream_kernel_lists  # (hierarchy_sp, 3) -> list, 3 stands for comp, send, recv
         # self.gpu_kernel_lists
         # self.valid_kernels    # 
         # self.stream_num   # 3
         
-        self.fob = fob  # fwd or bwd
-        self.plan_type = plan_type
-        self.d_graph = d_graph
-        self.da_config = d_graph.da_config
-        self.m_config = d_graph.m_config
-        self.split_degrees = d_graph.split_degrees
-        self.tot_sp = d_graph.tot_sp
-        self.hierarchy = d_graph.hierarchy
-        self.hierarchy_sp = self.da_config.SP[self.hierarchy]
-        if plan_type == 'automatic':
-            self.TIME_BUDGET = 5 * 60   # 5mins
-            self.TIME_BUDGET = 10   # 10s
-            self.threshold = 1.3
-            self.generate_execution_plan()
-        elif plan_type == 'ablation1':  # Flexflow
-            self.generate_execution_plan_through_start_time()
+        if not is_hack:
+            self.fob = fob  # fwd or bwd
+            self.plan_type = plan_type
+            assert plan_type in ['ILP', 'Flexflow']
+            self.d_graph = d_graph
+            self.da_config = d_graph.da_config
+            self.m_config = d_graph.m_config
+            self.split_degrees = d_graph.split_degrees
+            self.tot_sp = d_graph.tot_sp
+            self.hierarchy = d_graph.hierarchy
+            self.hierarchy_sp = self.da_config.SP[self.hierarchy]
+            if plan_type == 'ILP':
+                self.TIME_BUDGET = 5 * 60   # 5mins
+                self.TIME_BUDGET = 10   # 10s
+                self.threshold = 1.3
+                self.generate_execution_plan()
+            elif plan_type == 'Flexflow':  # Flexflow
+                self.generate_execution_plan_through_start_time()
+        else:
+            self.fob = fob
+            self.plan_type = plan_type
+            assert plan_type in ['ILP', 'Flexflow']
+            self.d_graph = None
+            self.da_config = None
+            self.m_config = None
+            self.split_degrees = (1, 1, 1, 1)
+            self.tot_sp = None
+            self.hierarchy = 0  # 0 stands for inter, 1 stands for intra
+            self.hierarchy_sp = 1
+            # [TODO]: Hack gpu_kernel_lists, stream_num, valid_kernels
+            self.stream_num = 3
+            # dict keys: (b_id, h_id, r_id, c_id, gpuid) or (b_id, h_id, (r_ids), (c_ids), gpuid)
+            kernel_key = (0, 0, 0, 0, 0)
+            only_kernel = Comp_Kernel(
+                kernel_key, None, None, 
+                self.hierarchy, time=np.array([1e-9, 1e-9], dtype=np.float32))
+            self.gpu_kernel_lists = [[only_kernel]]
+            self.valid_kernels = [only_kernel]
     
+    @classmethod
+    def create_one_node_exe_plan(cls, fob: bool):
+        return cls(None, fob, plan_type='ILP', is_hack=True)
+        
     def get_plan_name(self):
         if self.plan_type == 'manual':
             return f'SP={self.hierarchy_sp}_fob={self.fob}_Y={self.Y}_X={self.X}_dim={self.first_dim}'
@@ -176,7 +203,7 @@ class Execution_Plan(): # input: kernel streams of gpus
                 print(f"{OJB}{g}, {['comp', 'send', 'recv'][s]}: {len(self.stream_kernel_lists[(g, s)])}")
                 for v in self.stream_kernel_lists[(g, s)]:
                     print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
-        if self.plan_type == 'automatic':
+        if self.plan_type == 'ILP':
             print(f'objective={self.mylp_obj:.3e}', flush=True)
         # elif self.plan_type == 'manual':
         else:
@@ -416,6 +443,6 @@ class Execution_Plan(): # input: kernel streams of gpus
         self.generate_execution_plan_through_start_time()
     
     def generate_plan_with_one_topological_order(self):
-        self.plan_type = 'ablation1'
+        self.plan_type = 'Flexflow'
         self.generate_execution_plan_through_start_time()
             

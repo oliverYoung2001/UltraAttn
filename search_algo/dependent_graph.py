@@ -31,13 +31,17 @@ class Cuda_Kernel():
         v.add_precursor(self)
                 
 class Comp_Kernel(Cuda_Kernel):
-    def __init__(self, key: tuple, m_config: Machine_Config, comp_map_key: tuple, hierarchy: int):
+    def __init__(self, key: tuple, m_config: Machine_Config, comp_map_key: tuple, hierarchy: int, \
+                 time: Optional[np.array] = None):
         # dict keys: (b_id, h_id, r_id, c_id, gpuid) or (b_id, h_id, (r_ids), (c_ids), gpuid)
         super().__init__(key, 'comp')
-        # flashattn profile map_key:
-        self.comp_map_key = comp_map_key
         # kernel time
-        self.time = m_config.comp_profile_maps[hierarchy].get_comp_time_from_map_key(comp_map_key)    # [fwd/bwd]
+        if time is None:
+            # flashattn profile map_key:
+            self.comp_map_key = comp_map_key
+            self.time = m_config.comp_profile_maps[hierarchy].get_comp_time_from_map_key(comp_map_key)    # [fwd/bwd]
+        else:
+            self.time = time
     
     
 class Comm_Kernel(Cuda_Kernel):
@@ -75,7 +79,7 @@ class Dependent_Graph():
             self.create_raw_graph()
         else:
             self.kernel_dict = kernel_dict
-        
+    
     # @classmethod
     # def create_from_other_d_graph(cls, other_d_graph):
     #     cls(other_d_graph.schedule, other_d_graph.fob, other_d_graph.kernel_dict)

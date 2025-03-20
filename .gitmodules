@@ -1,0 +1,6 @@
+[submodule "third_party/kernel_profiler"]
+	path = third_party/kernel_profiler
+	url = https://github.com/oliverYoung2001/kernel_profiler.git
+[submodule "third_party/comm_test"]
+	path = third_party/comm_test
+	url = https://github.com/oliverYoung2001/comm_test.git

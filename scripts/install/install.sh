@@ -2,6 +2,15 @@
 
 CPUS_PER_NODE=104
 
+# Cluster Profiling
+pushd ~/yhy/llm
+#   comp profiling
+
+#   comm profiling
+git clone 
+
+popd
+
 # Install Openmpi
 export OPENMPI_HOME=/home/fit/zhaijd/yhy/.local/openmpi
 pushd ~/yhy/Software

@@ -12,15 +12,52 @@ import numpy as np
 from typing import Optional
 import torch
 from fractions import Fraction
+import inspect
+import argparse
+
+def print_rank_0(message):
+    """If distributed is initialized, print only on rank 0."""
+    if torch.distributed.is_initialized():
+        if torch.distributed.get_rank() == 0:
+            print(message, flush=True)
+    else:
+        print(message, flush=True)
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--attn-mode", type=str, choices=['zigzag_ring', 'lightseq', 'local_flash'], default="flash")
+    # parser.add_argument("--attn-mode", type=str, choices=['zigzag_ring', 'lightseq', 'local_flash'], default="flash")
     parser.add_argument('--profiler-with-tensorboard', action='store_true', default=False, help='whether to profile with tensorboard')
     parser.add_argument('--tb-dir', default=None, type=str, help='where to storage tensorboard files')
 
     args = parser.parse_args()
     return args
+
+def filter_kwargs(func, kwargs):
+    sig = inspect.signature(func)
+    return {k: v for k, v in kwargs.items() if k in sig.parameters}
+
+def calc_flops(mbs, S: tuple, Nh, D, causal=True, fob=0, total_sparsity=1):
+    # print(f'total_sparsity: {total_sparsity}')
+    flops = 2 * 2 * mbs * S[0] * S[1] * Nh * D * total_sparsity
+    if fob == 0:
+        m_flops = h_flops = flops
+    elif fob == 1:
+        m_flops = 2 * flops
+        h_flops = 2.5 * flops
+    elif fob == 2:
+        m_flops = (1 + 2) * flops
+        h_flops = (1 + 2.5) * flops
+    return m_flops, h_flops # model flops & hardware flops
+
+def all_wait_main_stream(stream_list: list, main_stream: torch.cuda.Stream):
+    for stream in stream_list:
+        if stream.cuda_stream != main_stream.cuda_stream:
+            stream.wait_stream(main_stream)
+
+def main_stream_wait_all(stream_list: list, main_stream: torch.cuda.Stream):
+    for stream in stream_list:
+        if stream.cuda_stream != main_stream.cuda_stream:
+            main_stream.wait_stream(stream)
 
 def convert_block_table_to_value(block_table):
     block_table_value = np.array([v.value for v in block_table.flatten()]).reshape(block_table.shape)
