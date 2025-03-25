@@ -20,6 +20,7 @@ mkdir -p results/${EXP_NAME}
 # Envs:
 export CLUSTER_NAME=fit
 export PLATFORM='A800'
+export PLATFORM='H800'
 # # set pulp tmp dir; [TODO]: `TMPDIR` is used by both pulp and openmpi
 export PULP_TMPDIR=./search_algo/tmp
 # export TMPDIR=search_algo/tmp

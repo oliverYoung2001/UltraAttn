@@ -376,7 +376,8 @@ def orchestrated_attn_forward(
     buf_dict = inter_execution_plan.buf_dict
         
     if hasattr(inter_execution_plan, 'hierarchy_sp'):
-        assert inter_execution_plan.hierarchy_sp == PROC_INFO['node_num']
+        # assert inter_execution_plan.hierarchy_sp == PROC_INFO['node_num']
+        pass
     else:
         assert inter_execution_plan.X * inter_execution_plan.Y == PROC_INFO['node_num']
     # assert inter_execution_plan.split_degrees[2] == 1 and inter_execution_plan.split_degrees[3] == 1

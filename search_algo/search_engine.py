@@ -14,6 +14,8 @@ import json
 import math
 from typing import Optional
 from search_algo.bsa_config import BSA_Config
+from search_algo.bsa_utils import convert_shape_config_to_str
+import regex as re
 
 class Evaluation_Configs():
     def __init__(self, plan_type: str, MAX_QUEUE_SIZE: int, fob: bool, plan_path: str = None, hierarchy: bool = 1, transform_mode: str = 'bf', inter_comp_profile_map=None, execution_plan=None):
@@ -50,7 +52,7 @@ class Dist_Attn_Config():
     @classmethod
     def from_bsa_config(cls, bsa_config: BSA_Config, shape_config: dict, hierarchy: int):
         SP = (bsa_config.CP[1], bsa_config.CP[0])
-        return cls(SP, **shape_config, causal=None, hierarchy=hierarchy, bsa_config=bsa_config)
+        return cls(SP, **shape_config, causal=bsa_config.causal, hierarchy=hierarchy, bsa_config=bsa_config)
         
     @property
     def hierarchy_sp(self):
@@ -68,7 +70,7 @@ class Dist_Attn_Config():
         return f'S={self.S}_SP={self.SP}_causal={self.causal}_fob={fob}_b={self.bs}_Nh={self.Nh}_D={self.D}'
     
     def get_shape_config_str(self):
-        return f'S={self.S}_Nh={self.Nh}_bs={self.bs}_D={self.D}'
+        return convert_shape_config_to_str(self.shape_config)
         
     def __str__(self):
         ret = f'SP={self.SP}, Sg={self.S_per_gpu}, S={self.S}, Nh={self.Nh}, bs={self.bs}, D={self.D}, causal={self.causal}, hierarchy={self.hierarchy}'
@@ -158,7 +160,7 @@ class FlashAttn_Profile_Map(Comp_Profile_Map):
         return map_key
     
 class Inter_Comp_Profile_Map(Comp_Profile_Map):
-    def __init__(self, profile_map: dict):
+    def __init__(self, profile_map: dict, bsa_profile_map: dict = None):
         super().__init__()
         if profile_map:
             assert 'level' in list(profile_map.keys())[0]
@@ -169,7 +171,11 @@ class Inter_Comp_Profile_Map(Comp_Profile_Map):
             self.cur_level = 0
             self.profile_maps = profile_map
             self.profile_map = profile_map
-
+        self.bsa_profile_map = bsa_profile_map  # (hfu, str(time))
+        
+    def update_inter_bsa_profile(self, intra_bsa_exe_plans_profile):
+        self.bsa_profile_map = intra_bsa_exe_plans_profile
+    
     def change_current_level(self, new_level: int):
         self.cur_level = new_level
         self.profile_map = self.profile_maps[f'level{new_level}']
@@ -222,6 +228,17 @@ class Inter_Comp_Profile_Map(Comp_Profile_Map):
         map_key = ((1, da_config.SP[1]), (Sq_split, Skv_split), (Nhq_split, Nhg_split), bs_split, da_config.D, False)
         return map_key
 
+    def get_comp_time_from_map_key(self, map_key: tuple) -> np.ndarray:
+        if 'bsa' in map_key:    # inter_bsa
+            assert map_key in self.bsa_profile_map.keys(), f"Key {map_key} not found in bsa_profile_map"
+            t = [None, None]
+            fob = int(re.search(r"fob=(\d+)", map_key).group(1))
+            t[fob] = float(self.bsa_profile_map[map_key]['time'])   # s
+            return t    # [fwd/bwd], one of them is None !!!
+        else:   # dense or intra_bsa
+            return super().get_comp_time_from_map_key(map_key)
+    
+    
 class Comm_Profile_Map():
     def __init__(self, profile_map):
         self.profile_map = profile_map
@@ -265,6 +282,9 @@ class Machine_Config():
         self.comp_profile_maps = [Inter_Comp_Profile_Map(inter_comp_profile_map), FlashAttn_Profile_Map(flashattn_profile_map)]
         self.comm_profile_maps = [Comm_Profile_Map(inter_comm_profile_map), Comm_Profile_Map(intra_comm_profile_map)]    # inter/intra-machine
     
+    def update_inter_bsa_profile(self, intra_bsa_exe_plans_profile):
+        self.comp_profile_maps[0].update_inter_bsa_profile(intra_bsa_exe_plans_profile)
+        
     # def merge_comm_map_key(self, map_key0: tuple, map_key1: tuple) -> tuple:
     #     return (map_key0[0] + map_key1[0])
     
@@ -879,14 +899,16 @@ def get_cc_optimal_schedule(da_config, m_config):
     return create_schedule(da_config, m_config, split_degrees, S_map, get_cc_optimal_schedule_table, da_config.hierarchy)
 
 def get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results: dict) -> Dist_Attn_Schedule:
-    sp = da_config.SP[da_config.hierarchy]
+    hierarchy = da_config.hierarchy # (0, 1) -> (inter, intra)
+    # sp = da_config.SP[da_config.hierarchy]
     Par_D = schedule_results['table'].shape[-1]
     split_degrees = [Par_D, Par_D, 1, 1]
     S_map = np.empty((split_degrees[2], min(split_degrees[0], split_degrees[1])), dtype=np.int32)
     # S_map[:] = np.arange(sp)
     if 'cmap' not in schedule_results.keys() or schedule_results['cmap'] is None:
-        CP = schedule_results['CP'][1 if schedule_results['CP'][1] > 1 else 0]
-        cmap = np.array([i // (Par_D // CP) for i in range(Par_D)])
+        # CP = schedule_results['CP'][1 if schedule_results['CP'][1] > 1 else 0]  # (intra, inter)
+        CP_ = schedule_results['CP'][not hierarchy] # (intra, inter)
+        cmap = np.array([i // (Par_D // CP_) for i in range(Par_D)])
     else:
         cmap = schedule_results['cmap']
     S_map[:] = cmap

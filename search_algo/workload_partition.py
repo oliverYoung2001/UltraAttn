@@ -6,11 +6,13 @@ import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
 from enum import Enum
-from typing import Union
-from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config
+from typing import Union, Optional
+from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Table_Type, Block_Attention_Config, calc_table_comp_relative_time, get_block_table_type
 from custom_sparse_pattern import create_block_sparse_pattern
 from search_algo.bsa_config import BSA_Config
 from search_algo.global_vars import TASK_STATUS
+from search_algo.utils import print_rank_0
+import copy
 
 TIME_BUDGET = 5 * 60 * 60   # 5 hours
 TIME_BUDGET = 5 * 60   # 5 mins
@@ -263,9 +265,7 @@ def Quad_LP_GUROBI(N: int):
     print_lp_result(N, N, Vars, 'x')
 
 
-    # causal = True, fwd
-
-def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
+def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: bool, hierarchy: bool, ParD: Optional[int]):
     # fwd
     # Arguments: Begin -----------------------------------------------
     problem_type = 'OPT'
@@ -293,34 +293,47 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     Vars = dict()
     # Var_cat_default = 'Integer'
     
-    CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
+    # CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
+    CP_ = block_config.CP[not hierarchy]
     # print(f'CP: {CP}', flush=True)
-    ParD = max(CP, block_config.block_table.shape[0]) # Workload partition degree
+    # assert ParD is not None
+    if ParD is None:    # Intra
+        assert block_config.CP[1] == 1 and hierarchy == 1, f'[ERROR]: ParD should be set in inter scheduling !!!'
+        ParD = max(CP_, block_config.block_table.shape[0]) # Workload partition degree
+    else:   # Inter
+        assert hierarchy == 0, f'[ERROR]: ParD should not be set in intra scheduling !!!'
+    # print_rank_0(f'ParD: {ParD}, block_config.bsa_repr.block_table_raw: {block_config.bsa_repr.block_table_raw}')
     block_config.bsa_repr.block_table_Par_D, block_config.bsa_repr.cmap_Par_D = \
-        block_config.bsa_repr.complicate_to(block_config.bsa_repr.block_table_raw, block_config.bsa_repr.cmap_raw, ParD)
+        block_config.bsa_repr.complicate_not_less_then(block_config.bsa_repr.block_table_raw, block_config.bsa_repr.cmap_raw, ParD)
     cur_block_table = block_config.bsa_repr.block_table_Par_D
     if hasattr(block_config, 'ParD'):
         assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
     cmap = block_config.cmap
     if cmap is None:
-        cmap = np.array([i // (ParD // CP) for i in range(ParD)])
+        cmap = np.array([i // (ParD // CP_) for i in range(ParD)])
     
+    sub_shape = (cur_block_table.shape[0] // ParD, cur_block_table.shape[1] // ParD) # each element of grad(ParD, ParD) is a `sub_block_table`
+    print_rank_0(f'sub_shape: {sub_shape}')
     block_ids = []  # block_ids to be scheduled
     # Check whether diagonal line is full
     diagonal_full = True    # [NOTE]: haven't consider imbalanced workload on diagonal line in load balance !!!
     for i in range(ParD):
-        if cur_block_table[i, i].value == Block_Type.EMPTY.value:
+        if get_block_table_type(cur_block_table[i*sub_shape[0]:(i+1)*sub_shape[0], i*sub_shape[1]:(i+1)*sub_shape[1]]).value \
+            == Block_Table_Type.EMPTY.value:
+        # if cur_block_table[i, i].value == Block_Type.EMPTY.value:
             diagonal_full = False
             break
     for i in range(ParD):
         for j in range(ParD):
             if i == j and diagonal_full:  # schedule block on diagonal line to cmap[i] by default
                 continue
-            if cur_block_table[i, j].value != Block_Type.EMPTY.value:
+            if get_block_table_type(cur_block_table[i*sub_shape[0]:(i+1)*sub_shape[0], j*sub_shape[1]:(j+1)*sub_shape[1]]).value \
+                != Block_Table_Type.EMPTY.value:
+            # if cur_block_table[i, j].value != Block_Type.EMPTY.value:
                 block_ids.append((i, j))
     
     for i, j in block_ids:
-        for k in range(CP):
+        for k in range(CP_):
             Vars[f"x_{i}_{j}_{k}"] = mylp.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}_{k}", lb=0, ub=1)
             # # Quadratic Constraints
             # constraints.append(Vars[f"x_{i}_{j}_{k}"] * (1 - Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
@@ -329,14 +342,14 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
             # constraints.append(Vars[f"x_{i}_{j}_{k}"] - cp.square(Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
             # Vars[f"x_{i}_{j}_{k}"] = mylp.addVar(vtype=GRB.CONTINUOUS, name=f"x_{i}_{j}_{k}", lb=0, ub=1)
             # mylp.addConstr(Vars[f"x_{i}_{j}_{k}"] * (1 - Vars[f"x_{i}_{j}_{k}"]) <= Quad_Bound)
-    for g in range(CP):
+    for g in range(CP_):
         for i in range(ParD):
             Vars[f'a_{g}_{i}'] = mylp.addVar(vtype=Var_cat_default, name=f'a_{g}_{i}', lb=0, ub=1)
             
-    for g in range(CP):
+    for g in range(CP_):
         for j in range(ParD):
             Vars[f'b_{g}_{j}'] = mylp.addVar(vtype=Var_cat_default, name=f'b_{g}_{j}', lb=0, ub=1)
-    for g in range(CP):
+    for g in range(CP_):
         Vars[f'A_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'A_{g}', lb=0)
         Vars[f'B_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'B_{g}', lb=0)
         Vars[f'C_{g}'] = mylp.addVar(vtype=Var_cat_default, name=f'C_{g}', lb=0)
@@ -353,44 +366,65 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     for i, j in block_ids:
         # mylp += pulp.lpSum([Vars[f"x_{i}_{j}_{k}"] for k in range(N)]) == 1 # w/o Replication
         # mylp += pulp.lpSum([Vars[f"x_{i}_{j}_{k}"] for k in range(N)]) >= 1 # w Replication
-        mylp.addConstr(gp.quicksum([Vars[f"x_{i}_{j}_{k}"] for k in range(CP)]) == 1) # w/o Replication
+        mylp.addConstr(gp.quicksum([Vars[f"x_{i}_{j}_{k}"] for k in range(CP_)]) == 1) # w/o Replication
     # 1. a, b
-    for g in range(CP):
+    for g in range(CP_):
         for i, j in block_ids:
             # mylp += Vars[f'a_{g}_{i}'] >= Vars[f'x_{i}_{j}_{g}']
             mylp.addConstr(Vars[f'a_{g}_{i}'] >= Vars[f'x_{i}_{j}_{g}'])
-    for g in range(CP):
+    for g in range(CP_):
         for i, j in block_ids:
             # mylp += Vars[f'b_{g}_{j}'] >= Vars[f'x_{i}_{j}_{g}']
             mylp.addConstr(Vars[f'b_{g}_{j}'] >= Vars[f'x_{i}_{j}_{g}'])
     
     # 2. A, B, C, D
-    for g in range(CP):
+    for g in range(CP_):
         # mylp += Vars[f'A_{g}'] == pulp.lpSum([Vars[f'a_{g}_{i}'] for i in range(N) if i != g])
         # mylp += Vars[f'B_{g}'] == pulp.lpSum([Vars[f'b_{g}_{j}'] for j in range(N) if j != g])
         # mylp += Vars[f'C_{g}'] == pulp.lpSum([Vars[f'a_{k}_{g}'] for k in range(N) if k != g])
         # mylp += Vars[f'D_{g}'] == pulp.lpSum([Vars[f'b_{k}_{g}'] for k in range(N) if k != g])
         mylp.addConstr(Vars[f'A_{g}'] == gp.quicksum([Vars[f'a_{g}_{i}'] for i in range(ParD) if cmap[i] != g]))
         mylp.addConstr(Vars[f'B_{g}'] == gp.quicksum([Vars[f'b_{g}_{j}'] for j in range(ParD) if cmap[j] != g]))
-        mylp.addConstr(Vars[f'C_{g}'] == gp.quicksum([Vars[f'a_{k}_{i}'] for i in range(ParD) if cmap[i] == g for k in range(CP) if k != g]))
-        mylp.addConstr(Vars[f'D_{g}'] == gp.quicksum([Vars[f'b_{k}_{j}'] for j in range(ParD) if cmap[j] == g for k in range(CP) if k != g]))
+        mylp.addConstr(Vars[f'C_{g}'] == gp.quicksum([Vars[f'a_{k}_{i}'] for i in range(ParD) if cmap[i] == g for k in range(CP_) if k != g]))
+        mylp.addConstr(Vars[f'D_{g}'] == gp.quicksum([Vars[f'b_{k}_{j}'] for j in range(ParD) if cmap[j] == g for k in range(CP_) if k != g]))
     
     # 3. Communication Volume (In/Out)
-    for g in range(CP): # [TODO]: only for forward now, support backward later !!!
+    for g in range(CP_): # Support backward later !!! ✅
         # mylp += Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 <= Vars[f'Comm_Volume']
         # mylp += Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 <= Vars[f'Comm_Volume']
-        mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 == Vars[f'Cin_{g}'])
-        mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 == Vars[f'Cout_{g}'])
+        if fob == 0:    # Forward
+            mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'B_{g}'] * 2 == Vars[f'Cin_{g}'])
+            mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 == Vars[f'Cout_{g}'])
+        else:           # Backward
+            mylp.addConstr(Vars[f'A_{g}'] * 2 + Vars[f'B_{g}'] * 2 + Vars[f'C_{g}'] * 1 + Vars[f'D_{g}'] * 2 == Vars[f'Cin_{g}'])
+            mylp.addConstr(Vars[f'A_{g}'] * 1 + Vars[f'B_{g}'] * 2 + Vars[f'C_{g}'] * 2 + Vars[f'D_{g}'] * 2 == Vars[f'Cout_{g}'])
         mylp.addConstr(Vars[f'Cin_{g}'] <= Vars[f'Comm_Volume'])
         mylp.addConstr(Vars[f'Cout_{g}'] <= Vars[f'Comm_Volume'])
     
     # # 4. Load Balance
     if LOAD_BALANCE:
-        COMP_TOTAL = sum([Block_Comp_Volume[cur_block_table[i, j]] for i, j in block_ids])
-        COMP_UB = int(math.ceil(COMP_TOTAL / CP))
-        for g in range(CP):
+        # if block_config.CP[1] == 1: # Intra schedule
+        if hierarchy == 1: # Intra schedule
+            COMP_TOTAL = sum([Block_Comp_Volume[cur_block_table[i, j]] for i, j in block_ids])
+            COMP_UB = int(math.ceil(COMP_TOTAL / CP_))
+        else:   # Inter schedule
+            COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
+            COMP_UB = int(math.ceil(COMP_TOTAL / CP_))
+            # print_rank_0(f'COMP_TOTAL: {COMP_TOTAL}, COMP_UB: {COMP_UB}')
+            # [HACK]: Find a more general strategy
+            if CP_ == 2:
+                COMP_UB += 1
+            # END
+        for g in range(CP_):
             # mylp += pulp.lpSum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB
-            mylp.addConstr(gp.quicksum([Vars[f'x_{i}_{j}_{g}'] for i, j in block_ids]) <= COMP_UB)
+            # # [NOTE]: Assume that `causal` block can only exist on diagonal line
+            diagonal_COMP_g = calc_table_comp_relative_time(
+                cur_block_table[g*sub_shape[0]:(g+1)*sub_shape[0], g*sub_shape[1]:(g+1)*sub_shape[1]]
+            ) if diagonal_full else 0
+            # print_rank_0(f'diagonal_COMP_g of {g}: {diagonal_COMP_g}')
+            mylp.addConstr(gp.quicksum([Vars[f'x_{i}_{j}_{g}'] * calc_table_comp_relative_time(
+                cur_block_table[i*sub_shape[0]:(i+1)*sub_shape[0], j*sub_shape[1]:(j+1)*sub_shape[1]]
+            ) for i, j in block_ids]) <= COMP_UB - diagonal_COMP_g)
 
     # Objective
     mylp.setObjective(Vars[f'Comm_Volume'], GRB.MINIMIZE)
@@ -408,7 +442,7 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config):
     return {
         'Par_D': ParD,
         'cmap': cmap,
-        'table': convert_result_to_np(CP, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
+        'table': convert_result_to_np(CP_, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
     }
 
     # causal = True, fwd
@@ -473,8 +507,8 @@ def solve_custom_sparse():
     block_config = create_block_sparse_pattern(CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate)
     Quad_LP_GUROBI_from_block_config(block_config)
 
-def solve_sparse_from_bsa(block_config: BSA_Config):
-    return Quad_LP_GUROBI_from_block_config(block_config)
+def solve_sparse_from_bsa(block_config: BSA_Config, fob: bool, hierarchy: bool, Par_D = None):
+    return Quad_LP_GUROBI_from_block_config(block_config, fob, hierarchy, Par_D)
   
 def main():
     # solve_global_causal()

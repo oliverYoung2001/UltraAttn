@@ -17,6 +17,8 @@ prof_results/
 results/
 tmp/
 database*/
+database_zips/
+database*
 third_party/*
 # third_party/comm_test
 # third_party/kernel_profiler

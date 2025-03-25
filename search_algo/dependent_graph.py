@@ -3,6 +3,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 from search_algo.search_engine import Dist_Attn_Schedule, FlashAttn_Profile_Map, Machine_Config
+from search_algo.bsa_utils import get_bsa_comp_key
+from search_algo.bsa_config import BSA_Config
 import numpy as np
 from typing import Optional
 import copy
@@ -39,7 +41,8 @@ class Comp_Kernel(Cuda_Kernel):
         if time is None:
             # flashattn profile map_key:
             self.comp_map_key = comp_map_key
-            self.time = m_config.comp_profile_maps[hierarchy].get_comp_time_from_map_key(comp_map_key)    # [fwd/bwd]
+            # one of them is None for inter_bsa !!!
+            self.time = m_config.comp_profile_maps[hierarchy].get_comp_time_from_map_key(comp_map_key) # [fwd/bwd];
         else:
             self.time = time
     
@@ -60,7 +63,8 @@ class Comm_Kernel(Cuda_Kernel):
         ])    # [fwd/bwd]
 
 class Dependent_Graph():
-    def __init__(self, schedule: Dist_Attn_Schedule, fob: bool, kernel_dict: Optional[dict] = None):
+    def __init__(self, schedule: Dist_Attn_Schedule, fob: bool, kernel_dict: Optional[dict] = None, is_inter_bsa = False, \
+                    bsa_comp_key_suffix: str = ''):
         # [NOTE]: only support star tree of broadcase/reduce here !!!
         # build dependent graph from schedule_table
         
@@ -71,6 +75,8 @@ class Dependent_Graph():
         self.fob = fob  # fwd or bwd
         self.tot_sp = schedule.tot_sp
         self.hierarchy = hierarchy = schedule.da_config.hierarchy
+        self.is_inter_bsa = is_inter_bsa
+        self.bsa_comp_key_suffix = bsa_comp_key_suffix
         # self.root_kernel = Cuda_Kernel()
         # comp: (b_id, h_id, r_id, c_id, gpuid) or (b_id, h_id, (r_ids), (c_ids), gpuid) -> Cuda_Kernel
         # comm: (b_id, h_id, r/c_id, send, recv, i/o, r/c) -> Cuda_Kernel
@@ -93,12 +99,20 @@ class Dependent_Graph():
     
     def create_raw_graph(self):
         schedule = self.schedule
-        hierarchy = self.hierarchy
+        hierarchy = self.hierarchy  # (0, 1) -> (inter, intra)
         fob = self.fob
         da_config = self.da_config
         # step1: Build Comp Kernel
-        comp_map_key = schedule.m_config.comp_profile_maps[hierarchy].get_comp_map_key(schedule.da_config, [1, 1], schedule.split_degrees)
-        causal_comp_map_key = schedule.m_config.comp_profile_maps[hierarchy].get_comp_map_key(schedule.da_config, [1, 1], schedule.split_degrees, causal=True)
+        if self.is_inter_bsa:
+            assert hierarchy == 0
+            bsa_CP = (self.da_config.SP[1], 1)  # (intra, inter)
+            inter_CP = self.da_config.SP[0]
+            bsa_intra_shape_config = copy.deepcopy(self.da_config.shape_config)
+            bsa_intra_shape_config['S'] = (bsa_intra_shape_config['S'][0] // inter_CP, bsa_intra_shape_config['S'][1] // inter_CP)
+            # bsa_comp_key: {fob, CP, shape_config, bsa_config}
+        else:   # dense or inter_bsa
+            comp_map_key = schedule.m_config.comp_profile_maps[hierarchy].get_comp_map_key(schedule.da_config, [1, 1], schedule.split_degrees)
+            causal_comp_map_key = schedule.m_config.comp_profile_maps[hierarchy].get_comp_map_key(schedule.da_config, [1, 1], schedule.split_degrees, causal=True)
         for i in range(schedule.split_degrees[2]):   # split_bs
             for j in range(schedule.split_degrees[3]):   # split_Nh
                 for k in range(schedule.split_degrees[0]):   # split_Sq
@@ -106,9 +120,22 @@ class Dependent_Graph():
                         if schedule.schedule_table[i, j, k, l] >= 0:    # Valid comp kernel
                             comp_key = (i, j, k, l, schedule.schedule_table[i, j, k, l])
                             assert comp_key not in self.kernel_dict.keys()
+                            if self.is_inter_bsa:   # ✅
+                                sub_bsa_repr = da_config.bsa_config.bsa_repr.create_sub_bsa_repr(
+                                    schedule.split_degrees[0: 2], select_ids = [[k], [l]])
+                                sub_pat_bsa_repr = {
+                                    'bsa_repr': sub_bsa_repr,
+                                    'CP': bsa_CP,
+                                }
+                                sub_bsa_config = BSA_Config(None, None, sub_pat_bsa_repr)   # [TODO]
+                                real_comp_map_key = get_bsa_comp_key(fob, bsa_CP, bsa_intra_shape_config, sub_bsa_config, \
+                                    key_suffix=self.bsa_comp_key_suffix)
+                            else:
+                                # bsa should set da_config.causal too !!!✅
+                                real_comp_map_key = causal_comp_map_key if da_config.causal and k == l else comp_map_key
                             self.kernel_dict[comp_key] = Comp_Kernel(
-                                comp_key, schedule.m_config, 
-                                causal_comp_map_key if da_config.causal and k == l else comp_map_key, 
+                                comp_key, schedule.m_config,
+                                real_comp_map_key,
                                 hierarchy)
         # step2: Build Comm Kernel
         assert schedule.split_degrees[0] == schedule.split_degrees[1] # [NOTE]: now only support Sq_split == Skv_split !!!
