@@ -1,3 +1,4 @@
+import os
 import pulp
 import time
 import math
@@ -282,9 +283,7 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
     # LP Problem
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
     mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
-    CPUS_NUM = 90   # nico0
-    CPUS_NUM = 208   # zhipu kruskal
-    CPUS_NUM = 64   # zhipu planck
+    CPUS_NUM = os.getenv('GUROBI_NUM_THREADS', default=64)
     mylp.setParam('Threads', CPUS_NUM)
     mylp.setParam('TimeLimit', TIME_BUDGET)
     # Variables & Bound

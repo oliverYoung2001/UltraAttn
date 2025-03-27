@@ -181,8 +181,11 @@ class Execution_Plan(): # input: kernel streams of gpus
                 kernel_list += self.stream_kernel_lists[(g, s)]
             kernel_list.sort(key=lambda x: (x.start_time.value(), x.id))
             self.gpu_kernel_lists.append(kernel_list)
-        self.mylp_obj = pulp.value(mylp.objective)
+        self.end_time = self.mylp_obj = pulp.value(mylp.objective)
         return mylp
+    
+    def get_end_time(self):
+        return self.end_time if hasattr(self, 'end_time') else self.mylp_obj
     
     def print_lp_result(self):
         fob = self.fob

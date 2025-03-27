@@ -37,6 +37,11 @@ if [ $CLUSTER_NAME == 'zhipu_planck' ]; then    # fix for planck
    "
 fi
 
+# Envs for gurobipy
+if [ $CLUSTER_NAME == 'zhipu_planck' ]; then
+    export GUROBI_NUM_THREADS=64
+fi
+
 mpirun -np $((MLP_WORKER_NUM * MLP_GPU)) \
         --hostfile ${MLP_MPI_HOSTFILE} \
         --allow-run-as-root -oversubscribe -map-by ppr:8:node \
@@ -64,6 +69,7 @@ mpirun -np $((MLP_WORKER_NUM * MLP_GPU)) \
         -x LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
         -x CLUSTER_NAME \
         -x PLATFORM \
+        -x GUROBI_NUM_THREADS \
         ./scripts/runtime/bench_dist_attn.sh \
         python $PYTHON_EXECUBLE \
             $LOGGING_ARGS \

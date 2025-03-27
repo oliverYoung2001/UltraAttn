@@ -155,7 +155,7 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
     key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_shape_config={{{da_config.get_shape_config_str()}}}_bsa_config={{{da_config.bsa_config}}}'
     # [TODO]: add Nhs and Ss to key_preffix !!!
     # plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
-    plan_types = ['ILP', 'Flexflow']
+    plan_types = ['Flexflow', 'ILP']
     for plan_type in plan_types:
         # KERNEL_SCHEDULE_TYPE = "ILP" if plan_type == "automatic" else "Flexflow"
         KERNEL_SCHEDULE_TYPE = plan_type
@@ -178,7 +178,13 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
         else:
-            print_rank_0(f'Bypassed !!!')
+            # print_rank_0(f'Bypassed !!!')
+            plan_id = intra_bsa_exe_plans_dict[key]
+            plan_file = f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
+            with open(plan_file, 'rb') as fin:
+                execute_plan: Execution_Plan = pickle.load(fin)
+            # execute_plan.print_lp_result()
+            print_rank_0(f'end_time={execute_plan.get_end_time():.3e}')
         
         # w Kernel Tile Execution_Plans:
         KERNEL_TILE_TYPE = 'w_kernel_tile'
@@ -207,7 +213,13 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
         else:
-            print_rank_0(f'Bypassed !!!')
+            # print_rank_0(f'Bypassed !!!')
+            plan_id = intra_bsa_exe_plans_dict[key]
+            plan_file = f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
+            with open(plan_file, 'rb') as fin:
+                execute_plan: Execution_Plan = pickle.load(fin)
+            # execute_plan.print_lp_result()
+            print_rank_0(f'end_time={execute_plan.get_end_time():.3e}')
     
     if intra_bsa_exe_plans_dict_changed:
         # assert not torch.cuda.is_available(), f'intra_bsa_exe_plans_dict should not be changed in GPU nodes'
@@ -465,7 +477,7 @@ def main():
     if torch.distributed.get_rank() == 0: #and not torch.cuda.is_available():
         intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)
     torch.distributed.barrier(gloo_global_group)
-    # return    # Step1 End
+    return    # Step1 End
 
     intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)  # Bypass mode
     torch.distributed.barrier(gloo_global_group)

@@ -64,11 +64,11 @@ def get_proc_info():
         local_rank = 0
         hostip = socket.gethostbyname(hostname)
         ip = None
-        print(f'hostip: {hostip}')
+        # print(f'hostip: {hostip}')
         os.environ['MASTER_ADDR'] = hostip
         os.environ['MASTER_PORT'] = str(random.randint(0, 12000) + 10000)
-        os.environ['CLUSTER_NAME'] = 'fit'
-        os.environ['PLATFORM'] = 'A800'
+        # os.environ['CLUSTER_NAME'] = 'fit'
+        # os.environ['PLATFORM'] = 'A800'
         # raise Exception("Unknown Launcher !!!")
     proc_info = {
         'clustername': clustername,
