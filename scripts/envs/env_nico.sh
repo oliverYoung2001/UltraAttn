@@ -20,8 +20,8 @@ export C_INCLUDE_PATH="$(dirname `which mpicxx`)/../include:$C_INCLUDE_PATH"  # 
 export CPLUS_INCLUDE_PATH="$(dirname `which mpicxx`)/../include:$CPLUS_INCLUDE_PATH"  # for #include <mpi.h>
 export LD_LIBRARY_PATH="$(dirname `which nvcc`)/../lib64:$LD_LIBRARY_PATH"  # for -lcudart
 
-# export http_proxy="http://127.0.0.1:8901"
-# export https_proxy="http://127.0.0.1:8901"
+export http_proxy="http://127.0.0.1:18901"
+export https_proxy="http://127.0.0.1:18901"
 
 # export http_proxy="http://nico0:8901"
 # export https_proxy="http://nico0:8901"

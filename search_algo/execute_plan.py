@@ -45,7 +45,7 @@ class Execution_Plan(): # input: kernel streams of gpus
             self.hierarchy_sp = self.da_config.SP[self.hierarchy]
             if plan_type == 'ILP':
                 self.TIME_BUDGET = 5 * 60   # 5mins
-                self.TIME_BUDGET = 10   # 10s
+                # self.TIME_BUDGET = 10   # 10s
                 self.threshold = 1.3
                 self.generate_execution_plan()
             elif plan_type == 'Flexflow':  # Flexflow
