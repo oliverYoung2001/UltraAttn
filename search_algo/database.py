@@ -1,5 +1,10 @@
+import os
 import torch
 from search_algo.search_engine import Machine_Config
+from search_algo.utils import convert_profile_data_to_map, FinitePriorityQueue, \
+                              convert_profile_data_to_comm_map, convert_node_profile_data_to_comp_map, \
+                              find_file_with_regex
+import json
 
 class Prof_DB():
     # 1. Base profile for cluster
@@ -13,9 +18,66 @@ class Prof_DB():
     #   KV pairs
     # 5. Inter-node execution times. 
     #   KV pairs
-    def __init__(self):
-        pass
+    def __init__(self, CLUSTER_NAME, PLATFORM):
+        # CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
+        self.CLUSTER_NAME = CLUSTER_NAME
+        self.PLATFORM = PLATFORM
+        self.DATABASE_ROOT = f'{os.path.dirname(__file__)}/../database/{CLUSTER_NAME}/{PLATFORM}'
+        self.M_CONFIG_DIR = f'{self.DATABASE_ROOT}/m_configs'
+        
+        self.INTRA_BSA_ALLOCATION = f'{self.DATABASE_ROOT}/intra_bsa_allocation.json'
+        self.INTRA_BSA_EXE_PLANS_DIR = f'{self.DATABASE_ROOT}/intra_bsa_exe_plans'
+        self.INTRA_BSA_EXE_PLANS_KV = f'{self.DATABASE_ROOT}/intra_bsa_exe_plans_kv.json'
+        self.INTRA_BSA_EXE_PLANS_PROFILE = f'{self.DATABASE_ROOT}/intra_bsa_exe_plans_profile.json'
+        
+        self.INTER_BSA_ALLOCATION = f'{self.DATABASE_ROOT}/inter_bsa_allocation.json'
+        self.INTER_BSA_EXE_PLANS_DIR = f'{self.DATABASE_ROOT}/inter_bsa_exe_plans'
+        self.INTER_BSA_EXE_PLANS_KV = f'{self.DATABASE_ROOT}/inter_bsa_exe_plans_kv.json'
+        self.INTER_BSA_EXE_PLANS_PROFILE = f'{self.DATABASE_ROOT}/inter_bsa_exe_plans_profile.json'
+        
+        if torch.distributed.get_rank() == 0:   # Initialize all above
+            if not os.path.exists(self.INTRA_BSA_ALLOCATION):
+                with open(self.INTRA_BSA_ALLOCATION, 'w') as f:
+                    json.dump({}, f)
+            os.makedirs(self.INTRA_BSA_EXE_PLANS_DIR, exist_ok=True)
+            if not os.path.exists(self.INTRA_BSA_EXE_PLANS_KV):
+                with open(self.INTRA_BSA_EXE_PLANS_KV, 'w') as f:
+                    json.dump({}, f)
+            if not os.path.exists(self.INTRA_BSA_EXE_PLANS_PROFILE):
+                with open(self.INTRA_BSA_EXE_PLANS_PROFILE, 'w') as f:
+                    json.dump({}, f)
+            
+            if not os.path.exists(self.INTER_BSA_ALLOCATION):
+                with open(self.INTER_BSA_ALLOCATION, 'w') as f:
+                    json.dump({}, f)
+            os.makedirs(self.INTER_BSA_EXE_PLANS_DIR, exist_ok=True)
+            if not os.path.exists(self.INTER_BSA_EXE_PLANS_KV):
+                with open(self.INTER_BSA_EXE_PLANS_KV, 'w') as f:
+                    json.dump({}, f)
+            if not os.path.exists(self.INTER_BSA_EXE_PLANS_PROFILE):
+                with open(self.INTER_BSA_EXE_PLANS_PROFILE, 'w') as f:
+                    json.dump({}, f)
+        
+        self.m_config = self.create_m_config()
     
+    def create_m_config(self) -> Machine_Config:
+        PROFILE_FILE_NAME = find_file_with_regex(self.M_CONFIG_DIR, r'^time.*\.json$')[0]
+        with open(f'{self.M_CONFIG_DIR}/{PROFILE_FILE_NAME}', 'r') as f:
+            profile_data = json.load(f)
+        INTER_COMM_FILE_NAME = self.M_CONFIG_DIR + '/' + find_file_with_regex(self.M_CONFIG_DIR, r'^cb_16_.*\.log$')[0]
+        INTRA_COMM_FILE_NAME = self.M_CONFIG_DIR + '/' + find_file_with_regex(self.M_CONFIG_DIR, r'^cb_8_.*\.log$')[0]
+        m_config = Machine_Config(None, convert_profile_data_to_map(profile_data['flash_attn']), \
+            None,
+            convert_profile_data_to_comm_map(INTER_COMM_FILE_NAME, 16),
+            convert_profile_data_to_comm_map(INTRA_COMM_FILE_NAME, 1),
+        )
+        return m_config
+    
+    def m_config_update_inter_bsa_profile(self):
+        with open(self.INTRA_BSA_EXE_PLANS_PROFILE, 'r') as f:
+            intra_bsa_exe_plans_profile = json.load(f)
+        self.m_config.update_inter_bsa_profile(intra_bsa_exe_plans_profile)
+
     def insert(self):
         pass
     
@@ -25,8 +87,8 @@ class Prof_DB():
     def update(self):
         pass
     
-    def update_m_config(self, m_config: Machine_Config):
-        self.m_config = m_config
+    # def update_m_config(self, m_config: Machine_Config):
+    #     self.m_config = m_config
     
     def read(self):
         pass

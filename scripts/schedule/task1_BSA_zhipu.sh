@@ -18,8 +18,8 @@ mkdir -p results
 mkdir -p results/${EXP_NAME}
 
 # Envs:
-export CLUSTER_NAME=fit
-export PLATFORM='A800'
+export CLUSTER_NAME=zhipu_planck
+export PLATFORM='H100'
 # # set pulp tmp dir; [TODO]: `TMPDIR` is used by both pulp and openmpi
 export PULP_TMPDIR=./search_algo/tmp
 # export TMPDIR=search_algo/tmp
@@ -30,12 +30,19 @@ TB_DIR=./prof_results/tb
 mkdir -p $TB_DIR
 LOGGING_ARGS=""
 
+MPI_EXTRA=''
+if [ $CLUSTER_NAME == 'zhipu_planck' ]; then    # fix for planck
+   MPI_EXTRA="$MPI_EXTRA \
+   -mca oob_tcp_if_include 10.102.2.0/24 \
+   "
+fi
 
 mpirun -np $((MLP_WORKER_NUM * MLP_GPU)) \
         --hostfile ${MLP_MPI_HOSTFILE} \
         --allow-run-as-root -oversubscribe -map-by ppr:8:node \
         --bind-to numa \
         -mca pml ob1 -mca btl ^openib -x OMPI_MCA_btl_tcp_if_include=${NET_DEVICE} \
+        $MPI_EXTRA \
         --output-filename results/${TIMESTAMP} \
         -x NCCL_PXN_DISABLE=0 \
         -x NCCL_IB_GID_INDEX=3 \

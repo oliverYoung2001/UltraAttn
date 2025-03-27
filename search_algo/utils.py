@@ -9,11 +9,12 @@ from search_algo.global_vars import *
 import math
 import regex as re
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 import torch
 from fractions import Fraction
 import inspect
 import argparse
+import regex as re
 
 def print_rank_0(message):
     """If distributed is initialized, print only on rank 0."""
@@ -22,6 +23,13 @@ def print_rank_0(message):
             print(message, flush=True)
     else:
         print(message, flush=True)
+
+def find_file_with_regex(dir: str, pat: str) -> List[str]:
+    matched_files = []
+    for file_name in os.listdir(dir):
+        if re.match(pat, file_name):
+            matched_files.append(file_name)
+    return matched_files
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -79,6 +87,11 @@ def unique_list(l):
 def closest_fraction(x, max_denominator=1000):
     return Fraction(x).limit_denominator(max_denominator)
 
+class Block_Table_Type(Enum):
+    EMPTY = 0
+    FULL = 1
+    PARTIAL = 2
+    
 class Block_Type(Enum):
     EMPTY = 0
     FULL = 1
@@ -123,8 +136,20 @@ class Block_Attention_Config():
     # def from_custom(cls, CP: int, ParD: int, cmap: np.ndarray, block_table: np.ndarray):
     #     return cls(CP, ParD, cmap, block_table)
     
+def calc_table_comp_relative_time(block_table: np.ndarray):
+    return sum([Block_Comp_Volume[block_table[i, j]] for i in range(block_table.shape[0]) for j in range(block_table.shape[1])])
 
-
+def get_block_table_type(block_table: np.ndarray) -> Block_Table_Type:
+    IS_EMPTY = True
+    IS_FULL = True
+    for i in range(block_table.shape[0]):
+        for j in range(block_table.shape[1]):
+            if block_table[i, j].value != Block_Type.EMPTY.value:
+                IS_EMPTY = False
+            if block_table[i, j].value != Block_Type.FULL.value:
+                IS_FULL = False
+    return Block_Table_Type.EMPTY if IS_EMPTY else (Block_Table_Type.FULL if IS_FULL else Block_Table_Type.PARTIAL)
+    
 def get_factors(n: int):
     factors = []
     for i in range(1, n + 1):
@@ -201,7 +226,7 @@ def convert_profile_data_to_comm_map(file_name: str, num_gpus_div: int):
 
 def convert_node_profile_data_to_comp_map(file_name: Optional[str], local_size: int):
     # map_key: ((Sq, Skv), (Nhq, Nhg), bs, D, causal) -> Time[fwd/bwd]  # S per GPU !!!
-    print(f'file_name: {file_name}')
+    print_rank_0(f'node_profile_data file_name: {file_name}')
     if file_name is None:
         return {}
     profile_map = {

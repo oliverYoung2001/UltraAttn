@@ -22,8 +22,8 @@
 source /home/yhy/mnt/.local/miniconda3/bin/activate
 conda deactivate && conda deactivate && conda deactivate && conda activate yhy_ultra
 
-# set GUROBI licence env
-export GRB_LICENSE_FILE=/home/yhy/mnt/.local/gurobi/gurobi.lic
+# # set GUROBI licence env
+# export GRB_LICENSE_FILE=/home/yhy/mnt/.local/gurobi/gurobi.lic
 
 # [NOTE]: tmux of qy has bug along with conda, thus the solution is copy the $PATH out of tmux into tmux  !!!
 export http_proxy=127.0.0.1:18901

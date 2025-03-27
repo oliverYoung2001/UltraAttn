@@ -2,9 +2,8 @@ from __future__ import annotations
 import torch
 import numpy as np
 from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction, unique_list, convert_block_table_to_value
-from typing import Union, Optional
 import regex as re
-from typing import List, Optional
+from typing import List, Union, Optional, Tuple
 
 class BSA_Repr():   # OK
     """
@@ -19,6 +18,36 @@ class BSA_Repr():   # OK
         self.block_table_Par_D, self.cmap_Par_D = None, None
         self.minimum_Par_D = self.block_table_raw.shape[0]
     
+    def create_sub_bsa_repr(self, split_degrees: List[int], select_ids: List[List[int], List[int]]) -> BSA_Repr:
+        assert len(split_degrees) == len(select_ids) == len(self.block_table_raw.shape) == 2
+        assert split_degrees[0] == split_degrees[1]
+        if split_degrees[0] > self.block_table_raw.shape[0]:
+            cur_block_table, cur_cmap = self.complicate_to(self.block_table_raw, self.cmap_raw, r_tar=split_degrees[0])
+        else:
+            assert self.block_table_raw.shape[0] % split_degrees[0] == 0
+            cur_block_table, cur_cmap = self.block_table_raw, self.cmap_raw
+            factor = self.block_table_raw.shape[0] // split_degrees[0]
+            def factor_map(ids) -> List[int]:
+                return [new_id for id in ids for new_id in range(id * factor, (id + 1) * factor)]
+            select_ids = [factor_map(axis_ids) for axis_ids in select_ids]
+            split_degrees = list(self.block_table_raw.shape)
+        # fancy indexing:
+        sub_block_table = cur_block_table[np.ix_(*select_ids)]
+        sub_bsa_repr = BSA_Repr(sub_block_table, cmap=None)
+        return sub_bsa_repr
+            
+        
+    def check_causal(self):
+        for i in range(self.block_table_raw.shape[0]):
+            for j in range(self.block_table_raw.shape[1]):
+                if i < j and self.block_table_raw[i, j].value != Block_Type.EMPTY.value:    # Should be EMPTY
+                    return False
+                if i == j and self.block_table_raw[i, j].value != Block_Type.CAUSAL.value:  # Should be CAUSAL
+                    return False
+                if i > j and self.block_table_raw[i, j].value not in [Block_Type.EMPTY.value, Block_Type.FULL.value]:# Should be EMPTY or FULL
+                    return False
+        return True
+        
     def check_empty(self):
         for i in range(self.block_table_raw.shape[0]):
             for j in range(self.block_table_raw.shape[1]):
@@ -128,7 +157,14 @@ class BSA_Repr():   # OK
         return new_block_table, new_cmap
     
     def complicate_to(self, block_table: np.ndarray, cmap: np.ndarray, r_tar: int):    # OK
-        assert block_table.shape[0] <= r_tar
+        assert block_table.shape[0] < r_tar and r_tar % block_table.shape[0] == 0
+        return self.complicate(block_table, cmap, rate=r_tar // block_table.shape[0])
+    
+    def complicate_not_less_then(self, block_table: np.ndarray, cmap: np.ndarray, r_tar: int):
+        if block_table.shape[0] >= r_tar:
+            assert block_table.shape[0] % r_tar == 0
+            return block_table, cmap
+        assert block_table.shape[0] < r_tar and r_tar % block_table.shape[0] == 0
         return self.complicate(block_table, cmap, rate=r_tar // block_table.shape[0])
     
     def split_n(self, n: int) -> List[BSA_Repr]:
@@ -174,12 +210,14 @@ class BSA_Config(): # OK
     def __init__(self, pat_dict: Union[dict, None] = None, pat_s: Optional[str] = None, pat_bsa_repr: Optional[dict] = None):# OK
         self.pat_dict = None
         self.pat_s = None
-        self.block_table = None
+        # self.block_table = None
         self.cmap = None
         self.bsa_repr = None
-        if pat_s is not None and pat_dict is None:  # Create from pat_s
+        if pat_s is not None and pat_dict is None:  # Create from pat_s; [DEPRECATED]
+            assert False
             pat_dict = self.convert_string_to_dict(pat_s)
-        if pat_dict is not None:    # Create from pat_dict
+        if pat_dict is not None:    # Create from pat_dict; [DEPRECATED]
+            assert False
             self.CP, self.Par_D, self.pattern_type, self.pattern_sparsity, \
                 self.local_blocks, self.global_blocks, self.replicate = \
                 pat_dict['CP'], pat_dict['Par_D'], pat_dict['pattern_type'], pat_dict['pattern_sparsity'], \
@@ -197,12 +235,14 @@ class BSA_Config(): # OK
             # assert ['block_table', 'cmap', 'CP'] <= list(pat_bsa_repr.keys())
             assert ['bsa_repr', 'CP'] <= list(pat_bsa_repr.keys())
             self.bsa_repr = pat_bsa_repr['bsa_repr']
-            self.block_table = self.bsa_repr.block_table
+            # self.block_table = self.bsa_repr.block_table
+            self.block_table_raw = self.bsa_repr.block_table_raw    # Irreducible representation of block_table
             self.cmap = self.bsa_repr.cmap
-            self.CP = pat_bsa_repr['CP']
+            self.CP = pat_bsa_repr['CP']    # (intra, inter)
             # [NOTE]: No ParD here !!!
         else:
             raise Exception(f'[ERROR]: Unknown BSA_Config __init__ !!!')
+        self.causal = self.bsa_repr.check_causal()
         # self.print_block_table()
         
     @classmethod
@@ -255,10 +295,10 @@ class BSA_Config(): # OK
     @property
     def total_sparsity(self):   # OK
         blk_num = 0
-        for i in range(self.Par_D):
-            for j in range(self.Par_D):
-                blk_num += Block_Comp_Volume[self.block_table[i, j]]
-        blk_sparsity = blk_num / pow(self.Par_D, 2)
+        for i in range(self.block_table_raw.shape[0]):
+            for j in range(self.block_table_raw.shape[1]):
+                blk_num += Block_Comp_Volume[self.block_table_raw[i, j]]
+        blk_sparsity = blk_num / (self.block_table_raw.shape[0] * self.block_table_raw.shape[1])
         return blk_sparsity
                 
     # def to_dict(self):
@@ -283,10 +323,11 @@ class BSA_Config(): # OK
         pass
     
     def print_block_table(self):    # OK
-        block_table_value = np.array([v.value for v in self.block_table.flatten()]).reshape(self.block_table.shape)
-        print(f'block_table_value:\n{block_table_value}')
+        block_table_raw_value = np.array([v.value for v in self.block_table_raw.flatten()]).reshape(self.block_table_raw.shape)
+        print(f'block_table_raw_value:\n{block_table_raw_value}')
         
-    def create_block_sparse_pattern_from_dict(self, pat_dict: dict) -> tuple:   # OK
+    def create_block_sparse_pattern_from_dict(self, pat_dict: dict) -> tuple:   # [DEPRECATED]
+        assert False
         assert pat_dict is not None
         # if self.created:
         #     return

@@ -11,10 +11,17 @@ from search_algo.utils import Block_Type
 from bsa_config import BSA_Repr, BSA_Config
 from typing import List, Set
 
+def convert_shape_config_to_str(shape_config: dict):
+    return f"S={shape_config['S']}_Nh={shape_config['Nh']}_bs={shape_config['bs']}_D={shape_config['D']}"
+    
+def get_bsa_comp_key(fob: int, CP: tuple, shape_config: dict, bsa_config: BSA_Config, key_suffix: str = ''):
+    key_preffix = f'fob={fob}_CP={CP}_shape_config={{{convert_shape_config_to_str(shape_config)}}}_bsa_config={{{bsa_config}}}'
+    return f'{key_preffix}{key_suffix}'
+    
 def split_to_node_configs(global_bsa_config: BSA_Config) -> List[BSA_Config]:
     global_bsa_repr = global_bsa_config.bsa_repr
     node_bsa_reprs = global_bsa_repr.split_n(global_bsa_config.CP[1])   # after deduplcating
-    CP0 = global_bsa_config.CP[0]
+    CP0 = global_bsa_config.CP[0]   # intra CP
     node_bsa_configs = unique_list([BSA_Config(None, None, {'bsa_repr': r, 'CP': (CP0, 1)}) for r in node_bsa_reprs])
     return node_bsa_configs
         

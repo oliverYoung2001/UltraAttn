@@ -995,7 +995,7 @@ def benchmark_orchestrate(args, raw_f, da_config: Dist_Attn_Config, tensor_buf: 
             
             inputs['execution_plan_dict'] = {
                 'inter': inter_execution_plan,
-                'intra': inter_comp_plans,
+                'intra': inter_comp_plans,  # [NOTE]: Useless
             }
             inputs = filter_kwargs(f, inputs)
         
