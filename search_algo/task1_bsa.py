@@ -27,7 +27,7 @@ import json
 import random
 from typing import List, Tuple, Union, Optional
 from search_algo.exp_configs import step0_top_down_decompose
-from search_algo.initialize import initialize_distribution
+from search_algo.initialize import initialize_distribution, initialize_prof_db
 
 # In-file global vars
 DTYPE = torch.bfloat16
@@ -35,71 +35,66 @@ DTYPE = torch.bfloat16
 def dummy_placeholder_op(*args, **kwargs):
     pass
 
-def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config) -> Dist_Attn_Config:
-    fob = exp_config.fob
-    hierarchy = da_config.hierarchy   # (0, 1) -> (inter, intra)
-    assert hierarchy == 1, f"[ERROR]: (hierarchy={hierarchy}) should be 1 in 'get_intra_bsa_cc_optimal_schedule'"
-    DATABASE_ROOT = get_global_var('DATABASE_ROOT')
-    os.makedirs(DATABASE_ROOT, exist_ok=True)
-    INTRA_BSA_ALLOCATION_DB = f'{DATABASE_ROOT}/intra_bsa_allocation.json'
-    # os.makedirs(INTRA_BSA_ALLOCATION_DB, exist_ok=True)
-    if not os.path.exists(f'{INTRA_BSA_ALLOCATION_DB}'):
-        with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
-            json.dump({}, f)
-    key = f'fob={fob}_bsa_config={{{da_config.bsa_config}}}'  # [TODO]
-    print_rank_0(f'intra_bsa_allocation_key: {key}')
-    with open(f'{INTRA_BSA_ALLOCATION_DB}', 'r') as f:
-        intra_bsa_allocation_dict = json.load(f)
-    if key in intra_bsa_allocation_dict.keys():
-        print_rank_0(f'Bypassed !!!')
-        value = intra_bsa_allocation_dict[key]
-        schedule_table = np.array(value['schedule_table'], dtype=np.int32)
-        assert value['Par_D'] == schedule_table.shape[-1]
-        schedule_results = {
-            'CP': da_config.bsa_config.CP,
-            # 'cmap': da_config.bsa_config.cmap,
-            'table': schedule_table,
-        }
-        # print_rank_0(f'cmap: {da_config.bsa_config.cmap}') # None !!!
-    else:
-        print_rank_0(f'Not bypass !!!')
-        assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
-        schedule_results = solve_sparse_from_bsa(da_config.bsa_config, fob, hierarchy=hierarchy)
-        schedule_table = schedule_results['table']
-        # print_rank_0(f'schedule_table: {schedule_table.dtype}')    # int32
-        value = {
-            'Par_D': schedule_table.shape[-1],
-            'schedule_table': schedule_table.tolist(),
-        }
-        intra_bsa_allocation_dict[key] = value
-        with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
-            json.dump(intra_bsa_allocation_dict, f)
+# def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config) -> Dist_Attn_Config:
+#     # [DEPRECATED]
+#     fob = exp_config.fob
+#     hierarchy = da_config.hierarchy   # (0, 1) -> (inter, intra)
+#     assert hierarchy == 1, f"[ERROR]: (hierarchy={hierarchy}) should be 1 in 'get_intra_bsa_cc_optimal_schedule'"
+#     DATABASE_ROOT = get_global_var('DATABASE_ROOT')
+#     os.makedirs(DATABASE_ROOT, exist_ok=True)
+#     INTRA_BSA_ALLOCATION_DB = f'{DATABASE_ROOT}/intra_bsa_allocation.json'
+#     # os.makedirs(INTRA_BSA_ALLOCATION_DB, exist_ok=True)
+#     if not os.path.exists(f'{INTRA_BSA_ALLOCATION_DB}'):
+#         with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
+#             json.dump({}, f)
+#     key = f'fob={fob}_bsa_config={{{da_config.bsa_config}}}'  # [TODO]
+#     print_rank_0(f'intra_bsa_allocation_key: {key}')
+#     with open(f'{INTRA_BSA_ALLOCATION_DB}', 'r') as f:
+#         intra_bsa_allocation_dict = json.load(f)
+#     if key in intra_bsa_allocation_dict.keys():
+#         print_rank_0(f'Bypassed !!!')
+#         value = intra_bsa_allocation_dict[key]
+#         schedule_table = np.array(value['schedule_table'], dtype=np.int32)
+#         assert value['Par_D'] == schedule_table.shape[-1]
+#         schedule_results = {
+#             'CP': da_config.bsa_config.CP,
+#             # 'cmap': da_config.bsa_config.cmap,
+#             'table': schedule_table,
+#         }
+#         # print_rank_0(f'cmap: {da_config.bsa_config.cmap}') # None !!!
+#     else:
+#         print_rank_0(f'Not bypass !!!')
+#         assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
+#         schedule_results = solve_sparse_from_bsa(da_config.bsa_config, fob, hierarchy=hierarchy)
+#         schedule_table = schedule_results['table']
+#         # print_rank_0(f'schedule_table: {schedule_table.dtype}')    # int32
+#         value = {
+#             'Par_D': schedule_table.shape[-1],
+#             'schedule_table': schedule_table.tolist(),
+#         }
+#         intra_bsa_allocation_dict[key] = value
+#         with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
+#             json.dump(intra_bsa_allocation_dict, f)
     
-    cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results)
+#     cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results)
     
-    if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
-        assert isinstance(cc_optimal_schedule, list)
-        cc_optimal_schedule = cc_optimal_schedule[0]
-    print_rank_0(f'cc_optimal_schedule.schedule_table: \n{cc_optimal_schedule.schedule_table}')
-    return cc_optimal_schedule
+#     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
+#         assert isinstance(cc_optimal_schedule, list)
+#         cc_optimal_schedule = cc_optimal_schedule[0]
+#     print_rank_0(f'cc_optimal_schedule.schedule_table: \n{cc_optimal_schedule.schedule_table}')
+#     return cc_optimal_schedule
 
-def get_general_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config) -> Dist_Attn_Config:
+def get_general_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB) -> Dist_Attn_Config:
     # [NOTE]: Is general, i.g. is intra func useless ???
     fob = exp_config.fob
     hierarchy = da_config.hierarchy # (0, 1) -> (inter, intra)
     hier_pre = 'inter' if hierarchy == 0 else 'intra'
     CP = da_config.bsa_config.CP    # (intra, inter)
     
-    DATABASE_ROOT = get_global_var('DATABASE_ROOT')
-    os.makedirs(DATABASE_ROOT, exist_ok=True)
-    GENERAL_BSA_ALLOCATION_DB = f'{DATABASE_ROOT}/{hier_pre}_bsa_allocation.json'
-    # os.makedirs(INTRA_BSA_ALLOCATION_DB, exist_ok=True)
-    if not os.path.exists(f'{GENERAL_BSA_ALLOCATION_DB}'):
-        with open(f'{GENERAL_BSA_ALLOCATION_DB}', 'w') as f:
-            json.dump({}, f)
+    GENERAL_BSA_ALLOCATION = prof_db.INTRA_BSA_ALLOCATION if hierarchy else prof_db.INTER_BSA_ALLOCATION
     key = f'fob={exp_config.fob}_bsa_config={{{da_config.bsa_config}}}'  # [TODO]
     print_rank_0(f'{hier_pre}_bsa_allocation_key: {key}')
-    with open(f'{GENERAL_BSA_ALLOCATION_DB}', 'r') as f:
+    with open(f'{GENERAL_BSA_ALLOCATION}', 'r') as f:
         general_bsa_allocation_dict = json.load(f)
     if key in general_bsa_allocation_dict.keys():
         print_rank_0(f'Bypassed !!!')
@@ -116,7 +111,7 @@ def get_general_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_confi
         print_rank_0(f'Not bypass !!!')
         # assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
         # Par_D = max(CP[hierarchy], da_config.bsa_config.block_table.shape[0])
-        Par_D = CP[not hierarchy]
+        Par_D = None if hierarchy else CP[not hierarchy]
         # print_rank_0(f'Par_D: {Par_D}, CP[not hierarchy]: {CP[not hierarchy]}')
         if hierarchy == 0: # inter; [TODO]
             assert Par_D == CP[not hierarchy], f'Inter bsa schedule not support Par_D={Par_D} > CP[0]={CP[0]} now.'
@@ -129,10 +124,10 @@ def get_general_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_confi
             'schedule_table': schedule_table.tolist(),
         }
         general_bsa_allocation_dict[key] = value
-        with open(f'{GENERAL_BSA_ALLOCATION_DB}', 'w') as f:
+        with open(f'{GENERAL_BSA_ALLOCATION}', 'w') as f:
             json.dump(general_bsa_allocation_dict, f)
     
-    cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results)
+    cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, prof_db.m_config, schedule_results)
     
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
@@ -142,24 +137,15 @@ def get_general_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_confi
     
 def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB):
     exp_config.hierarchy = da_config.hierarchy = 1
-    m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
-    prof_db.update_m_config(m_config)
+    m_config = prof_db.m_config
     print_rank_0(f'da_config.shape_config: {da_config.shape_config}')
-    cc_optimal_schedule = get_intra_bsa_cc_optimal_schedule(exp_config, da_config, m_config)
+    # cc_optimal_schedule = get_intra_bsa_cc_optimal_schedule(exp_config, da_config, m_config)
+    cc_optimal_schedule = get_general_bsa_cc_optimal_schedule(exp_config, da_config, prof_db)
     # exit(0)
     
     # Generate Intra_Execution_Plans:
-    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
-
-    DATABASE_ROOT = get_global_var('DATABASE_ROOT')
-    INTRA_BSA_EXE_PLANS_DIR = f'{DATABASE_ROOT}/{CLUSTER_NAME}/{PLATFORM}/intra_bsa_exe_plans'
-    INTRA_BSA_EXE_PLANS_KV = f'{DATABASE_ROOT}/intra_bsa_exe_plans_kv.json'
-    os.makedirs(INTRA_BSA_EXE_PLANS_DIR, exist_ok=True)
-    if not os.path.exists(f'{INTRA_BSA_EXE_PLANS_KV}'):
-        with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
-            json.dump({}, f)
     intra_bsa_exe_plans_dict_changed = False
-    with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'r') as f:
+    with open(prof_db.INTRA_BSA_EXE_PLANS_KV, 'r') as f:
         intra_bsa_exe_plans_dict = json.load(f)
     
     #   1. Generate Dependent_Graph:
@@ -181,14 +167,14 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         print_rank_0(f'intra_bsa_exe_plan_key: {key}')
         if key not in intra_bsa_exe_plans_dict.keys():
             print_rank_0(f'Not bypass !!!')
-            assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
+            # assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
             execute_plan = Execution_Plan(d_graph, exp_config.fob, plan_type=plan_type)
             execute_plan.print_lp_result()
             # Dump Execution_Plan:
             plan_id = max(intra_bsa_exe_plans_dict.values()) + 1 if intra_bsa_exe_plans_dict else 0
             intra_bsa_exe_plans_dict[key] = plan_id
             intra_bsa_exe_plans_dict_changed = True
-            plan_file = f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
+            plan_file = f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
         else:
@@ -202,7 +188,7 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         print_rank_0(f'intra_bsa_exe_plan_key: {key}')
         if key not in intra_bsa_exe_plans_dict.keys():
             print_rank_0(f'Not bypass !!!')
-            assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
+            # assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
             gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
             execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
             if execute_plan is None:    # No feasible transformations
@@ -217,19 +203,19 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
             plan_id = max(intra_bsa_exe_plans_dict.values()) + 1 if intra_bsa_exe_plans_dict else 0
             intra_bsa_exe_plans_dict[key] = plan_id
             intra_bsa_exe_plans_dict_changed = True
-            plan_file = f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
+            plan_file = f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
             with open(plan_file, 'wb') as f:
                 pickle.dump(execute_plan, f)
         else:
             print_rank_0(f'Bypassed !!!')
     
     if intra_bsa_exe_plans_dict_changed:
-        assert not torch.cuda.is_available(), f'intra_bsa_exe_plans_dict should not be changed in GPU nodes'
-        with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
+        # assert not torch.cuda.is_available(), f'intra_bsa_exe_plans_dict should not be changed in GPU nodes'
+        with open(f'{prof_db.INTRA_BSA_EXE_PLANS_KV}', 'w') as f:
             json.dump(intra_bsa_exe_plans_dict, f)
 
 def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, ncclcomm_global, gloo_global_group, \
-                          tensor_buf: torch.Tensor):
+                          tensor_buf: torch.Tensor, prof_db: Prof_DB):
     PROC_INFO = get_global_var(f'PROC_INFO')
     # [TODO]: Support baseline here !!! @yqg
     # baseline_funcs = [
@@ -252,32 +238,19 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
     # WARMUP, NUM_ITER = 1, 2 # later, bad performance
     # WARMUP, NUM_ITER = 0, 1 # [DEBUG]
     
-    inter_comp_profile_map = None
-    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
-    
-    # Generate inter_comp_plans_dicts
-    key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_shape_config={{{da_config.get_shape_config_str()}}}_bsa_config={{{da_config.bsa_config}}}'
-
     # Prepare database
-    DATABASE_ROOT = get_global_var('DATABASE_ROOT')
-    INTRA_BSA_EXE_PLANS_DIR = f'{DATABASE_ROOT}/{CLUSTER_NAME}/{PLATFORM}/intra_bsa_exe_plans'
-    INTRA_BSA_EXE_PLANS_KV = f'{DATABASE_ROOT}/intra_bsa_exe_plans_kv.json'
-    with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'r') as f:
+    with open(prof_db.INTRA_BSA_EXE_PLANS_KV, 'r') as f:
         intra_bsa_exe_plans_dict = json.load(f)
-    
-    INTRA_BSA_EXE_PLANS_PROFILE = f'{DATABASE_ROOT}/intra_bsa_exe_plans_profile.json'
-    if torch.distributed.get_rank() == 0:
-        if not os.path.exists(f'{INTRA_BSA_EXE_PLANS_PROFILE}'):
-            with open(f'{INTRA_BSA_EXE_PLANS_PROFILE}', 'w') as f:
-                json.dump({}, f)
-    torch.distributed.barrier(gloo_global_group)
-    with open(f'{INTRA_BSA_EXE_PLANS_PROFILE}', 'r') as f:
+    with open(prof_db.INTRA_BSA_EXE_PLANS_PROFILE, 'r') as f:
         intra_bsa_exe_plans_profile = json.load(f)
 
+    # Generate inter_comp_plans_dicts
+    key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_shape_config={{{da_config.get_shape_config_str()}}}_bsa_config={{{da_config.bsa_config}}}'
     key_suffixes = [f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})' \
                         for KERNEL_SCHEDULE_TYPE in ['ILP', 'Flexflow'] \
                             for KERNEL_TILE_TYPE in ['w/o_kernel_tile', 'w_kernel_tile']]
     keys = [f'{key_preffix}{key_suffix}' for key_suffix in key_suffixes]
+    # End
     inter_bsa_execution_plans = []  # inter_bsa_execution_plans and inter_comp_plans_dicts are bijective !!!
     inter_comp_plans_dicts = []
     for key in keys:
@@ -286,7 +259,7 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
         inter_bsa_execution_plans.append(inter_bsa_execution_plan)
         # load exe_plan
         plan_id = intra_bsa_exe_plans_dict[key]
-        with open(f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
+        with open(f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
             intra_bsa_execution_plan: Execution_Plan = pickle.load(fin)
         # OBJ1: build inter_comp_plans_dict
         # OBJ2: Set correct execution_plan to each inter kernel
@@ -324,13 +297,12 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
                 assert key not in intra_bsa_exe_plans_profile, f'profile_all_intra_BSA is profiled by grained of all ablation tests !!!'
                 intra_bsa_exe_plans_profile[key] = bench_result
             # print_rank_0(f'intra_bsa_exe_plans_profile: {intra_bsa_exe_plans_profile}')
-            with open(f'{INTRA_BSA_EXE_PLANS_PROFILE}', 'w') as f:
+            with open(prof_db.INTRA_BSA_EXE_PLANS_PROFILE, 'w') as f:
                 json.dump(intra_bsa_exe_plans_profile, f) 
     else:
         print_rank_0(f'Bypassed !!!')
     
-    return
-
+    
 def generate_inter_bsa_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB):
     DATABASE_ROOT = get_global_var('DATABASE_ROOT')
     CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
@@ -342,8 +314,8 @@ def generate_inter_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
     assert os.path.exists(INTRA_BSA_EXE_PLANS_PROFILE), f'[ERROR]: INTRA_BSA_EXE_PLANS_PROFILE={INTRA_BSA_EXE_PLANS_PROFILE} needs to exist'
     with open(f'{INTRA_BSA_EXE_PLANS_PROFILE}', 'r') as f:
         intra_bsa_exe_plans_profile = json.load(f)
-    m_config.update_inter_bsa_profile(intra_bsa_exe_plans_profile)
-    prof_db.update_m_config(m_config)
+    # m_config.update_inter_bsa_profile(intra_bsa_exe_plans_profile)
+    # prof_db.update_m_config(m_config)
     print_rank_0(f'da_config.shape_config Inter: {da_config.shape_config}')
     
     # Calc optimal schedule
@@ -398,19 +370,20 @@ def generate_inter_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         with open(f'{INTER_BSA_EXE_PLANS_KV}', 'w') as f:
             json.dump(inter_bsa_exe_plans_dict, f)
 
-def step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_configs, exp_configs, prof_db):
-    # Step1: Generate the intra-BSA; need all cpus on one node; (w cache/bypass)           
+def step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict: dict, exp_configs, prof_db):
+    # Step1: Generate the intra-BSA; need all cpus on one node; (w cache/bypass)
+    intra_node_shape_configs = shape_config_dict['intra']
     intra_plan_id = 0
     intra_da_configs: List[Dist_Attn_Config] = []
     for exp_config in exp_configs:
         for intra_node_bsa_config in intra_node_bsa_configs:
-            for Nh in shape_configs['Nhs']:
-                for S in shape_configs['Ss']:
-                    for bs in shape_configs['BSs']:
-                        for D in shape_configs['Ds']:
+            for Nh in intra_node_shape_configs['Nhs']:
+                for S_per_node in intra_node_shape_configs['Ss']:
+                    for bs in intra_node_shape_configs['BSs']:
+                        for D in intra_node_shape_configs['Ds']:
                             shape_config = {
                                 'Nh': (Nh, Nh),
-                                'S': (S, S),
+                                'S': (S_per_node, S_per_node),    # Useless
                                 'bs': bs,
                                 'D': D,
                             }
@@ -419,13 +392,16 @@ def step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_configs, ex
                                 shape_config=shape_config,
                                 hierarchy=1,
                             )
+                            S_per_gpu = S_per_node // da_config.hierarchy_sp
+                            if not (shape_config_dict['S_per_gpu_BOUND'][0] <= S_per_gpu <= shape_config_dict['S_per_gpu_BOUND'][1]):
+                                continue
                             intra_da_configs.append(da_config)
                             print_rank_0(f'intra_plan_id: {intra_plan_id}')
                             generate_intra_bsa_execution_plans(exp_config, da_config, prof_db)
                             intra_plan_id += 1
     return intra_da_configs
 
-def step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_global, gloo_global_group):
+def step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_global, gloo_global_group, prof_db):
     MAX_S_perG, MAX_NH, MAX_D, MAX_bs = 0, 0, 0, 0
     for da_config in intra_da_configs:
         MAX_S_perG = max(MAX_S_perG, max(da_config.S_per_gpu))
@@ -444,7 +420,7 @@ def step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_gl
     args = parse_args()
     for exp_config in exp_configs:  # fobs
         for da_config in intra_da_configs:
-            profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf)
+            profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf, prof_db)
 
 def step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, intra_node_shape_configs, exp_configs, prof_db):
     # Step3: Generate the inter-BSA; need all cpus on one node; (w cache/bypass)
@@ -481,21 +457,23 @@ def step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, intra_node_shape_
 def main():
     # Initialize distribution
     ncclcomm_global, gloo_global_group = initialize_distribution()
-    
     # Initialize Profile_DataBase
-    prof_db = Prof_DB() # [TODO]: finish profile database
-
+    prof_db = initialize_prof_db()
+    
     # if torch.distributed.get_rank() == 0:
-    inter_node_bsa_configs, intra_node_bsa_configs, intra_node_shape_configs, exp_configs = step0_top_down_decompose()
-    if torch.distributed.get_rank() == 0 and not torch.cuda.is_available():
-        intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, intra_node_shape_configs, exp_configs, prof_db)
+    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict, exp_configs = step0_top_down_decompose()
+    if torch.distributed.get_rank() == 0: #and not torch.cuda.is_available():
+        intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)
     torch.distributed.barrier(gloo_global_group)
-    intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, intra_node_shape_configs, exp_configs, prof_db)  # Bypass mode
+    # return    # Step1 End
+
+    intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)  # Bypass mode
     torch.distributed.barrier(gloo_global_group)
 
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
     if torch.cuda.is_available():
-        step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_global, gloo_global_group)
+        step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_global, gloo_global_group, prof_db)
+    return  # Step2 End
     
     # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)  [TODO]
     if torch.distributed.get_rank() == 0:

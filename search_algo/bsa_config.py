@@ -210,12 +210,14 @@ class BSA_Config(): # OK
     def __init__(self, pat_dict: Union[dict, None] = None, pat_s: Optional[str] = None, pat_bsa_repr: Optional[dict] = None):# OK
         self.pat_dict = None
         self.pat_s = None
-        self.block_table = None
+        # self.block_table = None
         self.cmap = None
         self.bsa_repr = None
-        if pat_s is not None and pat_dict is None:  # Create from pat_s
+        if pat_s is not None and pat_dict is None:  # Create from pat_s; [DEPRECATED]
+            assert False
             pat_dict = self.convert_string_to_dict(pat_s)
-        if pat_dict is not None:    # Create from pat_dict
+        if pat_dict is not None:    # Create from pat_dict; [DEPRECATED]
+            assert False
             self.CP, self.Par_D, self.pattern_type, self.pattern_sparsity, \
                 self.local_blocks, self.global_blocks, self.replicate = \
                 pat_dict['CP'], pat_dict['Par_D'], pat_dict['pattern_type'], pat_dict['pattern_sparsity'], \
@@ -233,7 +235,8 @@ class BSA_Config(): # OK
             # assert ['block_table', 'cmap', 'CP'] <= list(pat_bsa_repr.keys())
             assert ['bsa_repr', 'CP'] <= list(pat_bsa_repr.keys())
             self.bsa_repr = pat_bsa_repr['bsa_repr']
-            self.block_table = self.bsa_repr.block_table
+            # self.block_table = self.bsa_repr.block_table
+            self.block_table_raw = self.bsa_repr.block_table_raw    # Irreducible representation of block_table
             self.cmap = self.bsa_repr.cmap
             self.CP = pat_bsa_repr['CP']    # (intra, inter)
             # [NOTE]: No ParD here !!!
@@ -292,10 +295,10 @@ class BSA_Config(): # OK
     @property
     def total_sparsity(self):   # OK
         blk_num = 0
-        for i in range(self.block_table.shape[0]):
-            for j in range(self.block_table.shape[1]):
-                blk_num += Block_Comp_Volume[self.block_table[i, j]]
-        blk_sparsity = blk_num / (self.block_table.shape[0] * self.block_table.shape[1])
+        for i in range(self.block_table_raw.shape[0]):
+            for j in range(self.block_table_raw.shape[1]):
+                blk_num += Block_Comp_Volume[self.block_table_raw[i, j]]
+        blk_sparsity = blk_num / (self.block_table_raw.shape[0] * self.block_table_raw.shape[1])
         return blk_sparsity
                 
     # def to_dict(self):
@@ -320,10 +323,11 @@ class BSA_Config(): # OK
         pass
     
     def print_block_table(self):    # OK
-        block_table_value = np.array([v.value for v in self.block_table.flatten()]).reshape(self.block_table.shape)
-        print(f'block_table_value:\n{block_table_value}')
+        block_table_raw_value = np.array([v.value for v in self.block_table_raw.flatten()]).reshape(self.block_table_raw.shape)
+        print(f'block_table_raw_value:\n{block_table_raw_value}')
         
-    def create_block_sparse_pattern_from_dict(self, pat_dict: dict) -> tuple:   # OK
+    def create_block_sparse_pattern_from_dict(self, pat_dict: dict) -> tuple:   # [DEPRECATED]
+        assert False
         assert pat_dict is not None
         # if self.created:
         #     return

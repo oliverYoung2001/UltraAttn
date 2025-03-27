@@ -276,7 +276,7 @@ class Comm_Profile_Map():
        
 class Machine_Config():
     def __init__(self, BW, flashattn_profile_map: dict, inter_comp_profile_map: dict, inter_comm_profile_map: dict, intra_comm_profile_map: dict):
-        self.BW = BW
+        self.BW = BW    # Useless
         # self.flashattn_profile_map = FlashAttn_Profile_Map(flashattn_profile_map)
         # self.inter_comp_profile_map = Inter_Comp_Profile_Map(inter_comp_profile_map)
         self.comp_profile_maps = [Inter_Comp_Profile_Map(inter_comp_profile_map), FlashAttn_Profile_Map(flashattn_profile_map)]

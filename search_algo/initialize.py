@@ -12,7 +12,14 @@ import random
 from tests.distributed.device_communicators.pynccl import PyNcclCommunicator
 from functools import partial
 import math
+from search_algo.database import Prof_DB
 
+def initialize_prof_db():
+    # Generate Intra_Execution_Plans:
+    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
+    prof_db = Prof_DB(CLUSTER_NAME, PLATFORM)
+    return prof_db
+    
 def parse_slurm_tasks_per_node(tasks_per_node):
     # 4(x2), 8, ...
     return int(tasks_per_node.split('(')[0])

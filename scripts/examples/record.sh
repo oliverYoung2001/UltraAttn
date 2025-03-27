@@ -1,11 +1,14 @@
 
 # Cluster Profiling [TODO]
-pushd ~/yhy/llm
+pushd ~/yhy/llm/UltraAttn
 #   comp profiling
-
+pushd third_party/kernel_profiler
+./scripts/bench_ops_m2_py.sh    # Output is located in ./prof_data/tmp; Move it to UltraAttn/prof_data/${CLUSTER_NAME}
+popd
 #   comm profiling
-git clone 
-
+pushd third_party/comm_test
+./scripts/wrapper_conflict_bench_zhipu.sh 2>&1 | tee ./prof_data/zhipu/cb_<CP>_<nodes>.log
+popd
 popd
 
 

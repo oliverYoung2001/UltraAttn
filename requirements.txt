@@ -1,6 +1,6 @@
 regex
 pulp
-gurobipy
+gurobipy==12.0.1
 
 # # accelerate==0.28.0
 # datasets==2.18.0

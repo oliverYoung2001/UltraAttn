@@ -9,11 +9,12 @@ from search_algo.global_vars import *
 import math
 import regex as re
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 import torch
 from fractions import Fraction
 import inspect
 import argparse
+import regex as re
 
 def print_rank_0(message):
     """If distributed is initialized, print only on rank 0."""
@@ -23,6 +24,12 @@ def print_rank_0(message):
     else:
         print(message, flush=True)
 
+def find_file_with_regex(dir: str, pat: str) -> List[str]:
+    matched_files = []
+    for file_name in os.listdir(dir):
+        if re.match(pat, file_name):
+            matched_files.append(file_name)
+    return matched_files
 
 def parse_args():
     parser = argparse.ArgumentParser()

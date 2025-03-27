@@ -265,7 +265,7 @@ def Quad_LP_GUROBI(N: int):
     print_lp_result(N, N, Vars, 'x')
 
 
-def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: bool, hierarchy: bool, ParD: Optional[int]):
+def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config, BSA_Config], fob: bool, hierarchy: bool, ParD: Optional[int]):
     # fwd
     # Arguments: Begin -----------------------------------------------
     problem_type = 'OPT'
@@ -283,7 +283,8 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: 
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
     mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
     CPUS_NUM = 90   # nico0
-    CPUS_NUM = 208   # zhipu
+    CPUS_NUM = 208   # zhipu kruskal
+    CPUS_NUM = 64   # zhipu planck
     mylp.setParam('Threads', CPUS_NUM)
     mylp.setParam('TimeLimit', TIME_BUDGET)
     # Variables & Bound
@@ -296,24 +297,33 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: 
     # CP = block_config.CP[1] if block_config.CP[1] > 1 else block_config.CP[0]
     CP_ = block_config.CP[not hierarchy]
     # print(f'CP: {CP}', flush=True)
-    # assert ParD is not None
+    
+    # Calc ParD: Granularity of workload partition for scheduling
     if ParD is None:    # Intra
         assert block_config.CP[1] == 1 and hierarchy == 1, f'[ERROR]: ParD should be set in inter scheduling !!!'
-        ParD = max(CP_, block_config.block_table.shape[0]) # Workload partition degree
+        ParD = max(CP_, block_config.bsa_repr.block_table_raw.shape[0]) # Workload partition degree
     else:   # Inter
         assert hierarchy == 0, f'[ERROR]: ParD should not be set in intra scheduling !!!'
-    # print_rank_0(f'ParD: {ParD}, block_config.bsa_repr.block_table_raw: {block_config.bsa_repr.block_table_raw}')
+    assert ParD % CP_ == 0, f'Now not support (ParD={ParD}) % (CP_={CP_}) = {ParD % CP_} != 0'
+    # print_rank_0(f'ParD: {ParD}')
+    # block_config.print_block_table()
+    
+    # Create current_block_table&Cmap for ILP
     block_config.bsa_repr.block_table_Par_D, block_config.bsa_repr.cmap_Par_D = \
         block_config.bsa_repr.complicate_not_less_then(block_config.bsa_repr.block_table_raw, block_config.bsa_repr.cmap_raw, ParD)
-    cur_block_table = block_config.bsa_repr.block_table_Par_D
+    cur_block_table = block_config.bsa_repr.block_table_Par_D   # Irreducible representation of workload partition for scheduling
+    
     if hasattr(block_config, 'ParD'):
         assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
     cmap = block_config.cmap
     if cmap is None:
         cmap = np.array([i // (ParD // CP_) for i in range(ParD)])
+    # End
     
     sub_shape = (cur_block_table.shape[0] // ParD, cur_block_table.shape[1] // ParD) # each element of grad(ParD, ParD) is a `sub_block_table`
-    print_rank_0(f'sub_shape: {sub_shape}')
+    # print_rank_0(f'sub_shape: {sub_shape}')
+    
+    # Record block_ids
     block_ids = []  # block_ids to be scheduled
     # Check whether diagonal line is full
     diagonal_full = True    # [NOTE]: haven't consider imbalanced workload on diagonal line in load balance !!!
@@ -331,6 +341,8 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: 
                 != Block_Table_Type.EMPTY.value:
             # if cur_block_table[i, j].value != Block_Type.EMPTY.value:
                 block_ids.append((i, j))
+    print_rank_0(f'diagonal_full: {diagonal_full}; block_ids: {block_ids}')
+    # End
     
     for i, j in block_ids:
         for k in range(CP_):
@@ -405,23 +417,26 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: 
     if LOAD_BALANCE:
         # if block_config.CP[1] == 1: # Intra schedule
         if hierarchy == 1: # Intra schedule
-            COMP_TOTAL = sum([Block_Comp_Volume[cur_block_table[i, j]] for i, j in block_ids])
+            COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
             COMP_UB = int(math.ceil(COMP_TOTAL / CP_))
         else:   # Inter schedule
             COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
             COMP_UB = int(math.ceil(COMP_TOTAL / CP_))
-            # print_rank_0(f'COMP_TOTAL: {COMP_TOTAL}, COMP_UB: {COMP_UB}')
             # [HACK]: Find a more general strategy
             if CP_ == 2:
                 COMP_UB += 1
             # END
+        # print_rank_0(f'COMP_TOTAL: {COMP_TOTAL}, COMP_UB: {COMP_UB}')
         for g in range(CP_):
             # mylp += pulp.lpSum([Vars[f'x_{i}_{j}_{g}'] for i in range(N) for j in range(i)]) <= COMP_UB
             # # [NOTE]: Assume that `causal` block can only exist on diagonal line
-            diagonal_COMP_g = calc_table_comp_relative_time(
-                cur_block_table[g*sub_shape[0]:(g+1)*sub_shape[0], g*sub_shape[1]:(g+1)*sub_shape[1]]
-            ) if diagonal_full else 0
+            diagonal_COMP_g = sum([
+                calc_table_comp_relative_time(
+                    cur_block_table[i*sub_shape[0]:(i+1)*sub_shape[0], i*sub_shape[1]:(i+1)*sub_shape[1]]
+                ) for i in range(g*(ParD//CP_), (g+1)*(ParD//CP_))
+            ]) if diagonal_full else 0
             # print_rank_0(f'diagonal_COMP_g of {g}: {diagonal_COMP_g}')
+            
             mylp.addConstr(gp.quicksum([Vars[f'x_{i}_{j}_{g}'] * calc_table_comp_relative_time(
                 cur_block_table[i*sub_shape[0]:(i+1)*sub_shape[0], j*sub_shape[1]:(j+1)*sub_shape[1]]
             ) for i, j in block_ids]) <= COMP_UB - diagonal_COMP_g)
@@ -434,11 +449,11 @@ def Quad_LP_GUROBI_from_block_config(block_config: Block_Attention_Config, fob: 
     mylp.optimize()
     t1 = time.time()
     print(f'LP solve time: {t1 - t0} s', flush=True)
-    
+    # print(f'Model status: {mylp.status}', flush=True)
     # # print_lp_result
     if mylp.status == gp.GRB.OPTIMAL:
         print(f"Optimal value: {mylp.objVal}")
-    # print_lp_result(CP, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
+    # print_lp_result(CP_, ParD, Vars, 'x', cmap=cmap, diagonal_full=diagonal_full)
     return {
         'Par_D': ParD,
         'cmap': cmap,
