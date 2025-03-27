@@ -4,7 +4,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 import torch
 import torch.distributed as dist
-from flash_attn.flash_attn_interface import _flash_attn_forward, _flash_attn_backward
+if torch.cuda.is_available():
+    from flash_attn.flash_attn_interface import _flash_attn_forward, _flash_attn_backward
 # from flash_attn_burst.flash_attn_burst_interface import _flash_attn_burst_forward, _flash_attn_burst_backward
 from search_algo.execute_plan import Execution_Plan, Fused_Execution_Plan
 from .utils import *
