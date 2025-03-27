@@ -227,6 +227,7 @@ set -x
 # export TORCH_SHOW_CPP_STACKTRACES=1 # for debugging
 # export CUDA_LAUNCH_BLOCKING=1 # for debugging
 export CUDA_DEVICE_MAX_CONNECTIONS=32    # [NOTE]: important for cc overlap !!!
+time \
 $RUNNER_CMD \
 ./scripts/runtime/bench_dist_attn.sh \
 python $PYTHON_EXECUBLE \

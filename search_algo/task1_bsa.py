@@ -35,55 +35,6 @@ DTYPE = torch.bfloat16
 def dummy_placeholder_op(*args, **kwargs):
     pass
 
-# def get_intra_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config) -> Dist_Attn_Config:
-#     # [DEPRECATED]
-#     fob = exp_config.fob
-#     hierarchy = da_config.hierarchy   # (0, 1) -> (inter, intra)
-#     assert hierarchy == 1, f"[ERROR]: (hierarchy={hierarchy}) should be 1 in 'get_intra_bsa_cc_optimal_schedule'"
-#     DATABASE_ROOT = get_global_var('DATABASE_ROOT')
-#     os.makedirs(DATABASE_ROOT, exist_ok=True)
-#     INTRA_BSA_ALLOCATION_DB = f'{DATABASE_ROOT}/intra_bsa_allocation.json'
-#     # os.makedirs(INTRA_BSA_ALLOCATION_DB, exist_ok=True)
-#     if not os.path.exists(f'{INTRA_BSA_ALLOCATION_DB}'):
-#         with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
-#             json.dump({}, f)
-#     key = f'fob={fob}_bsa_config={{{da_config.bsa_config}}}'  # [TODO]
-#     print_rank_0(f'intra_bsa_allocation_key: {key}')
-#     with open(f'{INTRA_BSA_ALLOCATION_DB}', 'r') as f:
-#         intra_bsa_allocation_dict = json.load(f)
-#     if key in intra_bsa_allocation_dict.keys():
-#         print_rank_0(f'Bypassed !!!')
-#         value = intra_bsa_allocation_dict[key]
-#         schedule_table = np.array(value['schedule_table'], dtype=np.int32)
-#         assert value['Par_D'] == schedule_table.shape[-1]
-#         schedule_results = {
-#             'CP': da_config.bsa_config.CP,
-#             # 'cmap': da_config.bsa_config.cmap,
-#             'table': schedule_table,
-#         }
-#         # print_rank_0(f'cmap: {da_config.bsa_config.cmap}') # None !!!
-#     else:
-#         print_rank_0(f'Not bypass !!!')
-#         assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
-#         schedule_results = solve_sparse_from_bsa(da_config.bsa_config, fob, hierarchy=hierarchy)
-#         schedule_table = schedule_results['table']
-#         # print_rank_0(f'schedule_table: {schedule_table.dtype}')    # int32
-#         value = {
-#             'Par_D': schedule_table.shape[-1],
-#             'schedule_table': schedule_table.tolist(),
-#         }
-#         intra_bsa_allocation_dict[key] = value
-#         with open(f'{INTRA_BSA_ALLOCATION_DB}', 'w') as f:
-#             json.dump(intra_bsa_allocation_dict, f)
-    
-#     cc_optimal_schedule = get_cc_optimal_schedule_from_table(da_config, m_config, schedule_results)
-    
-#     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
-#         assert isinstance(cc_optimal_schedule, list)
-#         cc_optimal_schedule = cc_optimal_schedule[0]
-#     print_rank_0(f'cc_optimal_schedule.schedule_table: \n{cc_optimal_schedule.schedule_table}')
-#     return cc_optimal_schedule
-
 def get_general_bsa_cc_optimal_schedule(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB) -> Dist_Attn_Config:
     # [NOTE]: Is general, i.g. is intra func useless ???
     fob = exp_config.fob
@@ -161,7 +112,7 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         KERNEL_SCHEDULE_TYPE = plan_type
         # w/o Kernel Tile Execution_Plan:
         KERNEL_TILE_TYPE = 'w/o_kernel_tile'
-        print_rank_0(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:')
+        # print_rank_0(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:')
         key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
         key = f'{key_preffix}{key_suffix}'
         print_rank_0(f'intra_bsa_exe_plan_key: {key}')
@@ -246,7 +197,7 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
     # experiment variables
     WARMUP, NUM_ITER = 11, 20 # most, best performance for most cases
     WARMUP, NUM_ITER = 4, 4 # most, best performance for most cases
-    WARMUP, NUM_ITER = 2, 4 # intermediate, best performance for some cases !!!
+    # WARMUP, NUM_ITER = 2, 4 # intermediate, best performance for some cases !!!
     # WARMUP, NUM_ITER = 1, 2 # later, bad performance
     # WARMUP, NUM_ITER = 0, 1 # [DEBUG]
     
@@ -259,9 +210,10 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
     # Generate inter_comp_plans_dicts
     key_preffix = f'fob={exp_config.fob}_CP={da_config.bsa_config.CP}_shape_config={{{da_config.get_shape_config_str()}}}_bsa_config={{{da_config.bsa_config}}}'
     key_suffixes = [f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})' \
-                        for KERNEL_SCHEDULE_TYPE in ['ILP', 'Flexflow'] \
+                        for KERNEL_SCHEDULE_TYPE in ['Flexflow', 'ILP'] \
                             for KERNEL_TILE_TYPE in ['w/o_kernel_tile', 'w_kernel_tile']]
     keys = [f'{key_preffix}{key_suffix}' for key_suffix in key_suffixes]
+    print_rank_0(f'key_preffix: {key_preffix}')
     # End
     inter_bsa_execution_plans = []  # inter_bsa_execution_plans and inter_comp_plans_dicts are bijective !!!
     inter_comp_plans_dicts = []
@@ -357,7 +309,7 @@ def generate_inter_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         KERNEL_SCHEDULE_TYPE = plan_type
         # w/o Kernel Tile Execution_Plan:
         KERNEL_TILE_TYPE = 'w/o_kernel_tile'
-        print_rank_0(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:')
+        # print_rank_0(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:')
         key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
         key = f'{key_preffix}{key_suffix}'
         print_rank_0(f'inter_bsa_exe_plan_key: {key}')
@@ -477,7 +429,7 @@ def main():
     if torch.distributed.get_rank() == 0: #and not torch.cuda.is_available():
         intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)
     torch.distributed.barrier(gloo_global_group)
-    return    # Step1 End
+    # return    # Step1 End
 
     intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)  # Bypass mode
     torch.distributed.barrier(gloo_global_group)
