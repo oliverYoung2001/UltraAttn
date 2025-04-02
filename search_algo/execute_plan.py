@@ -48,6 +48,7 @@ class Execution_Plan(): # input: kernel streams of gpus
             self.hierarchy_sp = self.da_config.SP[self.hierarchy]
             if plan_type == 'ILP':
                 self.TIME_BUDGET = 5 * 60   # 5mins
+                self.TIME_BUDGET = 1 * 60   # 1mins
                 # self.TIME_BUDGET = 10   # 10s
                 # self.threshold = 1.3
                 self.generate_execution_plan()
@@ -86,10 +87,9 @@ class Execution_Plan(): # input: kernel streams of gpus
             return da_config.get_plan_name(self.fob)
         return None
     
-    def solve_ILP_with_gurobipy(self):
+    def solve_ILP_with_gurobipy(self, TOT_TIME_UP):
         fob = self.fob
         d_graph = self.d_graph
-        TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 1000
         # LP Problem
         mylp = gp.Model("Kernel_Schedule_ILP_GUROBI")
         mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
@@ -111,7 +111,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         #   1. stream exclusive
         overlap_set = set()
         for kernel_list_key, kernel_list in self.stream_kernel_lists.items():
-            print_rank_0(f'kernel_list_key: {kernel_list_key}') # (0, 1, 2) -> comp, send, recv
+            # print_rank_0(f'kernel_list_key: {kernel_list_key}') # (0, 1, 2) -> comp, send, recv
             for i in range(len(kernel_list)):
                 for j in range(i + 1, len(kernel_list)):
                     id0 = kernel_list[i].id
@@ -119,7 +119,7 @@ class Execution_Plan(): # input: kernel streams of gpus
                     overlap_key = (min(id0, id1), max(id0, id1))
                     if overlap_key in overlap_set:
                         continue
-                    print_rank_0(f'overlap_key: {overlap_key}; kernel keys: {kernel_list[i].key}, {kernel_list[j].key}')
+                    # print_rank_0(f'overlap_key: {overlap_key}; kernel keys: {kernel_list[i].key}, {kernel_list[j].key}')
                     overlap_set.add(overlap_key)
                     # overlap_ij = pulp.LpVariable(f"overlap_{overlap_key[0]}_{overlap_key[1]}", cat='Binary')
                     overlap_ij = mylp.addVar(vtype=GRB.BINARY, name=f"overlap_{overlap_key[0]}_{overlap_key[1]}")
@@ -154,10 +154,9 @@ class Execution_Plan(): # input: kernel streams of gpus
             v._start_time = v.start_time.x
         self.end_time = self.mylp_obj = mylp.objVal
 
-    def solve_ILP_with_pulp(self):
+    def solve_ILP_with_pulp(self, TOT_TIME_UP):
         fob = self.fob
         d_graph = self.d_graph
-        TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 1000
         # LP Problem
         # mylp = gp.Model("Kernel_Schedule_ILP_GUROBI")
         # mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
@@ -178,7 +177,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         #   1. stream exclusive
         overlap_set = set()
         for kernel_list_key, kernel_list in self.stream_kernel_lists.items():
-            print_rank_0(f'kernel_list_key: {kernel_list_key}') # (0, 1, 2) -> comp, send, recv
+            # print_rank_0(f'kernel_list_key: {kernel_list_key}') # (0, 1, 2) -> comp, send, recv
             for i in range(len(kernel_list)):
                 for j in range(i + 1, len(kernel_list)):
                     id0 = kernel_list[i].id
@@ -186,7 +185,7 @@ class Execution_Plan(): # input: kernel streams of gpus
                     overlap_key = (min(id0, id1), max(id0, id1))
                     if overlap_key in overlap_set:
                         continue
-                    print_rank_0(f'overlap_key: {overlap_key}; kernel keys: {kernel_list[i].key}, {kernel_list[j].key}')
+                    # print_rank_0(f'overlap_key: {overlap_key}; kernel keys: {kernel_list[i].key}, {kernel_list[j].key}')
                     overlap_set.add(overlap_key)
                     overlap_ij = pulp.LpVariable(f"overlap_{overlap_key[0]}_{overlap_key[1]}", cat='Binary')
                     mylp += kernel_list[i].start_time + kernel_list[i].time[fob] <= kernel_list[j].start_time + TOT_TIME_UP * overlap_ij
@@ -208,7 +207,13 @@ class Execution_Plan(): # input: kernel streams of gpus
         t0 = time.time()
         MSG = 1
         # MSG = 0 # disable msg
-        solver = pulp.GUROBI(msg=MSG, timeLimit=self.TIME_BUDGET, Seed=42)
+        CPUS_NUM = int(os.getenv('GUROBI_NUM_THREADS', default=64))
+        solver = pulp.GUROBI(msg=MSG, timeLimit=self.TIME_BUDGET, Seed=42)    # Cannot pass sanity check !!!
+        # solver = pulp.CPLEX_CMD(msg=MSG, timeLimit=self.TIME_BUDGET, threads=CPUS_NUM, options=[("randomseed", 42)])    # Need CPLEX
+        # solver = pulp.PULP_CBC_CMD(msg=MSG, timeLimit=self.TIME_BUDGET, threads=CPUS_NUM, options=["randomSeed", "42"])   # Too slow
+        # solver = pulp.SCIP_CMD(msg=MSG, timeLimit=self.TIME_BUDGET, threads=CPUS_NUM, options=[("randomization/randomseed", 42)]) # Need SCIP
+        # solver = pulp.CHOCO_CMD(msg=MSG, timeLimit=self.TIME_BUDGET)    # Need java
+        # solver = pulp.GLPK_CMD(msg=MSG, timeLimit=self.TIME_BUDGET) # Need GLPK
         mylp.solve(solver)    # Use GUROBI !!!
         t1 = time.time()
         print(f'LP solve time for {mylp.name}: {t1 - t0} s', flush=True)
@@ -247,132 +252,96 @@ class Execution_Plan(): # input: kernel streams of gpus
                 stream_kernel_lists[(v.key[4], 2)].append(v)
         
         # Build&Solve ILP
-        self.solve_ILP_with_gurobipy()   # with gurobipy !!!
-        # self.solve_ILP_with_pulp()    # with pulp(gurobi)
+        # TOT_TIME_UP ⬆️ -> solver performance ⬆️; corretness ⬇️
+        # TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 3  # Significant for GUROBI
+        TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 8  # Significant for GUROBI
+        # TOT_TIME_UP = d_graph.schedule.get_absolute_cc_time()
+        # TOT_TIME_UP = 1e9
+        print_rank_0(f'TOT_TIME_UP: {TOT_TIME_UP}')
+        self.solve_ILP_with_gurobipy(TOT_TIME_UP)   # with gurobipy !!!
+        # self.solve_ILP_with_pulp(TOT_TIME_UP)    # with pulp(gurobi)
         
-        # sort all kernels in each stream according to start_time
+        # Sort all kernels in each stream according to start_time (kernel orders on all stream are determined !!!)
         for g in range(self.hierarchy_sp):
             for s in range(self.stream_num):
                 self.stream_kernel_lists[(g, s)].sort(key=lambda x: x._start_time)
-        # sanity check for stream exclusive on stream_kernel_lists
+        # self.print_lp_result()
+        # Fine-tune start_time according to kernel orders
+        self.fine_tune_kernel_time()
+        
+        # Sanity check for stream exclusive on stream_kernel_lists
         if not self.sanity_check_stream_exclusive():
             print_rank_0(f'[ERROR]: sanity check for stream exclusive not passed !!!')
         else:
             print_rank_0(f'[INFO]: sanity check for stream exclusive passed.')
         
         self.gpu_kernel_lists = []
+        print_rank_0(f'gpu_kernel_lists:')
         for g in range(self.hierarchy_sp):
             kernel_list = []
             for s in range(self.stream_num):
                 kernel_list += self.stream_kernel_lists[(g, s)]
-            kernel_list.sort(key=lambda x: (x._start_time, x.id))
+            # kernel_list.sort(key=lambda x: (x._start_time, x.id))
+            kernel_list.sort(key=lambda x: (x._start_time, isinstance(x, Comp_Kernel)))
             self.gpu_kernel_lists.append(kernel_list)
-        
-    def generate_execution_plan_old(self):
+            # Print gpu_kernel_lists
+            print_rank_0(f'G{g} {" ".join([str(kernel.key) for kernel in kernel_list])}')
+            
+    def fine_tune_kernel_time(self):
+        # 1. Correct overlapped kernels on the same stream caused by GUROBI
+        # 2. Minimize start times for all kernel under constraints
         fob = self.fob
-        d_graph = self.d_graph
-        TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 1000
-        # print_rank_0(f'TOT_TIME_UP: {TOT_TIME_UP}')
-        # Using LP to optimize the execution order
-        mylp = pulp.LpProblem(f"Cuda_Stream_Events", pulp.LpMinimize)
-        # Variables
-        self.valid_kernels = []
-        v_id = 0
-        for v in d_graph.kernel_dict.values():
-            if not v.is_empty(fob):
-                self.valid_kernels.append(v)
-                v.id = v_id
-                v_id += 1
-                v.start_time = pulp.LpVariable(f'start_time[{v.id}]', cat=pulp.const.LpContinuous, lowBound=0)
-        end_time = pulp.LpVariable(f'end_time', cat=pulp.const.LpContinuous, lowBound=0)
-        # Constraints
-        # 1. stream exclusive
-        self.stream_num = 3
-        stream_kernel_lists = {}  # (hierarchy_sp, 3) -> list, 3 stands for comp, send, recv
-        for g in range(self.hierarchy_sp):
-            for s in range(self.stream_num):
-                stream_kernel_lists[(g, s)] = []
+        # search according to topology order
+        # bfs to calc start_time of kernels
+        def pack_func(v: Cuda_Kernel) -> tuple:
+            return (v._start_time, v.id, v)
+        def unpack_func(q_item: tuple) -> Cuda_Kernel:
+            return q_item[2]
+        pq = []     # Priprity Queue
+        
+        # build dependencies within streams
+        for kernel_list in self.stream_kernel_lists.values():   
+            for i in range(len(kernel_list) - 1):
+                # assert kernel_list[i + 1] not in kernel_list[i].successors, \
+                #     f'[ERROR]: {kernel_list[i + 1].key} should not be in successors of {kernel_list[i].key}'
+                # assert kernel_list[i] not in kernel_list[i + 1].precursors, \
+                #     f'[ERROR]: {kernel_list[i].key} should not be in precursors of {kernel_list[i + 1].key}'
+                # kernel_list[i].successors.add(kernel_list[i + 1])
+                # kernel_list[i + 1].precursors.add(kernel_list[i])
+                kernel_list[i].add_edge(kernel_list[i + 1], fob)
+                
+        # calc initialize kernels
         for v in self.valid_kernels:
-            if v.type == 'comp':
-                stream_kernel_lists[(v.key[-1], 0)].append(v)
-            elif v.type == 'comm':
-                stream_kernel_lists[(v.key[3], 1)].append(v)
-                stream_kernel_lists[(v.key[4], 2)].append(v)
-        # SEED = 2
-        # random.seed(SEED)
-        # print(f'SEED: {SEED}')
-        # for kernel_list in stream_kernel_lists.values():    # random shuffle
-        #     kernel_list = random.shuffle(kernel_list)
-        overlap_set = set()
-        for kernel_list_key, kernel_list in stream_kernel_lists.items():
-            print_rank_0(f'kernel_list_key: {kernel_list_key}') # (0, 1, 2) -> comp, send, recv
-            for i in range(len(kernel_list)):
-                for j in range(i + 1, len(kernel_list)):
-                    id0 = kernel_list[i].id
-                    id1 = kernel_list[j].id
-                    overlap_key = (min(id0, id1), max(id0, id1))
-                    if overlap_key in overlap_set:
-                        continue
-                    print_rank_0(f'overlap_key: {overlap_key}; kernel keys: {kernel_list[i].key}, {kernel_list[j].key}')
-                    overlap_set.add(overlap_key)
-                    overlap_ij = pulp.LpVariable(f"overlap_{overlap_key[0]}_{overlap_key[1]}", cat='Binary')
-                    mylp += kernel_list[i].start_time + kernel_list[i].time[fob] <= kernel_list[j].start_time + TOT_TIME_UP * overlap_ij
-                    mylp += kernel_list[j].start_time + kernel_list[j].time[fob] <= kernel_list[i].start_time + TOT_TIME_UP * (1 - overlap_ij)
+            v.left_precursors = len(v.precursors)
+            v._start_time = 0
+            v.selected = False
+            if v.left_precursors == 0:
+                heappush(pq, pack_func(v))
+        while len(pq) > 0:
+            v = unpack_func(heappop(pq))    # select a kernel
+            v.selected = True
+            # # update start_times of kernels in the same streams with v
+            # for stream_key in v.stream_keys:
+            #     for u in self.stream_kernel_lists[stream_key]:
+            #         if not u.selected:
+            #             u._start_time = max(u._start_time, v._start_time + v.time[fob])
+            # update start_times of successive kernels of v
+            for u in v.successors:
+                u.left_precursors -= 1
+                u._start_time = max(u._start_time, v._start_time + v.time[fob])
+                if u.left_precursors == 0:
+                    heappush(pq, pack_func(u))
                     
-        
-        # 2. kernel dependences
-        for u in self.valid_kernels:
-            for v in u.successors:
-                mylp += v.start_time >= u.start_time + u.time[fob]
-        
-        # 3. end_time
-        for u in self.valid_kernels:
-            mylp += end_time >= u.start_time + u.time[fob]
-        
-        # Objective
-        mylp += end_time
-        
-        # Solve
-        # solver = pulp.getSolver('GUROBI')
-        # print(f'before solve !!!', flush=True)
-        t0 = time.time()
-        MSG = 1
-        # MSG = 0 # disable msg
-        # mylp.solve(pulp.PULP_CBC_CMD(msg=MSG, timeLimit=self.TIME_BUDGET))    # Use CBC
-        solver = pulp.GUROBI(msg=MSG, timeLimit=self.TIME_BUDGET, Seed=42)
-        # solver = pulp.GUROBI_CMD(msg=MSG, timeLimit=self.TIME_BUDGET, options=[("Seed", 42)])
-        mylp.solve(solver)    # Use GUROBI !!!
-        # print(f'after solve !!!', flush=True)
-        t1 = time.time()
-        print(f'LP solve time: {t1 - t0} s', flush=True)
-        # pulp.GUROBI(mgs=0).solve(mylp)
-        # self.mylp = mylp
-        self.stream_kernel_lists = stream_kernel_lists
-        
-        # post process
-        
-        # parse start_time of each kernel
+        # remove dependencies within streams; in reverse order !!!!
+        for kernel_list in reversed(self.stream_kernel_lists.values()):   
+            for i in range(len(kernel_list) - 2, - 1, - 1):
+                kernel_list[i].remove_edge(kernel_list[i + 1], fob)
+                
+        # Recompute correct end_time
+        self.end_time = 0
         for v in self.valid_kernels:
-            v._start_time = v.start_time.value()
+            self.end_time = max(self.end_time, v._start_time + v.time[fob])
         
-        # sort all kernels in each stream according to start_time
-        for g in range(self.hierarchy_sp):
-            for s in range(self.stream_num):
-                self.stream_kernel_lists[(g, s)].sort(key=lambda x: x.start_time.value())
-        # sanity check for stream exclusive on stream_kernel_lists
-        if not self.sanity_check_stream_exclusive():
-            print_rank_0(f'[ERROR]: sanity check for stream exclusive not passed !!!')
-        
-        self.gpu_kernel_lists = []
-        for g in range(self.hierarchy_sp):
-            kernel_list = []
-            for s in range(self.stream_num):
-                kernel_list += self.stream_kernel_lists[(g, s)]
-            kernel_list.sort(key=lambda x: (x.start_time.value(), x.id))
-            self.gpu_kernel_lists.append(kernel_list)
-        self.end_time = self.mylp_obj = pulp.value(mylp.objective)
-        return mylp
-    
     def sanity_check_stream_exclusive(self):    # Assume that kernels on each list are sorted by their start time
         fob = self.fob
         ret = True
@@ -410,11 +379,11 @@ class Execution_Plan(): # input: kernel streams of gpus
                 print(f"{OJB}{g}, {['comp', 'send', 'recv'][s]}: {len(self.stream_kernel_lists[(g, s)])}")
                 for v in self.stream_kernel_lists[(g, s)]:
                     print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
-        if self.plan_type == 'ILP':
-            print(f'objective={self.mylp_obj:.3e}', flush=True)
-        # elif self.plan_type == 'manual':
-        else:
-            print(f'end_time={self.end_time:.3e}', flush=True)
+        # if self.plan_type == 'ILP':
+        #     print(f'objective={self.mylp_obj:.3e}', flush=True)
+        # # elif self.plan_type == 'manual':
+        # else:
+        print(f'end_time={self.end_time:.3e}', flush=True)
     
     def determine_kernel_order(self):   # [NOTE]: for full attn intra-node, non-fused, manually cc schedule
         hierarchy_sp = self.hierarchy_sp

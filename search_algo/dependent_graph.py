@@ -22,6 +22,12 @@ class Cuda_Kernel():
     def add_successor(self, successor):
         self.successors.add(successor)
     
+    def remove_precursor(self, precursor):
+        self.precursors.discard(precursor)
+    
+    def remove_successor(self, successor):
+        self.successors.discard(successor)
+    
     def is_empty(self, fob):
         return self.time[fob] <= 0
     
@@ -31,6 +37,13 @@ class Cuda_Kernel():
             return
         self.add_successor(v)
         v.add_precursor(self)
+    
+    def remove_edge(self, v, fob):
+        # check whether self or v is empty
+        if self.is_empty(fob) or v.is_empty(fob):
+            return
+        self.remove_successor(v)
+        v.remove_precursor(self)
                 
 class Comp_Kernel(Cuda_Kernel):
     def __init__(self, key: tuple, m_config: Machine_Config, comp_map_key: tuple, hierarchy: int, \

@@ -13,6 +13,7 @@ from tests.distributed.device_communicators.pynccl import PyNcclCommunicator
 from functools import partial
 import math
 from search_algo.database import Prof_DB
+from datetime import timedelta
 
 def initialize_prof_db():
     # Generate Intra_Execution_Plans:
@@ -103,7 +104,8 @@ def initialize_distribution():
         # init_method=init_method, 
         rank=PROC_INFO['rank'], 
         world_size=PROC_INFO['world_size'])
-    gloo_global_group = dist.new_group(ranks=global_ranks, backend='gloo')
+    gloo_global_group_timeout = timedelta(weeks=4)
+    gloo_global_group = dist.new_group(ranks=global_ranks, backend='gloo', timeout=gloo_global_group_timeout)
     ncclcomm_global = PyNcclCommunicator(gloo_global_group, ranks=global_ranks, device=PROC_INFO['local_rank'])
     
     cpu_group_dict = get_global_var_orch('cpu_group_dict')

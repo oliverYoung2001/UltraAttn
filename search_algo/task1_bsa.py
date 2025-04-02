@@ -200,6 +200,7 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
     # WARMUP, NUM_ITER = 2, 4 # intermediate, best performance for some cases !!!
     # WARMUP, NUM_ITER = 1, 2 # later, bad performance
     # WARMUP, NUM_ITER = 0, 1 # [DEBUG]
+    # WARMUP, NUM_ITER = 1, 1
     
     # Prepare database
     with open(prof_db.INTRA_BSA_EXE_PLANS_KV, 'r') as f:
@@ -217,6 +218,7 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
     # End
     inter_bsa_execution_plans = []  # inter_bsa_execution_plans and inter_comp_plans_dicts are bijective !!!
     inter_comp_plans_dicts = []
+    sim_times = []
     for key in keys:
         # Create dummy inter_bsa_execution_plan
         inter_bsa_execution_plan: Optional[Execution_Plan] = Execution_Plan.create_one_node_exe_plan(exp_config.fob)
@@ -225,6 +227,7 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
         plan_id = intra_bsa_exe_plans_dict[key]
         with open(f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
             intra_bsa_execution_plan: Execution_Plan = pickle.load(fin)
+        sim_times.append(intra_bsa_execution_plan.end_time)
         # OBJ1: build inter_comp_plans_dict
         # OBJ2: Set correct execution_plan to each inter kernel
         # inter_comp_plans_dict: {intra_bsa_key: intra_bsa_exe_plan}; intra_bsa_key only aims to deduplicate
@@ -254,11 +257,14 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
             warmup=WARMUP, num_iter=NUM_ITER, log=True, mode='profile',
         )
         bench_results = benchmark_op(use_cudagraph=False)   # List[[Tflops/s, s]] for rank0, List[[None, None]] for others
-        assert len(bench_results) == len(inter_comp_plans_dicts)
+        assert len(bench_results) == len(inter_comp_plans_dicts) == len(sim_times)
+        
         # Save bench_results to profile json file
         if torch.distributed.get_rank() == 0:
-            for key, bench_result in zip(keys, bench_results):
+            for key, bench_result, sim_time in zip(keys, bench_results, sim_times):
                 assert key not in intra_bsa_exe_plans_profile, f'profile_all_intra_BSA is profiled by grained of all ablation tests !!!'
+                # Add sim_time in bench_results
+                bench_result['sim_time'] = f'{sim_time:.3e}'
                 intra_bsa_exe_plans_profile[key] = bench_result
             # print_rank_0(f'intra_bsa_exe_plans_profile: {intra_bsa_exe_plans_profile}')
             with open(prof_db.INTRA_BSA_EXE_PLANS_PROFILE, 'w') as f:
@@ -386,24 +392,25 @@ def step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_gl
         for da_config in intra_da_configs:
             profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf, prof_db)
 
-def step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, intra_node_shape_configs, exp_configs, prof_db):
+def step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db):
     # Step3: Generate the inter-BSA; need all cpus on one node; (w cache/bypass)
     # inter_node_bsa_configs: List[Dict{CP: BSA_Config}]    # [DEPRECATED]
     # inter_node_bsa_configs: List[BSA_Config]
+    inter_node_shape_configs = shape_config_dict['inter']
     hierarchy = 1   # (0, 1) -> (inter, intra)
     inter_plan_id = 0
     inter_da_configs: List[Dist_Attn_Config] = []
     for exp_config in exp_configs:
         for inter_node_bsa_config in inter_node_bsa_configs:
-            for Nh in intra_node_shape_configs['Nhs']:
-                for S_per_node in intra_node_shape_configs['Ss']:
-                    for bs in intra_node_shape_configs['BSs']:
-                        for D in intra_node_shape_configs['Ds']:
-                            inter_node_S = S_per_node * inter_node_bsa_config.CP[1]
+            for Nh in inter_node_shape_configs['Nhs']:
+                for S_tot in inter_node_shape_configs['Ss']:
+                    for bs in inter_node_shape_configs['BSs']:
+                        for D in inter_node_shape_configs['Ds']:
+                            # inter_node_S = S_per_node * inter_node_bsa_config.CP[1]
                             # print_rank_0(f'S_per_node: {S_per_node}; inter_node_S: {inter_node_S}; inter_node_bsa_config.CP: {inter_node_bsa_config.CP}')
                             shape_config = {
                                 'Nh': (Nh, Nh),
-                                'S': (inter_node_S, inter_node_S),  # inter_node_S
+                                'S': (S_tot, S_tot),  # S_tot
                                 'bs': bs,
                                 'D': D,
                             }
@@ -438,11 +445,11 @@ def main():
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
     if torch.cuda.is_available():
         step2_profile_intra_bsa_exe_plans(intra_da_configs, exp_configs, ncclcomm_global, gloo_global_group, prof_db)
-    return  # Step2 End
+    # return  # Step2 End
     
     # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)  [TODO]
     if torch.distributed.get_rank() == 0:
-        step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, intra_node_shape_configs, exp_configs, prof_db)    
+        step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db)    
     
 if __name__ == '__main__':
     main()
