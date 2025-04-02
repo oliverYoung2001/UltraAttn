@@ -112,7 +112,7 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         KERNEL_SCHEDULE_TYPE = plan_type
         # w/o Kernel Tile Execution_Plan:
         KERNEL_TILE_TYPE = 'w/o_kernel_tile'
-        # print_rank_0(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:')
+        print_rank_0(f'{KERNEL_TILE_TYPE}, {KERNEL_SCHEDULE_TYPE}:')
         key_suffix = f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})'
         key = f'{key_preffix}{key_suffix}'
         print_rank_0(f'intra_bsa_exe_plan_key: {key}')
@@ -433,6 +433,7 @@ def main():
 
     intra_da_configs = step1_generate_intra_bsa_exe_plans(intra_node_bsa_configs, shape_config_dict, exp_configs, prof_db)  # Bypass mode
     torch.distributed.barrier(gloo_global_group)
+    # return      # Step1 End
 
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
     if torch.cuda.is_available():

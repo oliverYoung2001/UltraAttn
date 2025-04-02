@@ -6,7 +6,7 @@ from search_algo.search_engine import Evaluation_Configs
 import numpy as np
 from search_algo.bsa_config import BSA_Repr, BSA_Config
 from search_algo.bsa_utils import create_bsa_block_table, split_to_node_configs
-from search_algo.utils import combine_list_to_0, convert_block_table_to_value, print_rank_0
+from search_algo.utils import combine_list_to_0, convert_block_table_to_value, print_rank_0, Block_Type
 import math
 
 def get_exp_configs():
@@ -114,7 +114,7 @@ def get_bsa_configs():
     }
     return inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict
 
-def get_bsa_configs_debug():
+def get_bsa_configs_debug0():
     PLATFORM = os.getenv(f'PLATFORM')
     CPs = [
         (8, 1),
@@ -194,10 +194,66 @@ def get_bsa_configs_debug():
     }
     return inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict
 
+def get_bsa_configs_debug1():
+    # key_preffix: fob=0_CP=(8, 1)_shape_config={S=(524288, 524288)_Nh=(32, 32)_bs=1_D=128}_bsa_config={CP=(8, 1)_repr=[[10][11]]}
+    PLATFORM = os.getenv(f'PLATFORM')
+    CPs = [
+        (8, 1),
+    ]
+    Ss_total = [
+        512 * 1024,
+    ]
+    S_per_gpu_LB = 256
+    S_per_gpu_UB = 64 * 1024   # (8, 8) -> 2M; aims to limit memory usage
+    GPU_PER_NODE = 8
+    Ss_per_node = [1 << i for i in range(math.ceil(math.log2(min(Ss_total) // CPs[-1][-1])), \
+                                        math.ceil(math.log2(min(
+                                            max(Ss_total) // CPs[0][-1], S_per_gpu_UB * GPU_PER_NODE)
+                                        )) + 1)]
+    print_rank_0(f'Ss_per_node: {Ss_per_node}')
+    Nhs = [
+        # 1,
+        32,
+    ]
+    bs = 1
+    D = 128
+    
+    bsa_repr = np.array([[Block_Type.FULL, Block_Type.EMPTY], [Block_Type.FULL, Block_Type.FULL]], dtype=Block_Type)
+    intra_node_bsa_configs = [
+        BSA_Config(None, None, {
+            'bsa_repr': BSA_Repr(bsa_repr, None),
+            'CP': CPs[0],
+        })
+    ]
+    for intra_node_bsa_config in intra_node_bsa_configs:
+        block_table_raw_value = convert_block_table_to_value(intra_node_bsa_config.block_table_raw)
+        print_rank_0(f'CP: {intra_node_bsa_config.CP}, minimum_Par_D: {intra_node_bsa_config.bsa_repr.minimum_Par_D}\n'
+                     f'{block_table_raw_value}')
+    
+    inter_node_shape_configs = {
+        'Nhs': Nhs,
+        'Ss': Ss_total,
+        'BSs': [bs],
+        'Ds': [D],
+    }
+    intra_node_shape_configs = {
+        'Nhs': Nhs,
+        'Ss': Ss_per_node,
+        'BSs': [bs],
+        'Ds': [D],
+    }
+    shape_config_dict = {
+        'inter': inter_node_shape_configs,
+        'intra': intra_node_shape_configs,
+        'S_per_gpu_BOUND': (S_per_gpu_LB, S_per_gpu_UB),
+    }
+    return [], intra_node_bsa_configs, shape_config_dict
+
 def step0_top_down_decompose():
     # Step0: top-> down; need only 1 cpu; (w/o cache/bypass)✅
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()
-    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug()
+    # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug0()
+    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug1()
     exp_configs = get_exp_configs()
     if isinstance(exp_configs, Evaluation_Configs):
         exp_configs = [exp_configs]

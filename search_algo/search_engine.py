@@ -16,6 +16,7 @@ from typing import Optional
 from search_algo.bsa_config import BSA_Config
 from search_algo.bsa_utils import convert_shape_config_to_str
 import regex as re
+from search_algo.utils import print_rank_0
 
 class Evaluation_Configs():
     def __init__(self, plan_type: str, MAX_QUEUE_SIZE: int, fob: bool, plan_path: str = None, hierarchy: bool = 1, transform_mode: str = 'bf', inter_comp_profile_map=None, execution_plan=None):
@@ -45,6 +46,11 @@ class Dist_Attn_Config():
         self.causal = causal
         self.hierarchy = hierarchy
         self.bsa_config = bsa_config    # prior than 'causal'
+        # Calc total Par_D
+        if self.bsa_config is None: # dense
+            self.tot_Par_D = self.tot_sp
+        else:
+            self.tot_Par_D = max(self.tot_sp, self.bsa_config.block_table_raw.shape[0])
         # self.hierarchy_sp = SP[hierarchy]
         # self.tot_sp = reduce(lambda x,y:x*y, SP)
         # self.S_per_gpu = (S[0] // self.tot_sp, S[1] // self.tot_sp)
@@ -66,6 +72,13 @@ class Dist_Attn_Config():
     def S_per_gpu(self):
         return (self.S[0] // self.tot_sp, self.S[1] // self.tot_sp)
     
+    @property
+    def S_per_partition(self):
+        if self.bsa_config is None:
+            return self.S_per_gpu
+        else:
+            return (self.S[0] // self.tot_Par_D, self.S[1] // self.tot_Par_D)
+            
     def get_plan_name(self, fob=1):
         return f'S={self.S}_SP={self.SP}_causal={self.causal}_fob={fob}_b={self.bs}_Nh={self.Nh}_D={self.D}'
     
@@ -249,10 +262,11 @@ class Comm_Profile_Map():
     def get_comm_map_key(self, da_config: Dist_Attn_Config, batch_degrees: list, split_degrees: list) -> tuple:
         # [NOTE]: Now only support inter-machine communication
         assert(len(batch_degrees) == 2) # Q, KV
-        tot_sp = reduce(lambda x,y:x*y, da_config.SP)
-        Sq = da_config.S[0] * batch_degrees[0] // tot_sp
-        # Skv = da_config.S[1] * batch_degrees[1] // tot_sp
-        return (int(Sq * (da_config.bs / split_degrees[2]) * (da_config.Nh[0] / split_degrees[3]) * da_config.D * 2),)    # B
+        # tot_sp = reduce(lambda x,y:x*y, da_config.SP)
+        # Sq = da_config.S[0] * batch_degrees[0] // tot_sp
+        # # Skv = da_config.S[1] * batch_degrees[1] // tot_sp
+        Sq_per_partition = da_config.S_per_partition[0]
+        return (int(Sq_per_partition * (da_config.bs / split_degrees[2]) * (da_config.Nh[0] / split_degrees[3]) * da_config.D * 2),)    # B
     
     def get_comm_time_from_map_key(self, map_key: tuple) -> float:
         if map_key[0] <= 0:
@@ -266,7 +280,7 @@ class Comm_Profile_Map():
         else:
             matched_key = map_key
         comm_time = map_key[0] / pow(BYTE_MULTPLE_DOWN, 3) / self.profile_map[matched_key]    # s
-        # print(f'map_key: {map_key[0]}, comm_time: {comm_time}', flush=True)
+        # print_rank_0(f'map_key: {map_key[0]}, comm_time: {comm_time}')
         return comm_time
     
     def get_comm_time(self, da_config: Dist_Attn_Config, batch_degrees: list, split_degrees: list) -> float:

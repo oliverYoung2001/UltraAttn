@@ -12,6 +12,7 @@ MLP_MPI_HOSTFILE=/root/mpi_rack_hostfile
 EXP_NAME='task1_BSA'
 
 export MLP_WORKER_NUM=1
+GPU_NUM=$(( MLP_WORKER_NUM * $MLP_GPU))
 # source $1
 
 mkdir -p results
@@ -42,6 +43,14 @@ if [ $CLUSTER_NAME == 'zhipu_planck' ]; then
     export GUROBI_NUM_THREADS=64
 fi
 
+# Envs For Nsightexport 
+NSYS_DIR=./prof_results/nsys_orchestrate
+mkdir -p $NSYS_DIR
+NSIGHT_CMD="nsys profile --mpi-impl=openmpi -o ${NSYS_DIR}/${TRACE_NAME}_w${GPU_NUM}_$(date "+%Y%m%d-%H%M%S")"
+NSIGHT_CMD=""
+
+time \
+$NSIGHT_CMD \
 mpirun -np $((MLP_WORKER_NUM * MLP_GPU)) \
         --hostfile ${MLP_MPI_HOSTFILE} \
         --allow-run-as-root -oversubscribe -map-by ppr:8:node \

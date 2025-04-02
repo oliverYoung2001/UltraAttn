@@ -23,13 +23,13 @@ def print_rank_0(message):
         print(message, flush=True)
 
 def get_Q_shape_from_da_config(da_config: Dist_Attn_Config, batch_degree: int) -> Tuple:
-    return (da_config.bs, da_config.S_per_gpu[0] * batch_degree, da_config.Nh[0], da_config.D)
+    return (da_config.bs, da_config.S_per_partition[0] * batch_degree, da_config.Nh[0], da_config.D)
 
 def get_K_shape_from_da_config(da_config: Dist_Attn_Config, batch_degree: int) -> Tuple:
-    return (da_config.bs, da_config.S_per_gpu[1] * batch_degree, da_config.Nh[0], da_config.D)
+    return (da_config.bs, da_config.S_per_partition[1] * batch_degree, da_config.Nh[0], da_config.D)
 
 def get_lse_shape_from_da_config(da_config: Dist_Attn_Config, batch_degree: int) -> Tuple:
-    return (da_config.bs, da_config.Nh[0], da_config.S_per_gpu[0] * batch_degree)
+    return (da_config.bs, da_config.Nh[0], da_config.S_per_partition[0] * batch_degree)
 
 class Integrated_Data():
     def __init__(self):
@@ -324,10 +324,12 @@ class IntraComm:
         
     def send(self, dst: int, idata: Integrated_Data, stream: torch.cuda.Stream, ncclcomm: PyNcclCommunicator) -> None:
         global_dst = self.node_id * self.local_size + dst
+        # print_rank_0(f'send idata.data.shape: {idata.data.shape}')
         ncclcomm.send(idata.data, self.rank < global_dst, stream)
     
     def recv(self, src: int, idata: Integrated_Data, stream: torch.cuda.Stream, ncclcomm: PyNcclCommunicator) -> Integrated_Data:
         global_src = self.node_id * self.local_size + src
+        # print_rank_0(f'recv idata.data.shape: {idata.data.shape}')
         ncclcomm.recv(idata.data, self.rank < global_src, stream)
         return idata
 

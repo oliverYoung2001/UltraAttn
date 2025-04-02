@@ -184,13 +184,17 @@ def benchmark_ops(streams, global_group, device, f, inputs, \
                 event_end = torch.cuda.Event(enable_timing=True)
                 placeholder_op(stream=main_stream) # [NOTE]: aim to eliminate cpu overhead
                 event_start.record(stream=main_stream)
-                # preprocess
-                all_wait_main_stream(stream_list, main_stream)
+                # # preprocess
+                # all_wait_main_stream(stream_list, main_stream)
                 with torch.no_grad():
                     for _ in range(num_iter):
+                        # preprocess
+                        all_wait_main_stream(stream_list, main_stream)
                         _ = f(**inputs)
-                # postprocess
-                main_stream_wait_all(stream_list, main_stream)
+                        # postprocess
+                        main_stream_wait_all(stream_list, main_stream)
+                # # postprocess
+                # main_stream_wait_all(stream_list, main_stream)
                 event_end.record(stream=main_stream)
                 torch.cuda.synchronize()
                 td = event_start.elapsed_time(event_end) / 1000 # s
@@ -213,7 +217,7 @@ def create_buf_dict(da_config: Dist_Attn_Config, exp_config: Evaluation_Configs,
                     batch_degrees: tuple, tensor_buf: torch.Tensor, level_rank: int) -> dict:
     assert len(batch_degrees) == 2, f'Invalid batch_degrees: {batch_degrees}'   # [Q_batch_degree, KV_batch_degree]
     bs = da_config.bs
-    Sq, Skv = da_config.S_per_gpu
+    Sq, Skv = da_config.S_per_partition
     Sq *= batch_degrees[0]
     Skv *= batch_degrees[1]
     Nhq, Nhg = da_config.Nh
@@ -337,7 +341,7 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
 
     # Configs:
     batch_size = da_config.bs
-    Sq, Skv = da_config.S_per_gpu   # Sq, Skv per gpu !!!
+    # Sq, Skv = da_config.S_per_gpu   # Sq, Skv per gpu !!!
     nheads = da_config.Nh[0]    # Nh, Ng
     d = da_config.D
     dropout_p = 0
@@ -397,7 +401,7 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
         torch.cuda.empty_cache()
         t0 = time.time()
         SP = da_config.SP   # (inter, intra)
-        Ss = (Sq * world_size, Skv * world_size)    # S total
+        Ss = da_config.S    # S total
         Nhs = (nheads, nheads)
         bs = batch_size
         
@@ -560,8 +564,9 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
             torch.cuda.synchronize()
             torch.distributed.barrier(group=global_group)
             # continue
-            TRACE_NAME = f'{os.environ["TRACE_NAME"]}_SP({node_num},{local_size})_w{world_size}_r{rank}_S({Sq},{Skv})_bs{batch_size}_Nh{nheads}_D{nheads}_' \
-                        f'{"causal" if causal else "noncausal"}_{f.__name__}'
+            TRACE_NAME = f'{os.environ["TRACE_NAME"]}_SP({node_num},{local_size})_w{world_size}_r{rank}_' \
+                         f'S({da_config.S_per_partition[0]},{da_config.S_per_partition[1]})_bs{batch_size}_Nh{nheads}_D{nheads}_' \
+                         f'{"causal" if causal else "noncausal"}_{f.__name__}'
             # Build placeholder_op
             SYNC_SIZE = 8 * pow(1024, 3) # 8GB
             sync_tensor = torch.empty((SYNC_SIZE), dtype=torch.int8, device=torch.cuda.current_device())
@@ -576,7 +581,7 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
                     total_sparsity = da_config.bsa_config.total_sparsity
                 else:
                     total_sparsity = 0.5 if causal else 1
-                m_flops, h_flops = calc_flops(batch_size, (Sq * world_size, Skv * world_size), nheads, d, causal, fob=fob, total_sparsity=total_sparsity)
+                m_flops, h_flops = calc_flops(batch_size, da_config.S, nheads, d, causal, fob=fob, total_sparsity=total_sparsity)
                 mfu, hfu = (round(flops / pow(1000, 4) / (td / num_iter * world_size), 3) for flops in (m_flops, h_flops))
                 # print(f"suffix: {plan_path.split('/')[-1]}, mfu: {mfu} Tflops/s, hfu: {hfu} Tflops/s, {num_iter / td:.3f} iter/s, {td / num_iter:.3e} s/iter, ({(t1 - t0):.3f}, {(t2 - t1):.3f}, {td:.3f}) sec", flush=True)
                 if log:

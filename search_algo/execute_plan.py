@@ -10,6 +10,7 @@ import json
 import time
 from heapq import heappush, heappop, heappushpop
 import numpy as np
+from search_algo.utils import print_rank_0
 
 class Fused_Execution_Plan():
     def __init__(self, Y: int, X: int, time: float, causal: bool, fob: bool, ):
@@ -46,7 +47,7 @@ class Execution_Plan(): # input: kernel streams of gpus
             if plan_type == 'ILP':
                 self.TIME_BUDGET = 5 * 60   # 5mins
                 # self.TIME_BUDGET = 10   # 10s
-                self.threshold = 1.3
+                # self.threshold = 1.3
                 self.generate_execution_plan()
             elif plan_type == 'Flexflow':  # Flexflow
                 self.generate_execution_plan_through_start_time()
@@ -87,7 +88,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         fob = self.fob
         d_graph = self.d_graph
         TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 1000
-        # print(f'TOT_TIME_UP: {TOT_TIME_UP}')
+        # print_rank_0(f'TOT_TIME_UP: {TOT_TIME_UP}')
         # Using LP to optimize the execution order
         mylp = pulp.LpProblem(f"Cuda_Stream_Events", pulp.LpMinimize)
         # Variables
@@ -119,7 +120,8 @@ class Execution_Plan(): # input: kernel streams of gpus
         # for kernel_list in stream_kernel_lists.values():    # random shuffle
         #     kernel_list = random.shuffle(kernel_list)
         overlap_set = set()
-        for kernel_list in stream_kernel_lists.values():
+        for kernel_list_key, kernel_list in stream_kernel_lists.items():
+            print_rank_0(f'kernel_list_key: {kernel_list_key}') # (0, 1, 2) -> comp, send, recv
             for i in range(len(kernel_list)):
                 for j in range(i + 1, len(kernel_list)):
                     # mylp += kernel_list[i].start_time + kernel_list[i].time[fob] <= kernel_list[j].start_time or \
@@ -131,6 +133,7 @@ class Execution_Plan(): # input: kernel streams of gpus
                     overlap_key = (min(id0, id1), max(id0, id1))
                     if overlap_key in overlap_set:
                         continue
+                    print_rank_0(f'overlap_key: {overlap_key}; kernel keys: {kernel_list[i].key}, {kernel_list[j].key}')
                     overlap_set.add(overlap_key)
                     overlap_ij = pulp.LpVariable(f"overlap_{overlap_key[0]}_{overlap_key[1]}", cat='Binary')
                     mylp += kernel_list[i].start_time + kernel_list[i].time[fob] <= kernel_list[j].start_time + TOT_TIME_UP * overlap_ij
@@ -154,9 +157,11 @@ class Execution_Plan(): # input: kernel streams of gpus
         # print(f'before solve !!!', flush=True)
         t0 = time.time()
         MSG = 1
-        MSG = 0 # disable msg
+        # MSG = 0 # disable msg
         # mylp.solve(pulp.PULP_CBC_CMD(msg=MSG, timeLimit=self.TIME_BUDGET))    # Use CBC
-        mylp.solve(pulp.GUROBI(msg=MSG, timeLimit=self.TIME_BUDGET))    # Use GUROBI !!!
+        solver = pulp.GUROBI(msg=MSG, timeLimit=self.TIME_BUDGET, Seed=42)
+        # solver = pulp.GUROBI_CMD(msg=MSG, timeLimit=self.TIME_BUDGET, options=[("Seed", 42)])
+        mylp.solve(solver)    # Use GUROBI !!!
         # print(f'after solve !!!', flush=True)
         t1 = time.time()
         print(f'LP solve time: {t1 - t0} s', flush=True)
@@ -174,6 +179,10 @@ class Execution_Plan(): # input: kernel streams of gpus
         for g in range(self.hierarchy_sp):
             for s in range(self.stream_num):
                 self.stream_kernel_lists[(g, s)].sort(key=lambda x: x.start_time.value())
+        # sanity check for stream exclusive on stream_kernel_lists
+        if not self.sanity_check_stream_exclusive():
+            print_rank_0(f'[ERROR]: sanity check for stream exclusive not passed !!!')
+        
         self.gpu_kernel_lists = []
         for g in range(self.hierarchy_sp):
             kernel_list = []
@@ -184,6 +193,21 @@ class Execution_Plan(): # input: kernel streams of gpus
         self.end_time = self.mylp_obj = pulp.value(mylp.objective)
         return mylp
     
+    def sanity_check_stream_exclusive(self):    # Assume that kernels on each list are sorted by their start time
+        fob = self.fob
+        ret = True
+        THRESHOLD = 1e-3
+        for kernel_list_key, kernel_list in self.stream_kernel_lists.items():
+            for i in range(len(kernel_list) - 1):
+                if (kernel_list[i]._start_time + kernel_list[i].time[fob] - kernel_list[i + 1]._start_time) / kernel_list[i].time[fob] \
+                    > THRESHOLD:
+                    print_rank_0(f'Sanity check Error: {kernel_list_key}, {i}th; '
+                                 f'{kernel_list[i]._start_time:.3e} + {kernel_list[i].time[fob]:.3e} = '
+                                 f'{(kernel_list[i]._start_time + kernel_list[i].time[fob]):.3e} '
+                                 f'> {kernel_list[i + 1]._start_time:.3e}')
+                    ret = False
+        return ret
+        
     def get_end_time(self):
         return self.end_time if hasattr(self, 'end_time') else self.mylp_obj
     

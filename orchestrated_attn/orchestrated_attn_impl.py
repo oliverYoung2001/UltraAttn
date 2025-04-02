@@ -73,7 +73,15 @@ def execute_kernel(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_func, c
                 if hasattr(precursor, 'in_ranks') and rank in precursor.in_ranks:
                     kernel.stream.wait_event(precursor.event)
                     pass
-            
+            # # [DEBUG]: Begin
+            # if torch.distributed.get_rank() == 0:
+            #   print(f'precursor of {kernel.key}: ', end='')
+            # for precursor in kernel.precursors:
+            #     if hasattr(precursor, 'in_ranks') and rank in precursor.in_ranks:
+            #         if torch.distributed.get_rank() == 0:
+            #             print(f'{precursor.key} ', end='')
+            # print_rank_0(f'')
+            # # [DEBUG]: End
             # step2: execute kernel
             # comp: (b_id, h_id, r_id, c_id, gpuid) -> Cuda_Kernel
             # comm: (b_id, h_id, r/c_id, send, recv, i/o, r/c) -> Cuda_Kernel
@@ -105,7 +113,8 @@ def execute_kernel(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_func, c
                 if kernel.key[3] == local_rank: # Send
                     # assert d_key in data_dict.keys()
                     # comm.send(kernel.key[4], data_dict[d_key], kernel.stream, kernel.ncclcomm)
-                    comm.send(kernel.key[4], buf_dict[buf_key], kernel.stream, kernel.ncclcomm)
+                    comm.send(kernel.key[4], buf_dict[buf_key], kernel.stream, kernel.ncclcomm)   # [NOTE]: Useful !!!
+                    pass
                 else:                           # Recv
                     # idata_tmp = idata_buf[kernel.key[-2:]]  # ('i'/'o', 'r'/'c')
                     # comm.recv(kernel.key[3], idata_tmp, kernel.stream, kernel.ncclcomm)
@@ -113,7 +122,8 @@ def execute_kernel(kernel: Cuda_Kernel, data_dict: dict, PROC_INFO, comp_func, c
                     #     data_dict[d_key].reduce(idata_tmp)
                     # else:
                     #     data_dict[d_key] = idata_tmp
-                    comm.recv(kernel.key[3], buf_dict[buf_key], kernel.stream, kernel.ncclcomm)
+                    comm.recv(kernel.key[3], buf_dict[buf_key], kernel.stream, kernel.ncclcomm)   # [NOTE]: Useful !!!
+                    pass
             
             # step3: record event after kernel execution for successors
             kernel.event = torch.cuda.Event()
