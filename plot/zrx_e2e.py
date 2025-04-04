@@ -9,6 +9,25 @@ sys_names = ['torch', 'dynamo', 'tensorrt', 'tvm', 'korch', 'einnet', 'our']
 # data_a100 = parse_csv(LOG_DIR + "a100_40_e2e_4096.csv", sep='\t')
 # data_h100 = parse_csv(LOG_DIR + "h100_80_e2e_4096.csv", sep='\t')
 
+data_a100 = [
+  [870.4972,	679.4771,	718.3669,	1032.9777,	1051.2273,	1656.8996,	306.9346],  # h2o
+  [1012.6765,	698.7392,	733.9764,	1246.0357, 1206.9757,	2100.2619,	314.6816],  # roco
+  [1554.342,	973.2994,	799.9457,	1054.7816,	-1,	5461.3712,	538.501], # keyformer
+  [871.4715,	679.6971,	713.7223,	770.9506,	1049.7078,	1683.6359,	309.4149],  # snapkv
+  [955.1325,	721.5211,	959.4448,	-1,	1278.8785,	-1,	330.5531],  # corm
+  [826.3275,	659.1717,	371.3981,	613.6015,	995.6181,	1415.4351,	285.93],  # attn
+  [968.8927,	720.3511,	414.6827,	641.8723,	995.1936,	1722.8929,	286.8143],  # gemma2
+]
+data_h100 = [
+  [583.5969,	305.2832,	455.9139,	519.0936,	731.612,	790.2472,	189.2485],  # h2o
+  [695.7338,	318.9485,	472.5503,	607.5242,	851.1218,	1018.086,	195.877],  # roco
+  [1103.8482,	450.6336,	520.1073,	740.7938,	-1,	1422.3223,	319.9795], # keyformer
+  [588.5703,	304.7682,	466.5934,	512.2075,	728.9676,	791.7283,	189.1349],  # snapkv
+  [649.0136,	319.943,	640.0223,	-1,	785.513,	-1,	200.6378],  # corm
+  [544.6888,	286.755,	199.491,	397.1777,	687.6937,	667.2986,	167.2563],  # attn
+  [661.854,	304.9569,	254.9128,	409.0667,	689.9429,	852.743,	168.8982],  # gemma2
+]
+
 def plot(data, devices, model_names, sys_names, figure_name, add_legend=False):
   # 两图合并，参数有所修改
   figsize = {
@@ -22,6 +41,7 @@ def plot(data, devices, model_names, sys_names, figure_name, add_legend=False):
       'pdf.fonttype': 42,
       'ps.fonttype': 42
   }
+#   plt.rcParams["font.family"] = "Times New Roman"
   plt.rcParams.update(figsize)
   fig, axs = plt.subplots(2, len(model_names))
 
@@ -38,29 +58,36 @@ def plot(data, devices, model_names, sys_names, figure_name, add_legend=False):
 
   for row_id, (ax_row, dataset) in enumerate(zip(axs, data)):
     for col_id, (ax, model_name) in enumerate(zip(ax_row, model_names)):
-      perf_ref = dataset.loc[model_name][sys_names]
+      # perf_ref = dataset.loc[model_name][sys_names]
+      perf_ref = dataset[col_id]
 
-      perf = perf_ref.clip(lower=0)
+      # perf = perf_ref.clip(lower=0) 
+      perf = [max(x, 0) for x in perf_ref]
       # 绝对时间
-      baseline = perf.loc[sys_names[-1]]
+      # baseline = perf.loc[sys_names[-1]]  # scalar
+      baseline = perf[-1]
       norm_perf = perf 
 
       x_pos = np.arange(len(sys_names))
       bars = ax.bar(x_pos, norm_perf, color=pair_color_def, width=bar_width, edgecolor='k', hatch=hatch_def)
 
       for i, bar in enumerate(bars):
-        if perf_ref.loc[sys_names[i]] == 0:
+        # if perf_ref.loc[sys_names[i]] == 0:
+        if perf_ref[i] == 0:
           # OOM
           ax.text(bar.get_x() + bar.get_width() / 2, ylim * 0.05, 'OOM', ha='center', va='bottom', rotation=90)
-        elif perf_ref.loc[sys_names[i]] == -1:
+        # elif perf_ref.loc[sys_names[i]] == -1:
+        elif perf_ref[i] == -1:
           # 不支持
           ax.text(bar.get_x() + bar.get_width() / 2, ylim * 0.05, 'NS', ha='center', va='bottom', rotation=90)
-        elif perf_ref.loc[sys_names[i]] == -2:
+        # elif perf_ref.loc[sys_names[i]] == -2:
+        elif perf_ref[i] == -2:
           # 超时
           ax.text(bar.get_x() + bar.get_width() / 2, ylim * 0.05, 'TLE', ha='center', va='bottom', rotation=90)
-        elif norm_perf.loc[sys_names[i]] > ylim: 
+        # elif norm_perf.loc[sys_names[i]] > ylim: 
+        elif norm_perf[i] > ylim:
           # 截断，文字补充
-          ax.text(bar.get_x() + bar.get_width() / 2, ylim * 0.95, f'{norm_perf.loc[sys_names[i]]:.1f}', ha='center', va='top', rotation=90)
+          ax.text(bar.get_x() + bar.get_width() / 2, ylim * 0.95, f'{norm_perf[i]:.1f}', ha='center', va='top', rotation=90)
       
       min_perf = float('inf')
       for i in perf_ref[:-1]:

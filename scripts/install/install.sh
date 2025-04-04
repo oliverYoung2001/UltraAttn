@@ -68,3 +68,13 @@ pip3 install --pre torch torchvision torchaudio --index-url https://download.pyt
 # On Fit_Cluster
 conda activate yhy_ultra
 pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu124
+
+# "Times New Roman" font for plot
+# sudo apt update
+# sudo apt install ttf-mscorefonts-installer -y
+Download 'Times New Roman.ttf' at https://github.com/justrajdeep/fonts/blob/master/Times%20New%20Roman.ttf to ???/Software
+mkdir -p ~/.fonts
+mv ???/Software/'Times New Roman.ttf' ~/.fonts
+sudo fc-cache -f -v # refresh font cache
+fc-list | grep "Times New Roman" # check whether it is installed
+rm -r ~/.cache/matplotlib   # remove cache of matplotlib

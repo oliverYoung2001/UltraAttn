@@ -487,7 +487,7 @@ def step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict
     # inter_node_bsa_configs: List[Dict{CP: BSA_Config}]    # [DEPRECATED]
     # inter_node_bsa_configs: List[BSA_Config]
     inter_node_shape_configs = shape_config_dict['inter']
-    hierarchy = 1   # (0, 1) -> (inter, intra)
+    hierarchy = 0   # (0, 1) -> (inter, intra)
     inter_plan_id = 0
     inter_exp_da_configs: List[dict] = []
     for exp_config in exp_configs:

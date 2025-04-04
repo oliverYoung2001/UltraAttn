@@ -35,7 +35,7 @@ class Prof_DB():
         self.INTER_BSA_EXE_PLANS_KV = f'{self.DATABASE_ROOT}/inter_bsa_exe_plans_kv.json'
         self.INTER_BSA_EXE_PLANS_PROFILE = f'{self.DATABASE_ROOT}/inter_bsa_exe_plans_profile.json'
         
-        if torch.distributed.get_rank() == 0:   # Initialize all above
+        if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:   # Initialize all above
             if not os.path.exists(self.INTRA_BSA_ALLOCATION):
                 with open(self.INTRA_BSA_ALLOCATION, 'w') as f:
                     json.dump({}, f)

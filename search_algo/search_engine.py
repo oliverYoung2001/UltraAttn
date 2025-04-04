@@ -352,7 +352,7 @@ class Dist_Attn_Schedule():
         Skv_split = self.da_config.S[1] // self.split_degrees[1]
         kv_unit_ratio = Skv_split / Sq_split * self.da_config.Nh[1] / self.da_config.Nh[0]  # for crossattn and GQA
         # comm units count: fwd, bwd
-        self.u_inp_row = np.array([1, 3])    # (q), (q, o, do)
+        self.u_inp_row = np.array([1, 2])    # (q), (q, o, do) -> (q, do)
         self.u_inp_col = np.array([2, 2]) * kv_unit_ratio    # (k, v), (k, v)
         self.u_out_row = np.array([1, 1])    # (o), (dq)
         self.u_out_col = np.array([0, 2]) * kv_unit_ratio    # (), (dk, dv)

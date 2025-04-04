@@ -46,7 +46,7 @@ COLOR_DEF_LINE = [
   '#467447'
 ]
 
-PLOT_DIR = '../'
+PLOT_DIR = './figs/'
 LOG_DIR = './logs/'
 
 # OUR_SYS = 'TA'

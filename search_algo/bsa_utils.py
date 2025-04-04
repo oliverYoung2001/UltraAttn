@@ -8,7 +8,7 @@ from search_algo.utils import Block_Type
 # print(f'Block_Type in bsa_utils: {hex(id(Block_Type))}', flush=True)
 # print(f'{inspect.getfile(Block_Type)}', flush=True)
 
-from bsa_config import BSA_Repr, BSA_Config
+from search_algo.bsa_config import BSA_Repr, BSA_Config
 from typing import List, Set
 
 def convert_shape_config_to_str(shape_config: dict):
