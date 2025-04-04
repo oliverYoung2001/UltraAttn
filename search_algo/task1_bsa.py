@@ -226,20 +226,6 @@ def generate_intra_bsa_execution_plans(exp_config: Evaluation_Configs, da_config
         key = f'{key_preffix}{key_suffix}'
         print_rank_0(f'intra_bsa_exe_plan_key: {key}')
         if key not in intra_bsa_exe_plans_dict.keys():
-            # assert not is_bypass_mode, f'All in generate_inter_bsa_execution_plans must be bypassed in bypass mode !!!'
-            # print_rank_0(f'Not bypass !!!')
-            # # assert not torch.cuda.is_available(), f'All GPU workloads should be bypassed in GPU nodes'
-            # gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
-            # execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
-            
-            # # Dump Execution_Plan:
-            # plan_id = max(intra_bsa_exe_plans_dict.values()) + 1 if intra_bsa_exe_plans_dict else 0
-            # intra_bsa_exe_plans_dict[key] = plan_id
-            # intra_bsa_exe_plans_dict_changed = True
-            # plan_file = f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl'
-            # with open(plan_file, 'wb') as f:
-            #     pickle.dump(execute_plan, f)
-            
             not_bypass_behavior(d_graph, KERNEL_TILE_TYPE, KERNEL_SCHEDULE_TYPE)
         else:
             bypass_behavior(key)
@@ -569,7 +555,7 @@ def main():
     # Step2: Profile all BSA at intra_SP=8; one node, one processor occupies one gpu and even cpus; (w cache/bypass)
     if torch.cuda.is_available():
         step2_profile_intra_bsa_exe_plans(intra_exp_da_configs, ncclcomm_global, gloo_global_group, prof_db)
-    # return  # Step2 End
+    return  # Step2 End
     
     # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)
     if torch.distributed.get_rank() == 0:

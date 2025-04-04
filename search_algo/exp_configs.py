@@ -27,6 +27,24 @@ def get_exp_configs():
         exp_configs.append(Evaluation_Configs(plan_type, MAX_QUEUE_SIZE, fob, hierarchy=hierarchy, transform_mode=transform_mode))
     return exp_configs
 
+def get_exp_infer_configs():
+    # plan_type = 'ILP'         # automatic
+    plan_type = 'manual'        # for noncausal !!!
+    # plan_type = 'Flexflow'    # ablation1
+    MAX_QUEUE_SIZE = 100
+    fobs = [
+        0,    # fwd
+        # 1,      # bwd
+    ]
+    # hierarchy = 0  # 0: intra-machine, 1: inter-machine
+    hierarchy = None    # define in exps !!!
+    transform_mode = 'bf'       # Enumerate all possible transformations
+    transform_mode = 'greedy'   # Apply transformations greedily
+    exp_configs = []
+    for fob in fobs:
+        exp_configs.append(Evaluation_Configs(plan_type, MAX_QUEUE_SIZE, fob, hierarchy=hierarchy, transform_mode=transform_mode))
+    return exp_configs
+
 def get_bsa_configs():
     PLATFORM = os.getenv(f'PLATFORM')
     CPs = [
@@ -465,17 +483,85 @@ def get_bsa_configs_debug3():
     }
     return [], intra_node_bsa_configs, shape_config_dict
 
-# "fob=0_CP=(8, 2)_shape_config={S=(131072, 131072)_Nh=(32, 32)_bs=1_D=128}_bsa_config={CP=(8, 2)_repr=[[1111111111111111][1100000000000000][1010000000000000][1001000000000000][1000100000000000][1000010000000000][1000001000000000][1000000100000000][1000000010000000][1000000001000000][1000000000100000][1000000000010000][1000000000001000][1000000000000100][1000000000000010][1000000000000001]]}_ablation=(w_kernel_tile,ILP)": {
+def get_bsa_configs_debug4():
+    # intra_bsa_exe_plan_key: fob=0_CP=(2, 1)_shape_config={S=(32768, 32768)_Nh=(1, 1)_bs=1_D=128}_bsa_config={CP=(2, 1)_repr=[[20000000][12000000][11200000][11120000][10112000][10011200][10001120][10000112]]}_ablation=(w_kernel_tile,ILP)
+    PLATFORM = os.getenv(f'PLATFORM')
+    CPs = [
+        (2, 1),
+    ]
+    Ss_total = [
+        16 * 1024,
+    ]
+    S_per_gpu_LB = 256
+    S_per_gpu_UB = 64 * 1024   # (8, 8) -> 2M; aims to limit memory usage
+    GPU_PER_NODE = 8
+    Ss_per_node = [1 << i for i in range(math.ceil(math.log2(min(Ss_total) // CPs[-1][-1])), \
+                                        math.ceil(math.log2(min(
+                                            max(Ss_total) // CPs[0][-1], S_per_gpu_UB * GPU_PER_NODE)
+                                        )) + 1)]
+    print_rank_0(f'Ss_per_node: {Ss_per_node}')
+    Nhs = [
+        1,
+        # 32,
+    ]
+    bs = 1
+    D = 128
+    
+    bsa_repr = np.array([
+        [Block_Type.CAUSAL, Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.CAUSAL, Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.FULL,   Block_Type.CAUSAL, Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.FULL,   Block_Type.FULL,   Block_Type.CAUSAL, Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.EMPTY,  Block_Type.FULL,   Block_Type.FULL,   Block_Type.CAUSAL, Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.FULL,   Block_Type.FULL,   Block_Type.CAUSAL, Block_Type.EMPTY,  Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.FULL,   Block_Type.FULL,   Block_Type.CAUSAL, Block_Type.EMPTY],
+        [Block_Type.FULL,   Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.EMPTY,  Block_Type.FULL,   Block_Type.FULL,   Block_Type.CAUSAL],
+    ], dtype=Block_Type)
+    intra_node_bsa_configs = [
+        BSA_Config(None, None, {
+            'bsa_repr': BSA_Repr(bsa_repr, None),
+            'CP': CPs[0],
+        })
+    ]
+    for intra_node_bsa_config in intra_node_bsa_configs:
+        block_table_raw_value = convert_block_table_to_value(intra_node_bsa_config.block_table_raw)
+        print_rank_0(f'CP: {intra_node_bsa_config.CP}, minimum_Par_D: {intra_node_bsa_config.bsa_repr.minimum_Par_D}\n'
+                     f'{block_table_raw_value}')
+    
+    inter_node_shape_configs = {
+        'Nhs': Nhs,
+        'Ss': Ss_total,
+        'BSs': [bs],
+        'Ds': [D],
+    }
+    intra_node_shape_configs = {
+        'Nhs': Nhs,
+        'Ss': Ss_per_node,
+        'BSs': [bs],
+        'Ds': [D],
+    }
+    shape_config_dict = {
+        'inter': inter_node_shape_configs,
+        'intra': intra_node_shape_configs,
+        'S_per_gpu_BOUND': (S_per_gpu_LB, S_per_gpu_UB),
+    }
+    return [], intra_node_bsa_configs, shape_config_dict
 
 def step0_top_down_decompose():
     # Step0: top-> down; need only 1 cpu; (w/o cache/bypass)✅
-    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()     # For training
-    # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_infer_configs() # For inference
+    # Training configs:
+    # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()     # For training
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug0()
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug1()
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug2()
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug3()
     exp_configs = get_exp_configs()
+    
+    # Inference Configs:
+    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_infer_configs() # For inference
+    # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug4()    # Inference
+    exp_configs = get_exp_infer_configs()
+
     if isinstance(exp_configs, Evaluation_Configs):
         exp_configs = [exp_configs]
     #   [NOTE]: total exp space is (inter_node_bsa_configs/intra_node_bsa_configs) x shape_configs x exp_configs

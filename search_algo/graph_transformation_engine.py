@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 from search_algo.search_engine import Dist_Attn_Schedule, Dist_Attn_Config, Machine_Config, Evaluation_Configs
-from search_algo.utils import get_factors
+from search_algo.utils import get_factors, print_rank_0
 from search_algo.dependent_graph import Dependent_Graph, Comp_Kernel
 from search_algo.execute_plan import Execution_Plan
 import numpy as np
@@ -149,39 +149,10 @@ class Graph_Transformation_Engine():    # batch engine
     # [NOTE]: each position in schedule table cannot be fused more than ones !!!
     def __init__(self, exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, m_config: Machine_Config):
         self.exp_config = exp_config
+        self.da_config = da_config
         self.hierarchy = da_config.hierarchy
         self.tot_sp = da_config.tot_sp
         self.hierarchy_sp = da_config.SP[self.hierarchy]
-        
-        # type1: comp fusion substitutions
-        self.comp_unit_ub = self.hierarchy_sp // 2 + (self.hierarchy_sp == 3)  # 4 -> 2, 5 -> 2, 8 -> 4, special !!! 3 -> 2
-        # self.ub_factors = get_factors(self.comp_unit_ub)
-        self.comp_fusion_shapes = []
-        for x in range(1, int(self.comp_unit_ub ** 0.5) + 1):
-            for y in range(x, self.comp_unit_ub // x + 1):
-                if x == 1 and y == 1:
-                    continue
-                if x * y <= self.comp_unit_ub:
-                    self.comp_fusion_shapes.append((x, y))
-                if x != y:
-                    self.comp_fusion_shapes.append((y, x))
-        self.comp_fusion_shapes.sort(key=lambda x: (x[0] * x[1], x[1]), reverse=True)
-        # print(f'comp_fusion_shapes: {self.comp_fusion_shapes}')
-        self.comp_fusion_subs = [Comp_Fusion_Substitution(shape) for shape in self.comp_fusion_shapes]
-                
-        # type2: comm fusion substitutions [TODO]
-        self.comm_fusion_subs = []
-        
-        # sort all substitutions by performance
-        self.comp_fusion_subs.sort(key=lambda x: (math.prod(x.shape), x.shape), reverse=True)
-
-        # substitutions dictionary
-        self.subs_dict = {
-            'comp_fusion': self.comp_fusion_subs,
-            'comm_fusion': self.comm_fusion_subs,
-        }
-        # for sub in self.subs_dict['comp_fusion']:
-        #     print(f'sub.shape: {sub.shape}', flush=True)
     
     def print_trans(self):
         print(f'All transformations:', flush=True)
@@ -220,7 +191,7 @@ class Graph_Transformation_Engine():    # batch engine
             tran.apply_on_d_graph(new_d_graph)
         # Assess performance of new d_graph
         execute_plan = Execution_Plan(new_d_graph, self.exp_config.fob, plan_type=self.plan_type)
-        execute_plan.print_lp_result()
+        # execute_plan.print_lp_result()
         return execute_plan
             
     def dfs_trans(self, trans_all_id: int, selected_trans: list, fused_pos: set):
@@ -238,11 +209,46 @@ class Graph_Transformation_Engine():    # batch engine
             selected_trans.append(self.trans_all[trans_all_id])
             self.dfs_trans(trans_all_id + 1, selected_trans, new_fused_pos)
             selected_trans.pop()
+
+    def calc_subs_dict(self):
+        # type1: comp fusion substitutions
+        if self.da_config.bsa_config is None: # dense
+            self.comp_unit_ub = self.hierarchy_sp // 2 + (self.hierarchy_sp == 3)  # 4 -> 2, 5 -> 2, 8 -> 4, special !!! 3 -> 2
+        else:   # bsa
+            self.comp_unit_ub = int(math.ceil(math.prod(self.d_graph.split_degrees) / self.hierarchy_sp))
+        # self.ub_factors = get_factors(self.comp_unit_ub)
+        self.comp_fusion_shapes = []
+        for x in range(1, int(self.comp_unit_ub ** 0.5) + 1):
+            for y in range(x, self.comp_unit_ub // x + 1):
+                if x == 1 and y == 1:
+                    continue
+                if x * y <= self.comp_unit_ub:
+                    self.comp_fusion_shapes.append((x, y))
+                if x != y:
+                    self.comp_fusion_shapes.append((y, x))
+        self.comp_fusion_shapes.sort(key=lambda x: (x[0] * x[1], x[1]), reverse=True)
+        # print_rank_0(f'self.comp_unit_ub: {self.comp_unit_ub}')
+        # print_rank_0(f'comp_fusion_shapes: {self.comp_fusion_shapes}')
+        self.comp_fusion_subs = [Comp_Fusion_Substitution(shape) for shape in self.comp_fusion_shapes]
+                
+        # type2: comm fusion substitutions [TODO]
+        self.comm_fusion_subs = []
         
+        # sort all substitutions by performance
+        self.comp_fusion_subs.sort(key=lambda x: (math.prod(x.shape), x.shape), reverse=True)
+
+        # substitutions dictionary
+        self.subs_dict = {
+            'comp_fusion': self.comp_fusion_subs,
+            'comm_fusion': self.comm_fusion_subs,
+        }
+        # for sub in self.subs_dict['comp_fusion']:
+        #     print(f'sub.shape: {sub.shape}', flush=True)
         
     def transform(self, d_graph: Dependent_Graph, mode: str = 'bf', plan_type: str = 'automatic'):
         self.d_graph = d_graph
         self.plan_type = plan_type
+        self.calc_subs_dict()
         self.get_all_transformations()
         if mode == 'bf':
             self.dfs_trans(0, [], set())
