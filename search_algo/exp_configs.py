@@ -15,7 +15,7 @@ def get_exp_configs():
     # plan_type = 'Flexflow'    # ablation1
     MAX_QUEUE_SIZE = 100
     fobs = [
-        # 0,    # fwd
+        0,      # fwd
         1,      # bwd
     ]
     # hierarchy = 0  # 0: intra-machine, 1: inter-machine
@@ -469,8 +469,8 @@ def get_bsa_configs_debug3():
 
 def step0_top_down_decompose():
     # Step0: top-> down; need only 1 cpu; (w/o cache/bypass)✅
-    # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()     # For training
-    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_infer_configs() # For inference
+    inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()     # For training
+    # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_infer_configs() # For inference
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug0()
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug1()
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs_debug2()
