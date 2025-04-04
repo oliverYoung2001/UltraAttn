@@ -39,6 +39,21 @@ def create_bsa_block_table(case_id: int) -> np.ndarray:
         block_table = np.full((16, 16), fill_value=Block_Type.EMPTY, dtype=Block_Type)
         for i in range(16):
             block_table[i, 0] = block_table[0, i] = block_table[i, i] = Block_Type.FULL
+    elif case_id == 2:
+        # BSA_Repr for star(1/4) (no remapping)
+        block_table = np.full((4, 4), fill_value=Block_Type.EMPTY, dtype=Block_Type)
+        for i in range(4):
+            block_table[i, 0] = Block_Type.FULL
+            block_table[i, i] = Block_Type.CAUSAL
+    elif case_id == 3:
+        # BSA_Repr for stream(1/8, 3) (no remapping)
+        num_local = 3
+        block_table = np.full((8, 8), fill_value=Block_Type.EMPTY, dtype=Block_Type)
+        for i in range(8):
+            for j in range(max(0, i - num_local + 1), i):
+                block_table[i, j] = Block_Type.FULL
+            block_table[i, 0] = Block_Type.FULL
+            block_table[i, i] = Block_Type.CAUSAL
     else:
         raise Exception(f"Not support bsa_block_table case_id={case_id}")
     return block_table
