@@ -52,7 +52,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB): # Relative P
     
     sys_names = ['ring', 'w_node_tile', 'w_gpu_tile', 'w_kernel_tile', 'ultra']
     figsize = {
-        "figure.figsize": (12,35),
+        "figure.figsize": (12,70),
         'font.sans-serif': 'Times New Roman',
         'axes.labelsize': 12,
         'font.size':8,
@@ -117,7 +117,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB): # Relative P
         
         # Labels of the subfig
         ax.set_xticks(range(len(abc)), abc)
-        key_abbr = f'{da_config.bsa_config.CP}_S={da_config.shape_config["S"]}_Nh={da_config.shape_config["Nh"]}'
+        key_abbr = f'{"f" if exp_config.fob == 0 else "b"}_{da_config.bsa_config.CP}_S={da_config.shape_config["S"]}_Nh={da_config.shape_config["Nh"]}'
         ax.set_title(key_abbr, loc='center', fontsize=6)
         # if fig_rid == 0:
         #   ax.set_title(MODEL_NAME[model_name], loc='center', fontsize=10)
