@@ -15,8 +15,8 @@ def get_exp_configs():
     # plan_type = 'Flexflow'    # ablation1
     MAX_QUEUE_SIZE = 100
     fobs = [
-        # 0,    # fwd
-        1,      # bwd
+        0,    # fwd
+        # 1,      # bwd
     ]
     # hierarchy = 0  # 0: intra-machine, 1: inter-machine
     hierarchy = None    # define in exps !!!

@@ -28,6 +28,8 @@ import random
 from typing import List, Tuple, Union, Optional
 from search_algo.exp_configs import step0_top_down_decompose
 from search_algo.initialize import initialize_distribution, initialize_prof_db
+from orchestrated_attn.global_vars import set_global_var as set_global_var_orch
+from orchestrated_attn.global_vars import get_global_var as get_global_var_orch
 
 # In-file global vars
 DTYPE = torch.bfloat16
@@ -258,11 +260,38 @@ def profile_all_intra_BSA(args, exp_config: Evaluation_Configs, da_config: Dist_
     
     world_size = PROC_INFO['world_size']
     local_size = PROC_INFO['tasks_per_node']
+    local_rank = PROC_INFO['local_rank']
     node_num = PROC_INFO['node_num']
     node_id = PROC_INFO['nodeid']
     rank = PROC_INFO['rank']
-    
     assert local_size == 8, f'[ERROR]: Now not support for local_size({local_size}) intra-node not equal to 8'
+    
+    # Bypass useless node !!!
+    hierarchy_cp = da_config.hierarchy_sp
+    if hierarchy_cp > local_size:
+        print_rank_0(f'[WARN]: Current task needs {hierarchy_cp} gpus, but now there are only {local_size} gpus !!!')
+        return
+    if local_rank >= hierarchy_cp:
+        return
+    # Correct gloo_global_group&ncclcomm_global for current task
+    sub_group_key = tuple(range(hierarchy_cp))
+    assert rank in sub_group_key
+    
+    cpu_group_dict = get_global_var_orch('cpu_group_dict')
+    if sub_group_key not in cpu_group_dict.keys():
+        assert False
+        cpu_group_dict[sub_group_key] = torch.distributed.new_group(sub_group_key, backend='gloo')
+        set_global_var_orch('cpu_group_dict', cpu_group_dict)
+    gloo_global_group = cpu_group_dict[sub_group_key]
+    torch.distributed.barrier(group=gloo_global_group)
+    
+    ncclcomm_dict = get_global_var_orch('ncclcomm_dict')
+    if sub_group_key not in ncclcomm_dict.keys():
+        assert False
+        ncclcomm_dict[sub_group_key] = PyNcclCommunicator(gloo_global_group, ranks=sub_group_key, device=torch.cuda.current_device())
+        set_global_var_orch('ncclcomm_dict', ncclcomm_dict)
+    ncclcomm_global = ncclcomm_dict[sub_group_key]
+    # End
     
     # experiment variables
     WARMUP, NUM_ITER = 11, 20 # most, best performance for most cases
@@ -481,6 +510,7 @@ def step2_profile_intra_bsa_exe_plans(intra_exp_da_configs, ncclcomm_global, glo
     for exp_da_config in intra_exp_da_configs:
         exp_config, da_config = exp_da_config['exp_config'], exp_da_config['da_config']
         profile_all_intra_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf, prof_db)
+        torch.distributed.barrier(gloo_global_group)
 
 def step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db, is_bypass_mode: bool = False):
     # Step3: Generate the inter-BSA; need all cpus on one node; (w cache/bypass)

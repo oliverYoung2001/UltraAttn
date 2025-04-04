@@ -418,6 +418,9 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
         if hierarchy == 1: # Intra schedule
             COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
             COMP_UB = int(math.ceil(COMP_TOTAL / CP_))
+            # [HACK] for fob=0_bsa_config={CP=(8, 1)_repr=[[20000000][12000000][11200000][11120000][10112000][10011200][10001120][10000112]]}
+            if CP_ == 8 and COMP_TOTAL == 22:
+                COMP_UB += 0.5  # 3.5
         else:   # Inter schedule
             COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
             COMP_UB = int(math.ceil(COMP_TOTAL / CP_))

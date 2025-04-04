@@ -119,7 +119,8 @@ def initialize_distribution():
     
     # Create all sub groups:
     # for nr in range(3, math.ceil(math.log2(PROC_INFO['world_size']))):        # [ERROR]
-    for nr in range(math.ceil(math.log2(PROC_INFO['world_size'])) - 1, 2, - 1): # OK
+    # for nr in range(math.ceil(math.log2(PROC_INFO['world_size'])) - 1, 2, - 1): # OK
+    for nr in range(math.ceil(math.log2(PROC_INFO['world_size'])) - 1, - 1, - 1): # OK
         sub_ranks = tuple(range(1 << nr))
         if torch.distributed.get_rank() in sub_ranks:
             gloo_global_group_sub = dist.new_group(ranks=sub_ranks, backend='gloo')
