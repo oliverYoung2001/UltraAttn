@@ -14,10 +14,10 @@ from typing import List, Set
 def convert_shape_config_to_str(shape_config: dict):
     return f"S={shape_config['S']}_Nh={shape_config['Nh']}_bs={shape_config['bs']}_D={shape_config['D']}"
     
-def get_bsa_comp_key(fob: int, CP: tuple, shape_config: dict, bsa_config: BSA_Config, key_suffix: str = ''):
-    key_preffix = f'fob={fob}_CP={CP}_shape_config={{{convert_shape_config_to_str(shape_config)}}}_bsa_config={{{bsa_config}}}'
-    return f'{key_preffix}{key_suffix}'
-    
+# def get_bsa_comp_key(fob: int, CP: tuple, shape_config: dict, bsa_config: BSA_Config, key_suffix: str = ''):    # [DEPRECATED]
+#     key_preffix = f'fob={fob}_CP={CP}_shape_config={{{convert_shape_config_to_str(shape_config)}}}_bsa_config={{{bsa_config}}}'
+#     return f'{key_preffix}{key_suffix}'
+
 def split_to_node_configs(global_bsa_config: BSA_Config) -> List[BSA_Config]:
     global_bsa_repr = global_bsa_config.bsa_repr
     node_bsa_reprs = global_bsa_repr.split_n(global_bsa_config.CP[1])   # after deduplcating

@@ -14,6 +14,7 @@ from functools import partial
 import math
 from search_algo.database import Prof_DB
 from datetime import timedelta
+from pynvml import nvmlInit, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo
 
 def initialize_prof_db():
     # Generate Intra_Execution_Plans:
@@ -143,6 +144,14 @@ def initialize_distribution():
     if torch.cuda.is_available():
         device = torch.device(f"cuda:{PROC_INFO['deviceid']}")
         torch.cuda.set_device(device)
+        # Create sync_tensor for placeholder_op
+        SYNC_SIZE = 8 * pow(1024, 3) # 8GB
+        # SYNC_SIZE = 4 * pow(1024, 3) # 8GB
+        # sync_tensor = torch.empty((SYNC_SIZE), dtype=torch.int8, device=torch.cuda.current_device())
+        # set_global_var_orch(f'sync_tensor', sync_tensor)
+        set_global_var(f'SYNC_SIZE', SYNC_SIZE)
+        # Initialize NVML
+        nvmlInit()
     else:
         device = 'cpu'
     torch.distributed.barrier(gloo_global_group)

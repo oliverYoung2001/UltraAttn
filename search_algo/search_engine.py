@@ -173,17 +173,17 @@ class FlashAttn_Profile_Map(Comp_Profile_Map):
         return map_key
     
 class Inter_Comp_Profile_Map(Comp_Profile_Map):
-    def __init__(self, profile_map: dict, bsa_profile_map: dict = None):
+    def __init__(self, dense_profile_map: dict, bsa_profile_map: dict = None):
         super().__init__()
-        if profile_map:
-            assert 'level' in list(profile_map.keys())[0]
-            self.profile_maps = profile_map
+        if dense_profile_map:
+            assert 'level' in list(dense_profile_map.keys())[0]
+            self.profile_maps = dense_profile_map
             self.cur_level = 0
-            self.profile_map = profile_map[f'level{self.cur_level}']  # [TODO]: {'level0': {...}, 'level1': {...}, 'level2': {...}}
+            self.profile_map = dense_profile_map[f'level{self.cur_level}']  # [TODO]: {'level0': {...}, 'level1': {...}, 'level2': {...}}
         else:
             self.cur_level = 0
-            self.profile_maps = profile_map
-            self.profile_map = profile_map
+            self.profile_maps = dense_profile_map
+            self.profile_map = dense_profile_map
         self.bsa_profile_map = bsa_profile_map  # (hfu, str(time))
         
     def update_inter_bsa_profile(self, intra_bsa_exe_plans_profile):
@@ -842,7 +842,7 @@ class Search_Engine():
         # except Exception as e:
         #     pass
 
-def get_profile_data(SP: tuple, hierarchy: bool = 0):
+def get_profile_data(SP: tuple, hierarchy: bool = 0):   # [DEPRECATED]
     BW = (12.5, 215)   # Inter-Machine, Intra-Machine, GB/s, bidirectional
     import os
     CLUSTER_NAME = os.environ.get('CLUSTER_NAME', None)

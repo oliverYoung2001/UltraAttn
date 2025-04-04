@@ -3,11 +3,12 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 from search_algo.search_engine import Dist_Attn_Schedule, FlashAttn_Profile_Map, Machine_Config
-from search_algo.bsa_utils import get_bsa_comp_key
+from search_algo.bsa_utils import convert_shape_config_to_str
 from search_algo.bsa_config import BSA_Config
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 import copy
+from search_algo.utils import print_rank_0
 
 class Cuda_Kernel():
     def __init__(self, key: tuple, type: str):
@@ -51,6 +52,8 @@ class Comp_Kernel(Cuda_Kernel):
         # dict keys: (b_id, h_id, r_id, c_id, gpuid) or (b_id, h_id, (r_ids), (c_ids), gpuid)
         super().__init__(key, 'comp')
         # kernel time
+        if hierarchy == 0 and time is None:  # Only print at inter level without hack !!!
+            print_rank_0(f'comp_map_key: {comp_map_key}; time: {time}')
         if time is None:
             # flashattn profile map_key:
             self.comp_map_key = comp_map_key
@@ -77,7 +80,7 @@ class Comm_Kernel(Cuda_Kernel):
 
 class Dependent_Graph():
     def __init__(self, schedule: Dist_Attn_Schedule, fob: bool, kernel_dict: Optional[dict] = None, is_inter_bsa = False, \
-                    bsa_comp_key_suffix: str = ''):
+                    bsa_comp_key_suffixes: List[str] = None):
         # [NOTE]: only support star tree of broadcase/reduce here !!!
         # build dependent graph from schedule_table
         
@@ -87,9 +90,9 @@ class Dependent_Graph():
         self.split_degrees = schedule.split_degrees
         self.fob = fob  # fwd or bwd
         self.tot_sp = schedule.tot_sp
-        self.hierarchy = hierarchy = schedule.da_config.hierarchy
+        self.hierarchy = schedule.da_config.hierarchy
         self.is_inter_bsa = is_inter_bsa
-        self.bsa_comp_key_suffix = bsa_comp_key_suffix
+        self.bsa_comp_key_suffixes = bsa_comp_key_suffixes
         # self.root_kernel = Cuda_Kernel()
         # comp: (b_id, h_id, r_id, c_id, gpuid) or (b_id, h_id, (r_ids), (c_ids), gpuid) -> Cuda_Kernel
         # comm: (b_id, h_id, r/c_id, send, recv, i/o, r/c) -> Cuda_Kernel
@@ -110,6 +113,19 @@ class Dependent_Graph():
         new_self.kernel_dict = copy.deepcopy(self.kernel_dict, memo)
         return new_self
     
+    def select_bsa_comp_key(self, CP: tuple, shape_config: dict, bsa_config: BSA_Config, key_suffixes: List[str]):
+        fob = self.fob
+        hierarchy = self.hierarchy
+        key_preffix = f'fob={fob}_CP={CP}_shape_config={{{convert_shape_config_to_str(shape_config)}}}_bsa_config={{{bsa_config}}}'
+        opt_comp_time = float('inf')
+        for key_suffix in key_suffixes:
+            comp_map_key = f'{key_preffix}{key_suffix}'
+            cur_comp_time = self.m_config.comp_profile_maps[hierarchy].get_comp_time_from_map_key(comp_map_key)[fob]
+            if cur_comp_time < opt_comp_time:
+                selected_key_suffix = key_suffix
+                opt_comp_time = cur_comp_time
+        return f'{key_preffix}{selected_key_suffix}'
+        
     def create_raw_graph(self):
         schedule = self.schedule
         hierarchy = self.hierarchy  # (0, 1) -> (inter, intra)
@@ -140,9 +156,9 @@ class Dependent_Graph():
                                     'bsa_repr': sub_bsa_repr,
                                     'CP': bsa_CP,
                                 }
-                                sub_bsa_config = BSA_Config(None, None, sub_pat_bsa_repr)   # [TODO]
-                                real_comp_map_key = get_bsa_comp_key(fob, bsa_CP, bsa_intra_shape_config, sub_bsa_config, \
-                                    key_suffix=self.bsa_comp_key_suffix)
+                                sub_bsa_config = BSA_Config(None, None, sub_pat_bsa_repr)
+                                real_comp_map_key = self.select_bsa_comp_key(bsa_CP, bsa_intra_shape_config, sub_bsa_config, \
+                                    key_suffixes=self.bsa_comp_key_suffixes)   # [NOTE]: Select best key_suffix from key_suffixes
                             else:
                                 # bsa should set da_config.causal too !!!✅
                                 real_comp_map_key = causal_comp_map_key if da_config.causal and k == l else comp_map_key
@@ -217,5 +233,5 @@ class Dependent_Graph():
                                 comm_key = (i, j, l, dst_g_id, cur_g_id, 'o', 'c')
                                 comp_kernel.add_edge(self.kernel_dict[comm_key], fob)
     
-                            
+             
         

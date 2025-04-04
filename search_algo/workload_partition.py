@@ -283,7 +283,7 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
     # LP Problem
     mylp = gp.Model("Workload_Partition_Allocation_GUROBI")
     mylp.setParam('OutputFlag', 0)  # [NOTE]: disable output of gurobi
-    CPUS_NUM = os.getenv('GUROBI_NUM_THREADS', default=64)
+    CPUS_NUM = int(os.getenv('GUROBI_NUM_THREADS', default=64))
     mylp.setParam('Threads', CPUS_NUM)
     mylp.setParam('TimeLimit', TIME_BUDGET)
     # Variables & Bound
@@ -340,7 +340,7 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
                 != Block_Table_Type.EMPTY.value:
             # if cur_block_table[i, j].value != Block_Type.EMPTY.value:
                 block_ids.append((i, j))
-    print_rank_0(f'diagonal_full: {diagonal_full}; block_ids: {block_ids}')
+    # print_rank_0(f'diagonal_full: {diagonal_full}; block_ids: {block_ids}')
     # End
     
     for i, j in block_ids:
@@ -521,9 +521,52 @@ def solve_custom_sparse():
     block_config = create_block_sparse_pattern(CP, Par_D, pattern_type, pattern_sparsity, local_blocks, global_blocks, replicate)
     Quad_LP_GUROBI_from_block_config(block_config)
 
-def solve_sparse_from_bsa(block_config: BSA_Config, fob: bool, hierarchy: bool, Par_D = None):
-    return Quad_LP_GUROBI_from_block_config(block_config, fob, hierarchy, Par_D)
-  
+def solve_sparse_from_bsa(block_config: BSA_Config, fob: bool, hierarchy: bool, ParD = None):
+    return Quad_LP_GUROBI_from_block_config(block_config, fob, hierarchy, ParD)
+
+def naive_allocate_strategy(block_config: BSA_Config, fob: bool, hierarchy: bool, ParD = None):
+    assert hierarchy == 1, f'Now naive_allocate_strategy only supports intra tile !!!'
+    # like ring
+    CP_ = block_config.CP[not hierarchy]
+    
+    # Calc ParD: Granularity of workload partition for scheduling
+    if ParD is None:    # Intra
+        assert block_config.CP[1] == 1 and hierarchy == 1, f'[ERROR]: ParD should be set in inter scheduling !!!'
+        ParD = max(CP_, block_config.bsa_repr.block_table_raw.shape[0]) # Workload partition degree
+    else:   # Inter
+        assert hierarchy == 0, f'[ERROR]: ParD should not be set in intra scheduling !!!'
+    assert ParD % CP_ == 0, f'Now not support (ParD={ParD}) % (CP_={CP_}) = {ParD % CP_} != 0'
+    
+    # Create current_block_table&Cmap for ILP
+    block_config.bsa_repr.block_table_Par_D, block_config.bsa_repr.cmap_Par_D = \
+        block_config.bsa_repr.complicate_not_less_then(block_config.bsa_repr.block_table_raw, block_config.bsa_repr.cmap_raw, ParD)
+    cur_block_table = block_config.bsa_repr.block_table_Par_D   # Irreducible representation of workload partition for scheduling
+    
+    if hasattr(block_config, 'ParD'):
+        assert ParD == block_config.ParD, f'[ERROR]: ParD={ParD} must be equal to block_config.ParD={block_config.ParD}'
+    cmap = block_config.cmap
+    if cmap is None:
+        cmap = np.array([i // (ParD // CP_) for i in range(ParD)])
+    
+    # Calc allocation_table
+    sub_shape = (cur_block_table.shape[0] // ParD, cur_block_table.shape[1] // ParD) # each element of grad(ParD, ParD) is a `sub_block_table`
+    allocation_table = np.full((ParD, ParD), fill_value=TASK_STATUS.EMPTY.value, dtype=np.int32)
+    for i in range(ParD):
+        for j in range(ParD):
+            if get_block_table_type(cur_block_table[i*sub_shape[0]:(i+1)*sub_shape[0], j*sub_shape[1]:(j+1)*sub_shape[1]]).value \
+                != Block_Table_Type.EMPTY.value:    # Not empty
+                allocation_table[i, j] = cmap[i]
+    
+    return {
+        'Par_D': ParD,
+        'cmap': cmap,
+        'table': allocation_table,
+    }
+
+def comp_balance_allocate_strategy(block_config: BSA_Config, fob: bool, hierarchy: bool, Par_D = None):
+    # like zigzag
+    raise NotImplementedError
+    
 def main():
     # solve_global_causal()
     solve_custom_sparse()

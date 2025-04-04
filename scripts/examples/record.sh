@@ -7,7 +7,7 @@ pushd third_party/kernel_profiler
 popd
 #   comm profiling
 pushd third_party/comm_test
-./scripts/wrapper_conflict_bench_zhipu.sh 2>&1 | tee ./prof_data/zhipu/cb_<CP>_<nodes>.log
+./scripts/wrapper_conflict_bench_zhipu.sh 2>&1 | tee ./prof_data/zhipu_???/cb_<CP>_<nodes>.log
 popd
 popd
 

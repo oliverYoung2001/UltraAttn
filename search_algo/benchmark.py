@@ -9,14 +9,15 @@ from search_algo.dependent_graph import Cuda_Kernel, Comp_Kernel, Comm_Kernel
 from tests.distributed.device_communicators.pynccl import PyNcclCommunicator
 from typing import Optional, Union
 from orchestrated_attn.utils import *
-from search_algo.utils import filter_kwargs, calc_flops, all_wait_main_stream, main_stream_wait_all
+from search_algo.utils import filter_kwargs, calc_flops, all_wait_main_stream, main_stream_wait_all, report_memory
 from orchestrated_attn.orchestrated_attn_impl import orchestrated_attn_backward
 from search_algo.global_vars import get_global_var as get_global_var_search_algo
+from search_algo.database import Prof_DB
 import json
 import time
 import pickle
 
-def prepare_inter_comp_plans(inter_bsa_execution_plan: Execution_Plan) -> dict:
+def prepare_inter_comp_plans(inter_bsa_execution_plan: Execution_Plan, prof_db: Prof_DB) -> dict:   # [TODO]
     # OBJ1: build inter_comp_plans_dict
     # OBJ2: Set correct execution_plan to each inter kernel
     
@@ -26,11 +27,7 @@ def prepare_inter_comp_plans(inter_bsa_execution_plan: Execution_Plan) -> dict:
     #                       or inter_CP=1 of 'inter_bsa_exe_plans_kv.json')
     PROC_INFO = get_global_var_search_algo(f'PROC_INFO')
     node_id = PROC_INFO['nodeid']
-    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
-    DATABASE_ROOT = get_global_var_search_algo('DATABASE_ROOT')
-    INTRA_BSA_EXE_PLANS_DIR = f'{DATABASE_ROOT}/{CLUSTER_NAME}/{PLATFORM}/intra_bsa_exe_plans'
-    INTRA_BSA_EXE_PLANS_KV = f'{DATABASE_ROOT}/intra_bsa_exe_plans_kv.json'
-    with open(f'{INTRA_BSA_EXE_PLANS_KV}', 'r') as f:
+    with open(prof_db.INTRA_BSA_EXE_PLANS_KV, 'r') as f:
         intra_bsa_exe_plans_dict = json.load(f)
     
     inter_comp_plans_dict = {}
@@ -44,7 +41,7 @@ def prepare_inter_comp_plans(inter_bsa_execution_plan: Execution_Plan) -> dict:
         assert comp_map_key in intra_bsa_exe_plans_dict.keys(), f'[ERROR]: Exe_plan of inter_comp_key={comp_map_key} is not cached !!!'
         plan_id = intra_bsa_exe_plans_dict[comp_map_key]
         if str(plan_id) not in intra_bsa_execution_plan_dict.keys():
-            with open(f'{INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
+            with open(f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
                 intra_bsa_execution_plan: Execution_Plan = pickle.load(fin)
                 intra_bsa_execution_plan.plan_id = plan_id
                 intra_bsa_execution_plan_dict[str(plan_id)] = intra_bsa_execution_plan
@@ -205,7 +202,7 @@ def benchmark_ops(streams, global_group, device, f, inputs, \
     if td < 0:
         td = t3 - t2
     else:
-        td = torch.tensor(td, device=device)
+        td = torch.tensor(td)   # On cpu
         torch.distributed.all_reduce(td, op=torch.distributed.ReduceOp.MAX, group=global_group, async_op=False)
         torch.cuda.synchronize()
         td = td.cpu().item()
@@ -392,7 +389,6 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
         }
         return inputs
 
-    CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
     bench_results = []
     if True:
         # exp_config: fob✅, (plan_path, inter_comp_profile_map) are useless for profiling
@@ -520,6 +516,8 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
                             if key not in ncclcomm_dict.keys():
                                 ncclcomm_dict[key] = PyNcclCommunicator(global_group, ranks=key, device=torch.cuda.current_device())
                             kernel.ncclcomm = ncclcomm_dict[key]
+                        torch.cuda.synchronize()
+                        torch.distributed.barrier(group=global_group)
                 # For Intra
             for _, intra_execution_plan in inter_comp_plans.items():
                     # print(f'rank{rank}, batch_degrees: {batch_degrees}, intra_execution_plan: {intra_execution_plan}', flush=True)
@@ -542,10 +540,13 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
                     for kernel in intra_execution_plan.valid_kernels:
                         if isinstance(kernel, Comm_Kernel):
                             key = (node_id * local_size + kernel.key[3], node_id * local_size + kernel.key[4])    # (send, recv)
+                            # report_memory(f'In nccl comm')
                             if rank in key:
                                 if key not in ncclcomm_dict.keys():
                                     ncclcomm_dict[key] = PyNcclCommunicator(global_group, ranks=key, device=torch.cuda.current_device())
                                 kernel.ncclcomm = ncclcomm_dict[key]
+                            # torch.cuda.synchronize()
+                            # torch.distributed.barrier(group=global_group)
             set_global_var('ncclcomm_dict', ncclcomm_dict)
             # set_global_var('cpu_group_dict', cpu_group_dict)
             # print kernel orders
@@ -568,13 +569,13 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
                          f'S({da_config.S_per_partition[0]},{da_config.S_per_partition[1]})_bs{batch_size}_Nh{nheads}_D{nheads}_' \
                          f'{"causal" if causal else "noncausal"}_{f.__name__}'
             # Build placeholder_op
-            SYNC_SIZE = 8 * pow(1024, 3) # 8GB
-            sync_tensor = torch.empty((SYNC_SIZE), dtype=torch.int8, device=torch.cuda.current_device())
-            placeholder_op = partial(ncclcomm_global.all_reduce, sync_tensor)
+            SYNC_SIZE = get_global_var_search_algo('SYNC_SIZE')
+            placeholder_op = partial(ncclcomm_global.all_reduce, tensor_buf[: SYNC_SIZE // tensor_buf.element_size()])
             # End
+            # report_memory(f'Before benchmark_ops')
             t1, t2, t3, td = benchmark_ops(streams, global_group, torch.cuda.current_device(), f, inputs, \
                 warmup, warmup_cudagraph, num_iter, use_cudagraph, TRACE_NAME, args, placeholder_op)
-
+            # report_memory(f'After benchmark_ops')
             if rank == 0:
             # if True:
                 if da_config.bsa_config:

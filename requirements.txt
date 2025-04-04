@@ -1,6 +1,7 @@
 regex
 pulp
 gurobipy==12.0.1
+pynvml
 
 # # accelerate==0.28.0
 # datasets==2.18.0

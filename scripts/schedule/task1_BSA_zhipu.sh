@@ -6,20 +6,14 @@ TIMESTAMP=$(date +'%Y.%m.%d-%H:%M:%S')
 
 NET_DEVICE=$MLP_SOCKET_IFNAME
 MLP_GPU=8
-# NCCL_PATH=/common_libs/nccl_2.19.322/build/lib
 MLP_MPI_HOSTFILE=/root/mpi_rack_hostfile
-# NVSHMEM_PATH=/usr/local/nvshmem/lib
-EXP_NAME='task1_BSA'
 
 export MLP_WORKER_NUM=1
-GPU_NUM=$(( MLP_WORKER_NUM * $MLP_GPU))
-# source $1
-
-mkdir -p results
-mkdir -p results/${EXP_NAME}
+GPU_NUM=$((MLP_WORKER_NUM * $MLP_GPU))
 
 # Envs:
 export CLUSTER_NAME=zhipu_planck
+export CLUSTER_NAME=zhipu_hamming
 export PLATFORM='H100'
 # # set pulp tmp dir; [TODO]: `TMPDIR` is used by both pulp and openmpi
 export PULP_TMPDIR=./search_algo/tmp
@@ -38,12 +32,19 @@ if [ $CLUSTER_NAME == 'zhipu_planck' ]; then    # fix for planck
    "
 fi
 
+# Logs
+EXP_NAME=task1_BSA_${CLUSTER_NAME}
+mkdir -p results
+mkdir -p results/${EXP_NAME}
+
 # Envs for gurobipy
 if [ $CLUSTER_NAME == 'zhipu_planck' ]; then
     export GUROBI_NUM_THREADS=64
+elif [ $CLUSTER_NAME == 'zhipu_hamming' ]; then
+    export GUROBI_NUM_THREADS=96
 fi
 
-# Envs For Nsightexport 
+# Envs For Nsight
 NSYS_DIR=./prof_results/nsys_orchestrate
 mkdir -p $NSYS_DIR
 NSIGHT_CMD="nsys profile --mpi-impl=openmpi -o ${NSYS_DIR}/${TRACE_NAME}_w${GPU_NUM}_$(date "+%Y%m%d-%H%M%S")"
@@ -52,40 +53,38 @@ NSIGHT_CMD=""
 time \
 $NSIGHT_CMD \
 mpirun -np $((MLP_WORKER_NUM * MLP_GPU)) \
-        --hostfile ${MLP_MPI_HOSTFILE} \
-        --allow-run-as-root -oversubscribe -map-by ppr:8:node \
-        --bind-to numa \
-        -mca pml ob1 -mca btl ^openib -x OMPI_MCA_btl_tcp_if_include=${NET_DEVICE} \
-        $MPI_EXTRA \
-        --output-filename results/${TIMESTAMP} \
-        -x NCCL_PXN_DISABLE=0 \
-        -x NCCL_IB_GID_INDEX=3 \
-        -x NCCL_NET_GDR_LEVEL=4 \
-        -x NCCL_IB_RETRY_CNT=7 \
-        -x NCCL_IB_TIME_OUT=32 \
-        -x NCCL_IB_QPS_PER_CONNECTION=8 \
-        -x NCCL_P2P_LEVEL=NVL \
-        -x NCCL_DEBUG=VERSION \
-        -x PATH \
-        -x MASTER_ADDR=$(cat $MLP_MPI_HOSTFILE | head -n 1 | sed -s 's/slots=8//g') \
-        -x MASTER_PORT=${MLP_WORKER_0_PORT} \
-        -x GLOO_SOCKET_IFNAME=${NET_DEVICE} \
-        -x NCCL_SOCKET_IFNAME=${NET_DEVICE} \
-        -x CUDA_DEVICE_MAX_CONNECTIONS=1 \
-        -x TORCH_NCCL_AVOID_RECORD_STREAMS=1 \
-        -x PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-        -x NCCL_NVLS_ENABLE=0 \
-        -x LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
-        -x CLUSTER_NAME \
-        -x PLATFORM \
-        -x GUROBI_NUM_THREADS \
-        ./scripts/runtime/bench_dist_attn.sh \
-        python $PYTHON_EXECUBLE \
-            $LOGGING_ARGS \
-        2>&1 | tee results/${EXP_NAME}/output_${TIMESTAMP}.log
-        
-        # bash ./scripts/wrapper.sh 2>&1 | tee results/${EXP_NAME}/output_${TIMESTAMP}.log
-
+    --hostfile ${MLP_MPI_HOSTFILE} \
+    --allow-run-as-root -oversubscribe -map-by ppr:8:node \
+    --bind-to numa \
+    -mca pml ob1 -mca btl ^openib -x OMPI_MCA_btl_tcp_if_include=${NET_DEVICE} \
+    $MPI_EXTRA \
+    --output-filename results/${TIMESTAMP} \
+    -x NCCL_PXN_DISABLE=0 \
+    -x NCCL_IB_GID_INDEX=3 \
+    -x NCCL_NET_GDR_LEVEL=4 \
+    -x NCCL_IB_RETRY_CNT=7 \
+    -x NCCL_IB_TIME_OUT=32 \
+    -x NCCL_IB_QPS_PER_CONNECTION=8 \
+    -x NCCL_P2P_LEVEL=NVL \
+    -x NCCL_DEBUG=VERSION \
+    -x PATH \
+    -x MASTER_ADDR=$(cat $MLP_MPI_HOSTFILE | head -n 1 | sed -s 's/slots=8//g') \
+    -x MASTER_PORT=${MLP_WORKER_0_PORT} \
+    -x GLOO_SOCKET_IFNAME=${NET_DEVICE} \
+    -x NCCL_SOCKET_IFNAME=${NET_DEVICE} \
+    -x CUDA_DEVICE_MAX_CONNECTIONS=1 \
+    -x TORCH_NCCL_AVOID_RECORD_STREAMS=1 \
+    -x PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+    -x NCCL_NVLS_ENABLE=0 \
+    -x LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
+    -x CLUSTER_NAME \
+    -x PLATFORM \
+    -x GUROBI_NUM_THREADS \
+    -x TRACE_NAME \
+    ./scripts/runtime/bench_dist_attn.sh \
+    python $PYTHON_EXECUBLE \
+        $LOGGING_ARGS \
+    2>&1 | tee results/${EXP_NAME}/output_${TIMESTAMP}.log
 
 set +x
 exit 0

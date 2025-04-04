@@ -375,6 +375,8 @@ def get_bsa_configs_debug3():
     }
     return [], intra_node_bsa_configs, shape_config_dict
 
+# "fob=0_CP=(8, 2)_shape_config={S=(131072, 131072)_Nh=(32, 32)_bs=1_D=128}_bsa_config={CP=(8, 2)_repr=[[1111111111111111][1100000000000000][1010000000000000][1001000000000000][1000100000000000][1000010000000000][1000001000000000][1000000100000000][1000000010000000][1000000001000000][1000000000100000][1000000000010000][1000000000001000][1000000000000100][1000000000000010][1000000000000001]]}_ablation=(w_kernel_tile,ILP)": {
+
 def step0_top_down_decompose():
     # Step0: top-> down; need only 1 cpu; (w/o cache/bypass)✅
     inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()

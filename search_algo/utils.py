@@ -15,6 +15,31 @@ from fractions import Fraction
 import inspect
 import argparse
 import regex as re
+from pynvml import nvmlInit, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo
+
+def report_memory(name):
+    """Simple GPU memory report."""
+    mega_bytes = 1024.0 * 1024.0
+    string = name + ' memory (MB)'
+    string += ' | allocated: {}'.format(
+        torch.cuda.memory_allocated() / mega_bytes)
+    string += ' | max allocated: {}'.format(
+        torch.cuda.max_memory_allocated() / mega_bytes)
+    string += ' | reserved: {}'.format(
+        torch.cuda.memory_reserved() / mega_bytes)
+    string += ' | max reserved: {}'.format(
+        torch.cuda.max_memory_reserved() / mega_bytes)
+    # Memory info from NVML
+    # PROC_INFO = get_global_var(f'PROC_INFO')
+    handle = nvmlDeviceGetHandleByIndex(torch.cuda.current_device())
+    info = nvmlDeviceGetMemoryInfo(handle)
+    used_memory = info.used / 1024**2  # MB
+    total_memory = info.total / 1024**2
+    free_memory = info.free / 1024**2
+    string += f' | NVML used: {used_memory} | NVML total: {total_memory}'
+    if torch.distributed.get_rank() == 0:
+        print("[Rank {}] {}".format(torch.distributed.get_rank(), string),
+              flush=True)
 
 def print_rank_0(message):
     """If distributed is initialized, print only on rank 0."""
@@ -210,17 +235,17 @@ def convert_profile_data_to_comm_map(file_name: str, num_gpus_div: int):
     # SIZE 8192, REAL_BD 403.402 MB/s, BD/PAIR 201.701 MB/s, time 0.0041 s, comm_vol 1.638 MB
     pat1 = re.compile(r'^SIZE (\d+),.*?BD/PAIR (\d*(\.\d*)?) ([A-Z]*)/s.*$')
     # SIZE 131072, REAL_BD 16.653 GB/s, time 0.0013 s, comm_vol 20.972 MB
-    pat2 = re.compile(r'^SIZE (\d+),.*?REAL_BD (\d*(\.\d*)?) ([A-Z]*)/s.*$')
+    # pat2 = re.compile(r'^SIZE (\d+),.*?REAL_BD (\d*(\.\d*)?) ([A-Z]*)/s.*$')
 
     with open(file_name, 'r') as f:
         for line in f.readlines():
             res = pat1.match(line)
-            if res is None:
-                res = pat2.match(line)
+            # if res is None:
+            #     res = pat2.match(line)
             if res is None:
                 continue
             profile_map[(int(res.group(1)),)] = convert_throughput_to_B(float(res.group(2)), res.group(4)) \
-                                                / pow(BYTE_MULTPLE_DOWN, 3) / num_gpus_div
+                                                / pow(BYTE_MULTPLE_DOWN, 3) #/ num_gpus_div
     # print(f'profile_map: {profile_map}')
     return profile_map
 

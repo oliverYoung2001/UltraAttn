@@ -254,9 +254,10 @@ class Execution_Plan(): # input: kernel streams of gpus
         # Build&Solve ILP
         # TOT_TIME_UP ⬆️ -> solver performance ⬆️; corretness ⬇️
         # TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 3  # Significant for GUROBI
-        TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 8  # Significant for GUROBI
+        # TOT_TIME_UP = d_graph.schedule.get_e2e_time()[fob] * 8  # Significant for GUROBI
         # TOT_TIME_UP = d_graph.schedule.get_absolute_cc_time()
         # TOT_TIME_UP = 1e9
+        TOT_TIME_UP = sum([v.time[fob] for v in self.valid_kernels])    # Sum of all kernels
         print_rank_0(f'TOT_TIME_UP: {TOT_TIME_UP}')
         self.solve_ILP_with_gurobipy(TOT_TIME_UP)   # with gurobipy !!!
         # self.solve_ILP_with_pulp(TOT_TIME_UP)    # with pulp(gurobi)
@@ -367,8 +368,8 @@ class Execution_Plan(): # input: kernel streams of gpus
         hierarchy_sp = self.hierarchy_sp
         OJB = 'node' if hierarchy == 0 else 'gpu'
         
-        print(f'schedule:\n{d_graph.schedule.schedule_table}', flush=True)
-        print(f'fob: {fob}, get_e2e_time(): {d_graph.schedule.get_e2e_time()[fob]:.3e}, get_absolute_cc_time:{d_graph.schedule.get_absolute_cc_time()[fob]}', flush=True)
+        print(f'fob: {fob}; schedule:\n{d_graph.schedule.schedule_table}', flush=True)
+        # print(f'get_e2e_time(): {d_graph.schedule.get_e2e_time()[fob]:.3e}, get_absolute_cc_time:{d_graph.schedule.get_absolute_cc_time()[fob]}', flush=True)
         for v in d_graph.kernel_dict.values():
             if not v.is_empty(fob):
                 print(f'{v.key}: {v._start_time:.3e}, {v.time[fob]:.3e}, {(v._start_time + v.time[fob]):.3e}')
