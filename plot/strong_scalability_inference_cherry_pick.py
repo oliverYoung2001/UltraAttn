@@ -56,7 +56,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
         "figure.figsize": (20,4),  # Column, Row
         'font.sans-serif': 'Times New Roman',
         'axes.labelsize': FONT_SIZE,
-        'font.size':8,
+        'font.size': 8,
         'legend.fontsize': FONT_SIZE,
         'xtick.labelsize': FONT_SIZE,
         'ytick.labelsize': FONT_SIZE,
@@ -73,6 +73,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
     
     # 和utils.py中的COLOR_DEF相同，共7种颜色
     pair_color_def = COLOR_DEF[:len(sys_names)]
+    marker_def = MARKER_DEF[:len(sys_names)]
     # hatch_def = [HATCH_DEF[2] if i == len(sys_names) - 1 else None for i in range(len(sys_names))]
     # hatch_def = [None] * len(sys_names)
     
@@ -84,7 +85,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
     # bar_width = 0.4
     # bar_gap = 0.1
     # ylim = 1000 # 限制y轴范围, 保持表格整齐
-    ylim = 1  # Upper bound of relative performance
+    ylim = 1.1  # Upper bound of relative performance
     
     # ultra_key_suffixes = [f'_ablation=({KERNEL_TILE_TYPE},{KERNEL_SCHEDULE_TYPE})' \
     #                     for KERNEL_SCHEDULE_TYPE in ['Flexflow', 'ILP'] \
@@ -140,11 +141,11 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
                 for sys_id, sys_name in enumerate(sys_names):
                     if sys_name is None:
                         continue
-                    ax.plot(x, norm_perf[sys_name], color=pair_color_def[sys_id], linewidth=6)
+                    ax.plot(x, norm_perf[sys_name], color=pair_color_def[sys_id], marker=marker_def[sys_id], markersize=20, linewidth=6)
                 
                 ax.set_ylim(0, ylim)
                 if fig_cid == 0:
-                    ax.set_yticks(np.arange(0, ylim * 2 + 1, 1) / 2)  # [0, 0.5, 1]
+                    ax.set_yticks(np.arange(0, ylim * 2 + 1e-5, 1) / 2)  # [0, 0.5, 1]
                 else:
                     ax.set_yticks([])
                 

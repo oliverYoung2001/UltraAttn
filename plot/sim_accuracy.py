@@ -10,13 +10,13 @@ actual = predicted + np.random.randn(1000) * 5  # 实际性能（加噪声模拟
 def plot(source_file, DIFF, save_file, TITLE):
     FONT_SIZE = 40
     figsize = {
-        "figure.figsize": (8,6),  # Column, Row
+        "figure.figsize": (9.2,6),  # Column, Row
         'font.sans-serif': 'Times New Roman',
         'axes.labelsize': FONT_SIZE,
         'font.size':FONT_SIZE,
         'legend.fontsize': FONT_SIZE,
-        'xtick.labelsize': 20,
-        'ytick.labelsize': 20,
+        'xtick.labelsize': 30,
+        'ytick.labelsize': 30,
         'pdf.fonttype': 42,
         'ps.fonttype': 42
     }
@@ -52,7 +52,14 @@ def plot(source_file, DIFF, save_file, TITLE):
     # plt.legend()
     plt.grid(False)
     plt.show()
-    # plt.savefig(save_file)
+    plt.savefig(save_file)
+    
+    actual = np.array(actual)
+    predicted = np.array(predicted)
+    ss_res = np.sum((actual - predicted) ** 2)            # Residual sum of squares
+    ss_tot = np.sum((actual - np.mean(actual)) ** 2)   # Total sum of squares
+    r2 = 1 - (ss_res / ss_tot)
+    print(f"R² score: {r2:.4f}")
     
     
 def main():
