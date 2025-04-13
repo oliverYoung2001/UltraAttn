@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Union, Optional
 from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Table_Type, Block_Attention_Config, calc_table_comp_relative_time, get_block_table_type
 from custom_sparse_pattern import create_block_sparse_pattern
-from search_algo.bsa_config import BSA_Config
+from search_algo.bsa_config import BSA_Config, BSA_Repr
 from search_algo.global_vars import TASK_STATUS
 from search_algo.utils import print_rank_0
 import copy
@@ -159,9 +159,9 @@ def Quad_LP_GUROBI(N: int):
     # causal = True, fwd
     # Arguments
     problem_type = 'OPT'
-    problem_type = 'SAT'
+    # problem_type = 'SAT'
     LOAD_BALANCE = True
-    LOAD_BALANCE = False
+    # LOAD_BALANCE = False
     if problem_type == 'SAT':
         TARGET = N // 2 + 1 + (LOAD_BALANCE) - 1
     Var_cat_default = GRB.CONTINUOUS
@@ -301,8 +301,8 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
     if ParD is None:    # Intra
         assert block_config.CP[1] == 1 and hierarchy == 1, f'[ERROR]: ParD should be set in inter scheduling !!!'
         ParD = max(CP_, block_config.bsa_repr.block_table_raw.shape[0]) # Workload partition degree
-    else:   # Inter
-        assert hierarchy == 0, f'[ERROR]: ParD should not be set in intra scheduling !!!'
+    # else:   # Inter
+    #     assert hierarchy == 0, f'[ERROR]: ParD should not be set in intra scheduling !!!'
     assert ParD % CP_ == 0, f'Now not support (ParD={ParD}) % (CP_={CP_}) = {ParD % CP_} != 0'
     # print_rank_0(f'ParD: {ParD}')
     # block_config.print_block_table()
@@ -465,18 +465,31 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
     # causal = True, fwd
 
 def solve_global_causal():
+    fob = 0
+    hierarchy = 1
     # # 
     # N = 16
     # # ILP(N)
     # # Quad_LP_CVXPY(N)
     # # Quad_LP_SCIPY(N)
     # Quad_LP_GUROBI(N)
-    CP, Par_D = 2, 4
-    # CP, Par_D = 4, 8
+    # CP, Par_D = 2, 4
+    CP, Par_D = (4, 1), 8
+    # CP_ = math.prod(CP)
     # Par_D = 8
-    cmap = np.array([i // (Par_D // CP) for i in range(Par_D)]) # (0, 0, 1, 1, ..., CP-1, CP-1)
-    block_config = Block_Attention_Config.from_causal(CP, Par_D, cmap)
-    Quad_LP_GUROBI_from_block_config(block_config)
+    # cmap = np.array([i // (Par_D // CP_) for i in range(Par_D)]) # (0, 0, 1, 1, ..., CP-1, CP-1)
+    # block_config = Block_Attention_Config.from_causal(CP, Par_D, cmap)    
+    block_table = np.full((Par_D, Par_D), fill_value=Block_Type.EMPTY, dtype=Block_Type)
+    for i in range(Par_D):
+        block_table[i, i] = Block_Type.CAUSAL
+        for j in range(i):
+                block_table[i, j] = Block_Type.FULL
+    bsa_config = BSA_Config(None, None, {
+        'bsa_repr': BSA_Repr(block_table, None),
+        'CP': CP,
+    })
+    result = Quad_LP_GUROBI_from_block_config(bsa_config, fob, hierarchy, Par_D)
+    print(f'{result["table"]}')
   
 def solve_custom_sparse():
     # # star
@@ -571,8 +584,8 @@ def comp_balance_allocate_strategy(block_config: BSA_Config, fob: bool, hierarch
     raise NotImplementedError
     
 def main():
-    # solve_global_causal()
-    solve_custom_sparse()
+    solve_global_causal()
+    # solve_custom_sparse()
 
     
 if __name__ == '__main__':

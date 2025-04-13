@@ -74,8 +74,8 @@ def plot_e2e(raw_time_dict):
         'star',
         'streaming',
     ]
-    full_sys_names = ['ring', 'stripe', 'zigzag', 'ultra']  # For causal
-    sub_sys_names = ['ring', 'ultra']   # For others
+    full_sys_names = ['ring', 'stripe', 'zigzag', 'UltraAttn']  # For causal
+    sub_sys_names = ['ring', 'UltraAttn']   # For others
     
     FONT_SIZE = 25
     figsize = {
@@ -111,7 +111,8 @@ def plot_e2e(raw_time_dict):
     pair_color_def = np.array(COLOR_DEF[:len(full_sys_names)])
     hatch_def = [HATCH_DEF[2] if i == len(full_sys_names) - 1 else None for i in range(len(full_sys_names))]
     hatch_def = np.array([None] * len(full_sys_names))
-    
+    hatch_def = np.array(HATCH_DEF[:len(full_sys_names)-1] + [None])
+
     # 用ABCDEF替代7个sys_name
     # abc = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
     # abc = abc[: len(sys_names)]
@@ -128,7 +129,7 @@ def plot_e2e(raw_time_dict):
         matched = re.match(r'^(.*)_ring$', key)
         if matched:
             key_prefix = matched.group(1)
-            ultra_key = f'{key_prefix}_ultra'
+            ultra_key = f'{key_prefix}_{full_sys_names[-1]}'
             assert ultra_key not in raw_time_dict.keys()
             def parse_time_from_key(key):
                 return float(raw_time_dict[key]['time'])

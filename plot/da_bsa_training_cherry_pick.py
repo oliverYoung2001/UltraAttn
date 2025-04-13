@@ -78,7 +78,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
     with open('./database_bsa_train/zhipu_hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
       inter_bsa_exe_plans_profile = json.load(f)
     FONT_SIZE = 20
-    sys_names = ['ring', 'w_node_tile', 'w_node+gpu_tile', 'w_node+gpu+kernel_tile', 'ultra']
+    sys_names = ['ring', 'w_node_tile', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']
     figsize = {
         # "figure.figsize": (12,2),  # Column, Row
         # "figure.figsize": (28,3),  # Column, Row
@@ -105,6 +105,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
     pair_color_def = COLOR_DEF[:len(sys_names)]
     hatch_def = [HATCH_DEF[2] if i == len(sys_names) - 1 else None for i in range(len(sys_names))]
     hatch_def = [None] * len(sys_names)
+    hatch_def = HATCH_DEF[:len(sys_names)-1] + [None]
 
     # 用ABCDEF替代7个sys_name
     abc = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -148,9 +149,9 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
                         # 'w_node+gpu_tile': raw_time_dict[keys[1]],
                         # 'w_node+gpu+kernel_tile': min(raw_time_dict[keys[1]], raw_time_dict[keys[2]]),
                         # 'ultra': min([raw_time_dict[key] for key in keys[1:]]),
-                        'w_node+gpu_tile': raw_time_dict[keys[-4]],
-                        'w_node+gpu+kernel_tile': min(raw_time_dict[keys[-4]], raw_time_dict[keys[-3]]),
-                        'ultra': min([raw_time_dict[key] for key in keys[-4:]]),
+                        'w_node+device_tile': raw_time_dict[keys[-4]],
+                        'w_node+device+kernel_tile': min(raw_time_dict[keys[-4]], raw_time_dict[keys[-3]]),
+                        'UltraAttn': min([raw_time_dict[key] for key in keys[-4:]]),
                     }
                     ablation_time_list = [ablation_time_dict[sys_name] for sys_name in sys_names]
                     

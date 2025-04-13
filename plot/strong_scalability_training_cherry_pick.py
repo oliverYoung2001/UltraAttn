@@ -15,7 +15,8 @@ from search_algo.database import Prof_DB
 import regex as re
 import random
 from plot.common import parse_dense_performance_data
-    
+from matplotlib.lines import Line2D
+
 def plot_strong_scalability_for_training(raw_time_dict: dict):
     fobs = [0, 1]
     CPs = [
@@ -45,18 +46,20 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
     ]
     BSA_NAMES = [
         'strided',
-        'global+local',
+        'global\n+local',
         'full',
         'causal',
     ]
-    full_sys_names = ['ring', 'stripe', 'zigzag', 'ultra']  # No w_node_tile yet !!!
-    sub_sys_names = ['ring', None, None, 'ultra']
-    FONT_SIZE = 50
+    full_sys_names = ['ring', 'stripe', 'zigzag', 'UltraAttn']  # No w_node_tile yet !!!
+    sub_sys_names = ['ring', None, None, 'UltraAttn']
+    FONT_SIZE = 40
+    MARKER_SIZE = 20
+    LINEWIDTH = 5
     figsize = {
         # "figure.figsize": (12,2),  # Column, Row
         # "figure.figsize": (28,3),  # Column, Row
         "figure.figsize": (20,3),  # Column, Row
-        "figure.figsize": (20,16),  # Column, Row
+        "figure.figsize": (20,10),  # Column, Row
         'font.sans-serif': 'Times New Roman',
         'axes.labelsize': FONT_SIZE,
         'font.size':8,
@@ -100,7 +103,7 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
         matched = re.match(r'^(.*)_ring$', key)
         if matched:
             key_prefix = matched.group(1)
-            ultra_key = f'{key_prefix}_ultra'
+            ultra_key = f'{key_prefix}_UltraAttn'
             assert ultra_key not in raw_time_dict.keys()
             # def parse_time_from_suffix(key_suffix):
             #     return float(raw_time_dict[f'{key_prefix}{key_suffix}']['time'])
@@ -122,6 +125,7 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
                 for Nh_id, Nh in enumerate(Nhs):
                     fig_cid = fob_id * len(Nhs) + Nh_id
                     ax = axs[fig_rid, fig_cid]  # Get subfig
+                    ax.set_box_aspect(1/1.8)  # 宽高比为1.5
                     sub_fig_title = f"Nh={Nh}\n{'forward' if fob == 0 else 'backward'}"
                     shape_config_str = f"S={(S,S)}_Nh={(Nh,Nh)}_bs={bs}_D={D}"
                     key_preffix_CPs = {}
@@ -144,23 +148,7 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
                     for sys_id, sys_name in enumerate(sys_names):
                         if sys_name is None:
                             continue
-                        ax.plot(x, norm_perf[sys_name], color=pair_color_def[sys_id], marker=marker_def[sys_id], markersize=20, linewidth=6)
-                    # y1 = np.sin(x)
-                    # y2 = np.cos(x)
-                    # y3 = np.tan(x) / 10  # 缩小 tan 的幅度，避免过大
-
-                    # # 绘制折线并设置标签
-                    # ax.plot(x, y1, label='Sine', color='blue', linewidth=2)
-                    # ax.plot(x, y2, label='Cosine', color='red', linestyle='--', linewidth=2)
-                    # ax.plot(x, y3, label='Tangent', color='green', linestyle='-.', linewidth=2)
-
-                    # 添加图例
-                    # ax.legend()
-
-                    # 添加标题和轴标签
-                    # ax.set_title('Multiple Lines with Legend')
-                    # ax.set_xlabel('X Axis')
-                    # ax.set_ylabel('Y Axis')
+                        ax.plot(x, norm_perf[sys_name], color=pair_color_def[sys_id], marker=marker_def[sys_id], markersize=MARKER_SIZE, linewidth=LINEWIDTH)
                     
                     ax.set_ylim(0, ylim)
                     if fig_cid == 0:
@@ -175,14 +163,16 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
                         ax.set_xticks([])
                     
                     if fig_rid == num_rows - 1:
-                        ax.set_title(sub_fig_title, loc='center', fontsize=FONT_SIZE, y=-0.8)
+                        ax.set_title(sub_fig_title, loc='center', fontsize=FONT_SIZE, y=-1)
 
                     if fig_cid == 0:
                     #   ax.set_ylabel(f'{BSA_NAMES[bsa_id]}\nS={Ss_str_dict[str(S)]}', fontdict={'weight': 'bold'})
-                      ax.set_ylabel(f'{BSA_NAMES[bsa_id]}', fontdict={'weight': 'bold'})
-                      ax.yaxis.set_label_coords(-0.4, 0.5)
+                        ax.set_ylabel(f'{BSA_NAMES[bsa_id]}', fontdict={'weight': 'bold'})
+                        ax.yaxis.set_label_coords(-0.4, 0.5)
                       # ax.yaxis.set_label_coords(0, 1)
 
+                    for spine in ax.spines.values():
+                        spine.set_linewidth(4)  # 设置边框线宽
                     # 显示网格（可选）
                     # plt.grid(True)
 
@@ -191,8 +181,11 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
     # Add legend to the global fig 
     # legend_handles = [mpatches.Patch(hatch=hatch_def[i], facecolor=pair_color_def[i], edgecolor='k', label='(' + abc[i] + ') ' + sys_names[i]) for i in range(len(sys_names))]
     legend_handles = [mpatches.Patch(facecolor=pair_color_def[i], edgecolor='k', label=sys_names[i]) for i in range(len(sys_names))]
-    # fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15))
-    fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1))
+    legend_elements = [
+        Line2D([0], [0], marker=marker_def[i], color=pair_color_def[i], linestyle='-', label=sys_names[i], linewidth=LINEWIDTH, markersize=MARKER_SIZE) for i in range(len(sys_names))
+    ]
+    # fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1))
+    fig.legend(handles=legend_elements, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.02))
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.2)
     fig.savefig(f"./plot/figs/strong_scalability_training_cherry_pick.pdf", bbox_inches='tight')

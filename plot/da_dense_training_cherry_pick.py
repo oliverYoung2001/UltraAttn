@@ -49,7 +49,7 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
       'causal'
     ]
     # sys_names = ['ring', 'zigzag', 'w_node_tile', 'w_gpu_tile', 'w_kernel_tile', 'ultra']
-    sys_names = ['ring', 'stripe', 'zigzag', 'w_node+gpu_tile', 'w_node+gpu+kernel_tile', 'ultra']  # No w_node_tile yet !!!
+    sys_names = ['ring', 'stripe', 'zigzag', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']  # No w_node_tile yet !!!
     FONT_SIZE = 20
     figsize = {
         # "figure.figsize": (12,2),  # Column, Row
@@ -77,8 +77,17 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
     
     # 和utils.py中的COLOR_DEF相同，共7种颜色
     pair_color_def = COLOR_DEF[:len(sys_names)]
+    HATCH_DEF = [
+    '////',
+    '\\\\\\\\',
+    'xx',
+    '++',
+    '..',
+    'oo',
+    ]
     hatch_def = [HATCH_DEF[2] if i == len(sys_names) - 1 else None for i in range(len(sys_names))]
     hatch_def = [None] * len(sys_names)
+    hatch_def = HATCH_DEF[:len(sys_names)-1] + [None]
 
     # 用ABCDEF替代7个sys_name
     abc = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -139,9 +148,9 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
                             'stripe': raw_time_dict[full_keys[0]],
                             'zigzag': raw_time_dict[full_keys[0]],  # 
                             # 'w_node_tile': ???,
-                            'w_node+gpu_tile': min([raw_time_dict[key] for key in full_keys[1:1+YX_num]]),
-                            'w_node+gpu+kernel_tile': min([raw_time_dict[key] for key in full_keys[1:]]),
-                            'ultra': min([raw_time_dict[key] for key in full_keys[1:]]),
+                            'w_node+device_tile': min([raw_time_dict[key] for key in full_keys[1:1+YX_num]]),
+                            'w_node+device+kernel_tile': min([raw_time_dict[key] for key in full_keys[1:]]),
+                            'UltraAttn': min([raw_time_dict[key] for key in full_keys[1:]]),
                         }
                     elif bsa_repr == '[[2]]':   # causal
                         ablation_time_dict = {
@@ -149,9 +158,9 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
                             'stripe': raw_time_dict[causal_keys[1]],
                             'zigzag': raw_time_dict[causal_keys[2]],  # 
                             # 'w_node_tile': ???,
-                            'w_node+gpu_tile': raw_time_dict[causal_keys[-4]],
-                            'w_node+gpu+kernel_tile': min(raw_time_dict[causal_keys[-4]], raw_time_dict[causal_keys[-3]]),
-                            'ultra': min([raw_time_dict[key] for key in causal_keys[-4:]]),
+                            'w_node+device_tile': raw_time_dict[causal_keys[-4]],
+                            'w_node+device+kernel_tile': min(raw_time_dict[causal_keys[-4]], raw_time_dict[causal_keys[-3]]),
+                            'UltraAttn': min([raw_time_dict[key] for key in causal_keys[-4:]]),
                         }
                     else:
                         raise Exception(f'[ERROR]: Unknown bsa_repr={bsa_repr}')
@@ -179,7 +188,7 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
                     # ax.text(bars[-1].get_x() + bars[-1].get_width() / 2 + 0.1, - 0.15, f'TODO\u00D7', fontweight='bold', ha='center', va='bottom', \
                     #   fontsize=7, color='red')
                     ax.text(bars[-1].get_x() + bars[-1].get_width() / 2 + 0.1, 0.5, f'{norm_perf[-1]/max_baseline:.2f}\u00D7', \
-                      fontweight='bold', ha='center', va='center', fontsize=FONT_SIZE, color='black', rotation=90)
+                      fontweight='bold', ha='center', va='center', fontsize=FONT_SIZE-2, color='black', rotation=90)
 
                     # Labels of the subfig
                     # ax.set_xticks(range(len(abc)), abc)
@@ -202,7 +211,7 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
     # Add legend to the global fig 
     # legend_handles = [mpatches.Patch(hatch=hatch_def[i], facecolor=pair_color_def[i], edgecolor='k', label='(' + abc[i] + ') ' + sys_names[i]) for i in range(len(sys_names))]
     legend_handles = [mpatches.Patch(hatch=hatch_def[i], facecolor=pair_color_def[i], edgecolor='k', label=sys_names[i]) for i in range(len(sys_names))]
-    fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15))
+    fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15), columnspacing=1)
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.05)
     fig.savefig(f"./plot/figs/inter_dense_configs_training_cherry_pick_fallback_fob={fob}.pdf", bbox_inches='tight')
