@@ -187,7 +187,7 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
                     max_baseline = max(norm_perf[: 3])  # ring, stripe, zigzag
                     # ax.text(bars[-1].get_x() + bars[-1].get_width() / 2 + 0.1, - 0.15, f'TODO\u00D7', fontweight='bold', ha='center', va='bottom', \
                     #   fontsize=7, color='red')
-                    ax.text(bars[-1].get_x() + bars[-1].get_width() / 2 + 0.1, 0.5, f'{norm_perf[-1]/max_baseline:.2f}\u00D7', \
+                    ax.text(bars[-1].get_x() + bars[-1].get_width() / 2 + 0.25, 0.5, f'{norm_perf[-1]/max_baseline:.2f}\u00D7', \
                       fontweight='bold', ha='center', va='center', fontsize=FONT_SIZE-2, color='black', rotation=90)
 
                     # Labels of the subfig
