@@ -67,15 +67,15 @@ def plot_e2e(raw_time_dict):
         '[[20000000][12000000][11200000][11120000][10112000][10011200][10001120][10000112]]',
     ]
     BSA_NAMES = [
-        'strided',
-        'global\n+local',
-        'full',
-        'causal',
-        'star',
-        'streaming',
+        'Strided',
+        'Global\n+Local',
+        'Full',
+        'Causal',
+        'Star',
+        'Streaming',
     ]
-    full_sys_names = ['ring', 'stripe', 'zigzag', 'UltraAttn']  # For causal
-    sub_sys_names = ['ring', 'UltraAttn']   # For others
+    full_sys_names = ['Ring', 'Stripe', 'Zigzag', 'UltraAttn']  # For causal
+    sub_sys_names = ['Ring', 'UltraAttn']   # For others
     
     FONT_SIZE = 25
     figsize = {
@@ -129,7 +129,7 @@ def plot_e2e(raw_time_dict):
         matched = re.match(r'^(.*)_ring$', key)
         if matched:
             key_prefix = matched.group(1)
-            ultra_key = f'{key_prefix}_{full_sys_names[-1]}'
+            ultra_key = f'{key_prefix}_{full_sys_names[-1].lower()}'
             assert ultra_key not in raw_time_dict.keys()
             def parse_time_from_key(key):
                 return float(raw_time_dict[key]['time'])
@@ -166,7 +166,7 @@ def plot_e2e(raw_time_dict):
                 key_preffixes = [f'fob={fob}_CP={CP}_shape_config={{{shape_config_str}}}_bsa_config={{{bsa_config_str}}}' for fob in fobs]
                 
                 times_attention = np.array([ # Unit: s
-                    sum([float(raw_time_dict[f'{key_preffixes[fob]}_{sys_name}']['time']) for fob in fobs]) * N_LAYERS
+                    sum([float(raw_time_dict[f'{key_preffixes[fob]}_{sys_name.lower()}']['time']) for fob in fobs]) * N_LAYERS
                         for sys_name in sys_names
                 ])
                 e2e_time = times_attention + time_wo_attention

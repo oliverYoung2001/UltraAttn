@@ -10,7 +10,8 @@ actual = predicted + np.random.randn(1000) * 5  # 实际性能（加噪声模拟
 def plot(source_file, DIFF, save_file, TITLE):
     FONT_SIZE = 40
     figsize = {
-        "figure.figsize": (9.2,6),  # Column, Row
+        # "figure.figsize": (9.2,6),  # Column, Row
+        "figure.figsize": (6.6,6),  # Column, Row
         'font.sans-serif': 'Times New Roman',
         'axes.labelsize': FONT_SIZE,
         'font.size':FONT_SIZE,
@@ -50,6 +51,7 @@ def plot(source_file, DIFF, save_file, TITLE):
     plt.subplots_adjust(bottom=0.2, left=0.15)
     # plt.title(TITLE)
     # plt.legend()
+    plt.tight_layout()
     plt.grid(False)
     plt.show()
     plt.savefig(save_file)

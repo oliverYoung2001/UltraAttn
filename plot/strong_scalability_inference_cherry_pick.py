@@ -44,11 +44,11 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
       '[[20000000][12000000][11200000][11120000][10112000][10011200][10001120][10000112]]',
     ]
     BSA_NAMES = [
-      'star',
-      'streaming'
+      'Star',
+      'Streaming'
     ]
     # full_sys_names = ['ring', 'stripe', 'zigzag', 'ultra']  # No w_node_tile yet !!!
-    sys_names = ['ring', 'UltraAttn']
+    sys_names = ['Ring', 'UltraAttn']
     FONT_SIZE = 40
     MARKER_SIZE = 20
     LINEWIDTH = 5
@@ -100,7 +100,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
         matched = re.match(r'^(.*)_ring$', key)
         if matched:
             key_prefix = matched.group(1)
-            ultra_key = f'{key_prefix}_UltraAttn'
+            ultra_key = f'{key_prefix}_{sys_names[-1].lower()}'
             assert ultra_key not in raw_time_dict.keys()
             # def parse_time_from_suffix(key_suffix):
             #     return float(raw_time_dict[f'{key_prefix}{key_suffix}']['time'])
@@ -136,7 +136,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
                 for sys_id, sys_name in enumerate(sys_names):
                     if sys_name is None:
                         continue
-                    time_dict[sys_name] = [float(raw_time_dict[f'{key_preffix_CPs[CP]}_{sys_name}']['time']) for CP in CPs]
+                    time_dict[sys_name] = [float(raw_time_dict[f'{key_preffix_CPs[CP]}_{sys_name.lower()}']['time']) for CP in CPs]
                 total_gpu_time = {k: [t * math.prod(CPs[CP_id]) for CP_id, t in enumerate(t_l)] for k, t_l in time_dict.items()}
                 total_gpu_time_min = min([t for t_l in total_gpu_time.values() for t in t_l])
                 norm_perf = {k: [total_gpu_time_min / t for t in t_l] for k, t_l in total_gpu_time.items()}

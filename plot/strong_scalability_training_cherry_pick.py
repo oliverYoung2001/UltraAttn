@@ -45,13 +45,13 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
         '[[2]]',  # CAUSAL
     ]
     BSA_NAMES = [
-        'strided',
-        'global\n+local',
-        'full',
-        'causal',
+        'Strided',
+        'Global\n+Local',
+        'Full',
+        'Causal',
     ]
-    full_sys_names = ['ring', 'stripe', 'zigzag', 'UltraAttn']  # No w_node_tile yet !!!
-    sub_sys_names = ['ring', None, None, 'UltraAttn']
+    full_sys_names = ['Ring', 'Stripe', 'Zigzag', 'UltraAttn']  # No w_node_tile yet !!!
+    sub_sys_names = ['Ring', None, None, 'UltraAttn']
     FONT_SIZE = 40
     MARKER_SIZE = 20
     LINEWIDTH = 5
@@ -103,7 +103,7 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
         matched = re.match(r'^(.*)_ring$', key)
         if matched:
             key_prefix = matched.group(1)
-            ultra_key = f'{key_prefix}_UltraAttn'
+            ultra_key = f'{key_prefix}_{full_sys_names[-1].lower()}'
             assert ultra_key not in raw_time_dict.keys()
             # def parse_time_from_suffix(key_suffix):
             #     return float(raw_time_dict[f'{key_prefix}{key_suffix}']['time'])
@@ -137,7 +137,7 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
                     for sys_id, sys_name in enumerate(sys_names):
                         if sys_name is None:
                             continue
-                        time_dict[sys_name] = [float(raw_time_dict[f'{key_preffix_CPs[CP]}_{sys_name}']['time']) for CP in CPs]
+                        time_dict[sys_name] = [float(raw_time_dict[f'{key_preffix_CPs[CP]}_{sys_name.lower()}']['time']) for CP in CPs]
                     total_gpu_time = {k: [t * math.prod(CPs[CP_id]) for CP_id, t in enumerate(t_l)] for k, t_l in time_dict.items()}
                     total_gpu_time_min = min([t for t_l in total_gpu_time.values() for t in t_l])
                     norm_perf = {k: [total_gpu_time_min / t for t in t_l] for k, t_l in total_gpu_time.items()}

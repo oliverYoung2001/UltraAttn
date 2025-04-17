@@ -71,14 +71,15 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
       '[[1111111111111111][1100000000000000][1010000000000000][1001000000000000][1000100000000000][1000010000000000][1000001000000000][1000000100000000][1000000010000000][1000000001000000][1000000000100000][1000000000010000][1000000000001000][1000000000000100][1000000000000010][1000000000000001]]',
     ]
     BSA_NAMES = [
-      'strided',
-      'global+local'
+      'Strided',
+      'Global+Local'
     ]
     # with open(prof_db.INTER_BSA_EXE_PLANS_PROFILE, 'r') as f:
     with open('./database_bsa_train/zhipu_hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
       inter_bsa_exe_plans_profile = json.load(f)
-    FONT_SIZE = 20
-    sys_names = ['ring', 'w_node_tile', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']
+    FONT_SIZE = 18
+    # sys_names = ['ring', 'w_node_tile', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']
+    sys_names = ['Ring', 'Node Tile', 'Node+Device Tile', 'Node+Device+Kernel Tile', 'UltraAttn']
     figsize = {
         # "figure.figsize": (12,2),  # Column, Row
         # "figure.figsize": (28,3),  # Column, Row
@@ -143,14 +144,14 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
                     keys = [f'{key_preffix}{key_suffix}' for key_suffix in key_suffixes]
                     #   Parse and select execution times
                     raw_time_dict = {key: float(inter_bsa_exe_plans_profile[key]['time']) for key in keys}
-                    ablation_time_dict = {
-                        'ring': raw_time_dict[keys[0]], # @yqg
-                        'w_node_tile': raw_time_dict[f'{key_preffix}{w_node_tile_suffix}'],
+                    ablation_time_dict = {  # 'Node Tile', 'Node+Device Tile', 'Node+Device+Kernel Tile'
+                        'Ring': raw_time_dict[keys[0]], # @yqg
+                        'Node Tile': raw_time_dict[f'{key_preffix}{w_node_tile_suffix}'],
                         # 'w_node+gpu_tile': raw_time_dict[keys[1]],
                         # 'w_node+gpu+kernel_tile': min(raw_time_dict[keys[1]], raw_time_dict[keys[2]]),
                         # 'ultra': min([raw_time_dict[key] for key in keys[1:]]),
-                        'w_node+device_tile': raw_time_dict[keys[-4]],
-                        'w_node+device+kernel_tile': min(raw_time_dict[keys[-4]], raw_time_dict[keys[-3]]),
+                        'Node+Device Tile': raw_time_dict[keys[-4]],
+                        'Node+Device+Kernel Tile': min(raw_time_dict[keys[-4]], raw_time_dict[keys[-3]]),
                         'UltraAttn': min([raw_time_dict[key] for key in keys[-4:]]),
                     }
                     ablation_time_list = [ablation_time_dict[sys_name] for sys_name in sys_names]
@@ -177,7 +178,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
                     # ax.set_xticks(range(len(abc)), abc)
                     ax.set_xticks([])
                     if fig_rid == num_rows - 1:
-                        ax.set_title(sub_fig_title, loc='center', fontsize=FONT_SIZE, y=-1)
+                        ax.set_title(sub_fig_title, loc='center', fontsize=FONT_SIZE, y=-0.9)
                     # if fig_rid == 0:
                     #   ax.set_title(MODEL_NAME[model_name], loc='center', fontsize=10)
 
@@ -196,7 +197,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
     # Add legend to the global fig 
     # legend_handles = [mpatches.Patch(hatch=hatch_def[i], facecolor=pair_color_def[i], edgecolor='k', label='(' + abc[i] + ') ' + sys_names[i]) for i in range(len(sys_names))]
     legend_handles = [mpatches.Patch(hatch=hatch_def[i], facecolor=pair_color_def[i], edgecolor='k', label=sys_names[i]) for i in range(len(sys_names))]
-    fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15))
+    fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.10))
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.05)
     fig.savefig(f"./plot/figs/inter_bsa_configs_training_cherry_pick_fob={fob}.pdf", bbox_inches='tight')

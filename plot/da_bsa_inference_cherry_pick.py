@@ -74,14 +74,15 @@ def plot_all_intra_configs(intra_exp_da_configs, prof_db: Prof_DB): # Relative P
       '[[20000000][12000000][11200000][11120000][10112000][10011200][10001120][10000112]]',
     ]
     BSA_NAMES = [
-      'star',
-      'streaming'
+      'Star',
+      'Streaming'
     ]
     # with open(prof_db.INTER_BSA_EXE_PLANS_PROFILE, 'r') as f:
     with open('./database_bsa_infer/zhipu_hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
       intra_bsa_exe_plans_profile = json.load(f)
     FONT_SIZE = 22
-    sys_names = ['ring', 'w_device_tile', 'w_device+kernel_tile', 'UltraAttn']
+    # sys_names = ['ring', 'w_device_tile', 'w_device+kernel_tile', 'UltraAttn']
+    sys_names = ['Ring', 'Device Tile', 'Device+Kernel Tile', 'UltraAttn']
     figsize = {
         "figure.figsize": (12,3),
         "figure.figsize": (10,2.8),
@@ -138,14 +139,14 @@ def plot_all_intra_configs(intra_exp_da_configs, prof_db: Prof_DB): # Relative P
                     keys = [f'{key_preffix}{key_suffix}' for key_suffix in key_suffixes]
                     #   Parse and select execution times
                     raw_time_dict = {key: float(intra_bsa_exe_plans_profile[key]['time']) for key in keys}
-                    ablation_time_dict = {
-                        'ring': raw_time_dict[keys[0]], # @yqg
+                    ablation_time_dict = {  # 'Device Tile', 'Device+Kernel Tile'
+                        'Ring': raw_time_dict[keys[0]], # @yqg
                         # 'w_node_tile': raw_time_dict[f'{key_preffix}{w_node_tile_suffix}'],
                         # 'w_gpu_tile': raw_time_dict[keys[1]],
                         # 'w_gpu+kernel_tile': min(raw_time_dict[keys[1]], raw_time_dict[keys[2]]),
                         # 'ultra': min([raw_time_dict[key] for key in keys[1:]]),
-                        'w_device_tile': raw_time_dict[keys[-4]],
-                        'w_device+kernel_tile': min(raw_time_dict[keys[-4]], raw_time_dict[keys[-3]]),
+                        'Device Tile': raw_time_dict[keys[-4]],
+                        'Device+Kernel Tile': min(raw_time_dict[keys[-4]], raw_time_dict[keys[-3]]),
                         'UltraAttn': min([raw_time_dict[key] for key in keys[-4:]]),
                     }
                     ablation_time_list = [ablation_time_dict[sys_name] for sys_name in sys_names]

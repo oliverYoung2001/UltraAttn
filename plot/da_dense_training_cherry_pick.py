@@ -45,11 +45,12 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
       '[[2]]',  # CAUSAL
     ]
     BSA_NAMES = [
-      'full',
-      'causal'
+      'Full',
+      'Causal'
     ]
     # sys_names = ['ring', 'zigzag', 'w_node_tile', 'w_gpu_tile', 'w_kernel_tile', 'ultra']
-    sys_names = ['ring', 'stripe', 'zigzag', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']  # No w_node_tile yet !!!
+    # sys_names = ['ring', 'stripe', 'zigzag', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']  # No w_node_tile yet !!!
+    sys_names = ['Ring', 'Stripe', 'Zigzag', 'Node+Device Tile', 'Node+Device+Kernel Tile', 'UltraAttn']
     FONT_SIZE = 20
     figsize = {
         # "figure.figsize": (12,2),  # Column, Row
@@ -143,23 +144,23 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
                     #   Parse and select execution times
                     # raw_time_dict = {key: float(inter_bsa_exe_plans_profile[key]['time']) for key in keys}
                     if bsa_repr == '[[1]]':     # full
-                        ablation_time_dict = {
-                            'ring': raw_time_dict[full_keys[0]], # 
-                            'stripe': raw_time_dict[full_keys[0]],
-                            'zigzag': raw_time_dict[full_keys[0]],  # 
+                        ablation_time_dict = {  # 'Node+Device Tile', 'Node+Device+Kernel Tile', 'UltraAttn'
+                            'Ring': raw_time_dict[full_keys[0]], # 
+                            'Stripe': raw_time_dict[full_keys[0]],
+                            'Zigzag': raw_time_dict[full_keys[0]],  # 
                             # 'w_node_tile': ???,
-                            'w_node+device_tile': min([raw_time_dict[key] for key in full_keys[1:1+YX_num]]),
-                            'w_node+device+kernel_tile': min([raw_time_dict[key] for key in full_keys[1:]]),
+                            'Node+Device Tile': min([raw_time_dict[key] for key in full_keys[1:1+YX_num]]),
+                            'Node+Device+Kernel Tile': min([raw_time_dict[key] for key in full_keys[1:]]),
                             'UltraAttn': min([raw_time_dict[key] for key in full_keys[1:]]),
                         }
                     elif bsa_repr == '[[2]]':   # causal
                         ablation_time_dict = {
-                            'ring': raw_time_dict[causal_keys[0]], # 
-                            'stripe': raw_time_dict[causal_keys[1]],
-                            'zigzag': raw_time_dict[causal_keys[2]],  # 
+                            'Ring': raw_time_dict[causal_keys[0]], # 
+                            'Stripe': raw_time_dict[causal_keys[1]],
+                            'Zigzag': raw_time_dict[causal_keys[2]],  # 
                             # 'w_node_tile': ???,
-                            'w_node+device_tile': raw_time_dict[causal_keys[-4]],
-                            'w_node+device+kernel_tile': min(raw_time_dict[causal_keys[-4]], raw_time_dict[causal_keys[-3]]),
+                            'Node+Device Tile': raw_time_dict[causal_keys[-4]],
+                            'Node+Device+Kernel Tile': min(raw_time_dict[causal_keys[-4]], raw_time_dict[causal_keys[-3]]),
                             'UltraAttn': min([raw_time_dict[key] for key in causal_keys[-4:]]),
                         }
                     else:
