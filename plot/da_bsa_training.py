@@ -230,7 +230,7 @@ def plot(data, devices, model_names, sys_names, figure_name, add_legend=False):
  
   
 def main():
-    os.environ['CLUSTER_NAME'] = 'zhipu_hamming'
+    os.environ['CLUSTER_NAME'] = 'hamming'
     os.environ['PLATFORM'] = 'H100'
     prof_db = initialize_prof_db()
     inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()

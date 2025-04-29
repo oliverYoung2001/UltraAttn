@@ -49,7 +49,7 @@ def plot_all_intra_configs(intra_exp_da_configs, prof_db: Prof_DB = None): # Rel
     """
     # with open(prof_db.INTRA_BSA_EXE_PLANS_PROFILE, 'r') as f:
     #   intra_bsa_exe_plans_profile = json.load(f)
-    with open('./database_bsa_infer/zhipu_hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
+    with open('./database_bsa_infer/hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
       intra_bsa_exe_plans_profile = json.load(f)
       
     # sys_names = ['ring', 'w_node_tile', 'w_gpu_tile', 'w_kernel_tile', 'ultra']
@@ -145,7 +145,7 @@ def plot_all_intra_configs(intra_exp_da_configs, prof_db: Prof_DB = None): # Rel
     fig.savefig(f"./plot/figs/intra_bsa_configs_inference.pdf", bbox_inches='tight')
   
 def main():
-    os.environ['CLUSTER_NAME'] = 'zhipu_hamming'
+    os.environ['CLUSTER_NAME'] = 'hamming'
     os.environ['PLATFORM'] = 'H100'
     # prof_db = initialize_prof_db()
     inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_infer_configs()

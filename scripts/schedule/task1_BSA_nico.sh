@@ -10,7 +10,7 @@ mkdir -p results
 mkdir -p results/${EXP_NAME}
 
 # Envs:
-export CLUSTER_NAME=zhipu_planck
+export CLUSTER_NAME=planck
 export PLATFORM='H100'
 # # set pulp tmp dir; [TODO]: `TMPDIR` is used by both pulp and openmpi
 export PULP_TMPDIR=./search_algo/tmp

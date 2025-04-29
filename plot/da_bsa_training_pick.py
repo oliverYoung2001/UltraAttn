@@ -75,7 +75,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
       'Global+Local'
     ]
     # with open(prof_db.INTER_BSA_EXE_PLANS_PROFILE, 'r') as f:
-    with open('./database_bsa_train/zhipu_hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
+    with open('./database_bsa_train/hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
       inter_bsa_exe_plans_profile = json.load(f)
     FONT_SIZE = 18
     # sys_names = ['ring', 'w_node_tile', 'w_node+device_tile', 'w_node+device+kernel_tile', 'UltraAttn']
@@ -294,7 +294,7 @@ def plot(data, devices, model_names, sys_names, figure_name, add_legend=False):
  
   
 def main():
-    os.environ['CLUSTER_NAME'] = 'zhipu_hamming'
+    os.environ['CLUSTER_NAME'] = 'hamming'
     os.environ['PLATFORM'] = 'H100'
     # prof_db = initialize_prof_db()
     # inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict = get_bsa_configs()

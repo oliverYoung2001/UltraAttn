@@ -65,8 +65,8 @@ def plot(source_file, DIFF, save_file, TITLE):
     
     
 def main():
-    plot('./database_bsa_infer/zhipu_hamming/H100/intra_bsa_exe_plans_profile.json', 0.3, f'./plot/figs/sim_intra.pdf', 'Intra-node Distributed Attention')
-    plot('./database_bsa_train/zhipu_hamming/H100/inter_bsa_exe_plans_profile.json', 0.5, f'./plot/figs/sim_inter.pdf', 'Inter-node Distributed Attention')
+    plot('./database_bsa_infer/hamming/H100/intra_bsa_exe_plans_profile.json', 0.3, f'./plot/figs/sim_intra.pdf', 'Intra-node Distributed Attention')
+    plot('./database_bsa_train/hamming/H100/inter_bsa_exe_plans_profile.json', 0.5, f'./plot/figs/sim_inter.pdf', 'Inter-node Distributed Attention')
     
 if __name__ == '__main__':
     main()

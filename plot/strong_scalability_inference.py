@@ -170,7 +170,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
 def main():
     # BSA for inference time dict
     raw_time_dict = {}
-    with open('./database_bsa_infer/zhipu_hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
+    with open('./database_bsa_infer/hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
         inter_bsa_exe_plans_profile = json.load(f)
     raw_time_dict.update(inter_bsa_exe_plans_profile)
     

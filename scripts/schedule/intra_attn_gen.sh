@@ -4,7 +4,7 @@ export CLUSTER_NAME='fit'
 export PLATFORM='A800'
 export PLATFORM='H800'
 
-export CLUSTER_NAME=zhipu_hamming
+export CLUSTER_NAME=hamming
 export PLATFORM='H100'
 # set pulp tmp dir
 export TMPDIR=./search_algo/tmp

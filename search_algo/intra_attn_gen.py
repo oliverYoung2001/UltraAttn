@@ -36,7 +36,7 @@ def get_configs():
 def main():
     CLUSTER_NAME = os.environ.get('CLUSTER_NAME', None)
     PLATFORM = os.environ.get(f'PLATFORM', None)
-    assert CLUSTER_NAME in ['qiyuan', 'fit', 'zhipu_hamming'], f'[ERROR]: Not support CLUSTER_NAME: {CLUSTER_NAME}'
+    assert CLUSTER_NAME in ['qiyuan', 'fit', 'hamming'], f'[ERROR]: Not support CLUSTER_NAME: {CLUSTER_NAME}'
     assert PLATFORM in ['A100', 'A800', 'H800', 'H100'], f'[ERROR]: Not support PLATFORM: {PLATFORM}'
     fobs = [
         0,

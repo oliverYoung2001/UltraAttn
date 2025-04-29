@@ -216,14 +216,14 @@ def plot_e2e(raw_time_dict):
 def main():
     _, raw_time_dict = parse_dense_performance_data()  # {key: {'hfu': xxx, 'time': xxx, 'sim_time': xxx}}}
     # BSA for training time dict
-    with open('./database_bsa_train/zhipu_hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
+    with open('./database_bsa_train/hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
         inter_bsa_exe_plans_profile = json.load(f)
     raw_time_dict.update(inter_bsa_exe_plans_profile)
     # BSA for inference time dict
-    with open('./database_bsa_train/zhipu_hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
+    with open('./database_bsa_train/hamming/H100/inter_bsa_exe_plans_profile.json', 'r') as f:
         inter_bsa_exe_plans_profile = json.load(f)
     raw_time_dict.update(inter_bsa_exe_plans_profile)
-    with open('./database_bsa_infer/zhipu_hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
+    with open('./database_bsa_infer/hamming/H100/intra_bsa_exe_plans_profile.json', 'r') as f:
         inter_bsa_exe_plans_profile = json.load(f)
     raw_time_dict.update(inter_bsa_exe_plans_profile)
     
