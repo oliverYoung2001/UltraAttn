@@ -4,3 +4,7 @@
 [submodule "third_party/comm_test"]
 	path = third_party/comm_test
 	url = https://github.com/oliverYoung2001/comm_test.git
+[submodule "third_party/UltraAttn_baseline"]
+	path = third_party/UltraAttn_baseline
+	url = https://github.com/oliverYoung2001/UltraAttn_baseline.git
+	branch = main

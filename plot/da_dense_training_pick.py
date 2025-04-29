@@ -169,12 +169,12 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
                     ablation_time_list = [ablation_time_dict[sys_name] for sys_name in sys_names]
                     min_time = min(ablation_time_list)
                     norm_perf = [min_time / t for t in ablation_time_list]
-                    # [HACK]: fall back to zigzag when ultra is worse than zigzag
-                    if norm_perf[- 1] < 1:
-                        assert max(norm_perf[3:]) < 1
-                        for sys_id in range(3, len(norm_perf)):
-                            norm_perf[sys_id] = 1 + (0.01 * random.randint(-3, 3))
-                    # End
+                    # #
+                    # if norm_perf[- 1] < 1:
+                    #     assert max(norm_perf[3:]) < 1
+                    #     for sys_id in range(3, len(norm_perf)):
+                    #         norm_perf[sys_id] = 1 + (0.01 * random.randint(-3, 3))
+                    # # End
                   
                     ax = axs[fig_rid, fig_cid]  # Get subfig
                     

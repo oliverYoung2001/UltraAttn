@@ -10,7 +10,8 @@ from search_algo.global_vars import *
 import pickle
 import numpy as np
 from functools import partial
-
+from search_algo.initialize import initialize_prof_db
+from search_algo.dense_utils import create_plan_for_full, write_plan
 
 def get_configs():
     SP0, SP1 = 1, 1
@@ -31,62 +32,21 @@ def get_configs():
     hierarchy = 1
     return Dist_Attn_Config((SP0, SP1), (Sq, Skv), (Nhq, Ng), bs, D, causal, hierarchy)
 
-def get_block_schedule_table(split_degrees: list, S_map: np.ndarray, causal: bool, X):
-    assert len(split_degrees) == 4
-    assert S_map.shape == (split_degrees[2], min(split_degrees[0], split_degrees[1]))
-    assert split_degrees[0] == split_degrees[1] and split_degrees[0] % X == 0
-    Y = split_degrees[0] // X
-    block_schedule_table = np.zeros((split_degrees[2], split_degrees[3], split_degrees[0], split_degrees[1]), dtype=np.int32)
-    block_schedule_table -= 1  # -1 means not used
-    for i in range(split_degrees[2]):   # split_bs
-        for j in range(split_degrees[3]):   # split_Nh
-            for k in range(split_degrees[0]):   # split_Sq
-                for l in range(split_degrees[1]):   # split_Skv
-                    if causal and k < l:
-                        continue
-                    block_schedule_table[i, j, k, l] = S_map[i, k // X * X + l % X]
-    return block_schedule_table
-
-def create_plan(da_config: Dist_Attn_Config, m_config: Machine_Config, X, fob, first_dim) -> Execution_Plan:
-    # **Not fused** with manually cc schedule !!!
-    tot_sp = da_config.tot_sp
-    # Create Schedule:
-    split_degrees = [tot_sp, tot_sp, 1, 1]
-    S_map = np.empty((split_degrees[2], min(split_degrees[0], split_degrees[1])), dtype=np.int32)
-    S_map[:] = np.arange(tot_sp)
-    get_schedule_table_func = partial(get_block_schedule_table, X=X)
-    schedule =  create_schedule(da_config, m_config, split_degrees, S_map, get_schedule_table_func)
-    print(f'schedule: {schedule.schedule_table}', flush=True)
-    # Create Dependent Graph:
-    d_graph = Dependent_Graph(schedule, fob) # Intra-machine
-    # Create Execution Plan:
-    plan = Execution_Plan(d_graph, fob, False)
-    # Generate Manual Plan:
-    plan.generate_manual_plan(tot_sp, X, first_dim=first_dim)
-    return plan
-
-def write_plan(execute_plan: Execution_Plan, prefix: str):
-    # dump plan
-    plan_name = execute_plan.get_plan_name()
-    plan_file = f'{prefix}/{plan_name}.pkl'
-    with open(plan_file, 'wb') as f:
-        pickle.dump(execute_plan, f)
-    # load plan
-    with open(plan_file, 'rb') as f:
-        execute_plan_loaded = pickle.load(f)
-    execute_plan_loaded.print_lp_result()
 
 def main():
     CLUSTER_NAME = os.environ.get('CLUSTER_NAME', None)
     PLATFORM = os.environ.get(f'PLATFORM', None)
-    assert CLUSTER_NAME in ['qiyuan', 'fit'], f'[ERROR]: Not support CLUSTER_NAME: {CLUSTER_NAME}'
-    assert PLATFORM in ['A100', 'A800', 'H800'], f'[ERROR]: Not support PLATFORM: {PLATFORM}'
+    assert CLUSTER_NAME in ['qiyuan', 'fit', 'zhipu_hamming'], f'[ERROR]: Not support CLUSTER_NAME: {CLUSTER_NAME}'
+    assert PLATFORM in ['A100', 'A800', 'H800', 'H100'], f'[ERROR]: Not support PLATFORM: {PLATFORM}'
     fobs = [
         0,
         1,
     ]
     da_config = get_configs()
-    m_config = get_profile_data(da_config.SP, da_config.hierarchy)
+    # Initialize Profile_DataBase
+    prof_db = initialize_prof_db()
+    
+    # m_config = get_profile_data(da_config.SP, da_config.hierarchy)
     tot_sp = da_config.SP[0] * da_config.SP[1]
     for fob in fobs:
         par_dir = f'{os.path.dirname(__file__)}/execution_plans/{CLUSTER_NAME}/{PLATFORM}/intra_SP{da_config.SP[1]}_fob={fob}'
@@ -95,11 +55,11 @@ def main():
             if tot_sp % X != 0:
                 continue
             if X == 1 or X == tot_sp:
-                plan = create_plan(da_config, m_config, X, fob=fob, first_dim=0)
+                plan = create_plan_for_full(da_config, prof_db.m_config, X, fob=fob, first_dim=0)
                 write_plan(plan, prefix=par_dir)
             else:
                 for first_dim in range(1):  # [TODO]: Support first_dim == 1
-                    plan = create_plan(da_config, m_config, X, fob=fob, first_dim=first_dim)
+                    plan = create_plan_for_full(da_config, prof_db.m_config, X, fob=fob, first_dim=first_dim)
                     write_plan(plan, prefix=par_dir)
     
 if __name__ == '__main__':

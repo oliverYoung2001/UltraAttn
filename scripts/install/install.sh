@@ -78,3 +78,7 @@ cp ???/Software/'Times New Roman.ttf' ~/.fonts
 sudo fc-cache -f -v # refresh font cache
 fc-list | grep "Times New Roman" # check whether it is installed
 rm -r ~/.cache/matplotlib   # remove cache of matplotlib
+
+
+# Add main branch of UltraAttn_baseline as submodule
+git submodule add -f -b main https://github.com/oliverYoung2001/UltraAttn_baseline.git ./third_party/UltraAttn_baseline

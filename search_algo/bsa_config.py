@@ -173,15 +173,18 @@ class BSA_Repr():   # OK
         if cur_spt >= n:
             assert cur_spt % n == 0
             sub_size = cur_spt // n
-            for i in range(n):
-                for j in range(n):
-                    sub_bsa_reprs.append(BSA_Repr(self.block_table_raw[i*sub_size: (i+1)*sub_size, j*sub_size: (j+1)*sub_size], None))
+            sub_block_table = self.block_table_raw
+            # for i in range(n):
+            #     for j in range(n):
+            #         sub_bsa_reprs.append(BSA_Repr(self.block_table_raw[i*sub_size: (i+1)*sub_size, j*sub_size: (j+1)*sub_size], None))
         else:
             assert n % cur_spt == 0
             sub_block_table, _ = self.complicate(self.block_table_raw, self.cmap_raw, rate=n // cur_spt)
-            for i in range(n):
-                for j in range(n):
-                    sub_bsa_reprs.append(BSA_Repr(self.block_table_raw[i, j], None))
+            sub_size = 1
+            
+        for i in range(n):
+            for j in range(n):
+                sub_bsa_reprs.append(BSA_Repr(sub_block_table[i*sub_size: (i+1)*sub_size, j*sub_size: (j+1)*sub_size], None))
         # Deduplicate
         sub_bsa_reprs = unique_list(sub_bsa_reprs)
         return sub_bsa_reprs

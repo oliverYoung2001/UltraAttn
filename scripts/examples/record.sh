@@ -7,7 +7,8 @@ pushd third_party/kernel_profiler
 popd
 #   comm profiling
 pushd third_party/comm_test
-./scripts/wrapper_conflict_bench_zhipu.sh 2>&1 | tee ./prof_data/zhipu_???/cb_<CP>_<nodes>.log
+./scripts/wrapper_conflict_bench_hamming.sh 8 2>&1 | tee ./prof_data/hamming/cb_8.log
+./scripts/wrapper_conflict_bench_hamming.sh 16 2>&1 | tee ./prof_data/hamming/cb_8.log
 popd
 popd
 
@@ -29,7 +30,7 @@ export PLATFORM='H800'
 ./scripts/schedule/intra_attn_gen.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_intra_SP=2_noncausal_all.log
 ./scripts/schedule/intra_attn_gen.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_intra_SP=4_noncausal_all.log
 ./scripts/schedule/intra_attn_gen.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_intra_SP=8_noncausal_all.log
-✅✅
+✅✅✅
 
 # 保留，独立的，提前做好
 # Generate the intra-attention w causal results
@@ -42,7 +43,7 @@ export PLATFORM='H800'
 # SP = 1, 4; # SP = 1, 8 -> Useless !!!
 ./scripts/schedule/search_engine_old.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_intra_SP=4_causal_all_gurobi.log
 ./scripts/schedule/search_engine_old.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_intra_SP=8_causal_all_gurobi.log
-✅✅
+✅✅✅
 
 # [TODO]: 想办法去掉！！！
 # # Generate the inter-attention SP0 = 1 before profile !!! [WORKAROUND] for profile intra-attn
@@ -51,7 +52,7 @@ export PLATFORM='H800'
 # Both run with causal=True and causal=False
 ./scripts/schedule/search_engine_old.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_inter_SP=1_causal_all.log
 ./scripts/schedule/search_engine_old.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_inter_SP=1_full_all.log
-✅✅
+✅✅✅
 
 # 保留，独立的，提前做好
 # Generate profile file: wrapper_intra_SP=8_all.log
@@ -65,7 +66,7 @@ export PLATFORM='H800'
 ./scripts/runtime/wrapper.sh 2>&1 | tee ./prof_data/fit/wrapper_intra_SP=8_all_H800.log
 # About 4 hours on H800 with parallel [TODO]: accelerate it !!!
 # But need "inter_SP1_fob=x" schedules !!!
-✅✅
+✅✅✅
 
 # 整合入task1 (3)
 # Generate the inter-attention w causal results
@@ -78,7 +79,7 @@ export PLATFORM='H800'
 ./scripts/schedule/search_engine_old.sh 2>&1 | tee ./results/schedule/${PLATFORM}/search_inter_SP=2_causal_all.log
 # [TODO]: more fine-grained division for SP=(2, 8)
 # SP=(2, 8): no fused ?
-✅✅
+✅✅✅
 
 # Generate the inter-attention w/o causal results   # No !!!
 # None

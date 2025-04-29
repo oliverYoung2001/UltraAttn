@@ -9,7 +9,23 @@ from search_algo.utils import Block_Type
 # print(f'{inspect.getfile(Block_Type)}', flush=True)
 
 from search_algo.bsa_config import BSA_Repr, BSA_Config
-from typing import List, Set
+from typing import List, Set, Optional
+
+def bsa_is_dense(bsa_config: Optional[BSA_Config]):
+    if bsa_config is None:
+        return True
+    if bsa_config.bsa_repr.block_table_raw.shape == (1, 1) and \
+        bsa_config.bsa_repr.block_table_raw[0, 0].value in [Block_Type.FULL.value, Block_Type.CAUSAL.value]:
+        return True
+    return False
+
+def bsa_is_causal(bsa_config: Optional[BSA_Config]):
+    if bsa_config is None:
+        return True
+    if bsa_config.bsa_repr.block_table_raw.shape == (1, 1) and \
+        bsa_config.bsa_repr.block_table_raw[0, 0].value == Block_Type.CAUSAL.value:
+        return True
+    return False
 
 def convert_shape_config_to_str(shape_config: dict):
     return f"S={shape_config['S']}_Nh={shape_config['Nh']}_bs={shape_config['bs']}_D={shape_config['D']}"
@@ -54,6 +70,10 @@ def create_bsa_block_table(case_id: int) -> np.ndarray:
                 block_table[i, j] = Block_Type.FULL
             block_table[i, 0] = Block_Type.FULL
             block_table[i, i] = Block_Type.CAUSAL
+    elif case_id == 4:  # Full
+        block_table = np.full((1, 1), fill_value=Block_Type.FULL, dtype=Block_Type)
+    elif case_id == 5:  # Causal
+        block_table = np.full((1, 1), fill_value=Block_Type.CAUSAL, dtype=Block_Type)
     else:
         raise Exception(f"Not support bsa_block_table case_id={case_id}")
     return block_table

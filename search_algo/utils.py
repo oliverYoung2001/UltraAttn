@@ -61,7 +61,8 @@ def parse_args():
     # parser.add_argument("--attn-mode", type=str, choices=['zigzag_ring', 'lightseq', 'local_flash'], default="flash")
     parser.add_argument('--profiler-with-tensorboard', action='store_true', default=False, help='whether to profile with tensorboard')
     parser.add_argument('--tb-dir', default=None, type=str, help='where to storage tensorboard files')
-
+    parser.add_argument('--exp-class', default=None, type=str, choices=['bsa_train', 'dense_train', 'bsa_infer'], \
+        help='Experiment class for AE')
     args = parser.parse_args()
     return args
 
@@ -430,4 +431,3 @@ def select_best_schedule_in_node_profile_data(file_name: str, local_size: int):
     #     print(f'level1: {profile_map["level1"]}')
     # exit(0)
     return profile_map
-

@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 from search_algo.search_engine import Dist_Attn_Schedule, Dist_Attn_Config, Machine_Config, Evaluation_Configs
 from search_algo.utils import get_factors, print_rank_0
+from search_algo.bsa_utils import bsa_is_dense
 from search_algo.dependent_graph import Dependent_Graph, Comp_Kernel
 from search_algo.execute_plan import Execution_Plan
 import numpy as np
@@ -212,7 +213,9 @@ class Graph_Transformation_Engine():    # batch engine
 
     def calc_subs_dict(self):
         # type1: comp fusion substitutions
-        if self.da_config.bsa_config is None: # dense
+        # print(f'self.da_config.bsa_config: {self.da_config.bsa_config}', flush=True)
+        # if self.da_config.bsa_config is None: # dense
+        if bsa_is_dense(self.da_config.bsa_config): # dense (full, causal)
             self.comp_unit_ub = self.hierarchy_sp // 2 + (self.hierarchy_sp == 3)  # 4 -> 2, 5 -> 2, 8 -> 4, special !!! 3 -> 2
         else:   # bsa
             self.comp_unit_ub = int(math.ceil(math.prod(self.d_graph.split_degrees) / self.hierarchy_sp))

@@ -13,6 +13,7 @@ import numpy as np
 from search_algo.utils import print_rank_0
 import gurobipy as gp
 from gurobipy import GRB
+from typing import Optional
 
 class Fused_Execution_Plan():
     def __init__(self, Y: int, X: int, time: float, causal: bool, fob: bool, ):
@@ -22,6 +23,7 @@ class Fused_Execution_Plan():
         assert causal == False, "[Error]: causal attention is supported in Fused_Execution_Plan"
         self.causal = causal
         self.fob = fob
+        self.end_time = time    # [TODO]
         
     def __str__(self):
         ret = f'Y={self.Y}, X={self.X}, fused={True}, causal={self.causal}, time={self.time}, fob={self.fob}'
@@ -29,7 +31,7 @@ class Fused_Execution_Plan():
         return ret
         
 class Execution_Plan(): # input: kernel streams of gpus
-    def __init__(self, d_graph: Dependent_Graph, fob: bool, plan_type: str, is_hack: bool = False):
+    def __init__(self, d_graph: Dependent_Graph, fob: bool, plan_type: Optional[str], is_hack: bool = False):
         # self.stream_kernel_lists  # (hierarchy_sp, 3) -> list, 3 stands for comp, send, recv
         # self.gpu_kernel_lists
         # self.valid_kernels    # 
@@ -38,7 +40,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         if not is_hack:
             self.fob = fob  # fwd or bwd
             self.plan_type = plan_type
-            assert plan_type in ['ILP', 'Flexflow']
+            assert plan_type in ['ILP', 'Flexflow', None]
             self.d_graph = d_graph
             self.da_config = d_graph.da_config
             self.m_config = d_graph.m_config
@@ -386,7 +388,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         # else:
         print(f'end_time={self.end_time:.3e}', flush=True)
     
-    def determine_kernel_order(self):   # [NOTE]: for full attn intra-node, non-fused, manually cc schedule
+    def determine_kernel_order_for_full(self):   # [NOTE]: for full attn intra-node, non-fused, manually cc schedule
         hierarchy_sp = self.hierarchy_sp
         X = self.X
         Y = self.Y
@@ -616,7 +618,7 @@ class Execution_Plan(): # input: kernel streams of gpus
                 self.valid_kernels.append(v)
                 v.id = v_id
                 v_id += 1
-        self.determine_kernel_order()
+        self.determine_kernel_order_for_full()
         self.generate_execution_plan_through_start_time()
     
     def generate_plan_with_one_topological_order(self):

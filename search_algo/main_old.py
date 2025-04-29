@@ -11,6 +11,8 @@ from search_algo.global_vars import *
 import pickle
 import numpy as np
 from search_algo.bsa_config import BSA_Config
+from search_algo.initialize import initialize_prof_db
+from search_algo.database import Prof_DB
 
 def get_exp_configs():
     # plan_type = 'automatic'
@@ -77,7 +79,7 @@ def get_configs():
     causal = False
     causal = True
     use_BSA = False
-    use_BSA = True  # prior than 'causal', this will hide 'causal'
+    # use_BSA = True  # prior than 'causal', this will hide 'causal'
     # CP, Par_D, pattern_type, pattern_sparsity, local_blocks(l&r), global_blocks(l&r), (replicate)
     # 8_8_lg_1-8_0_0&1
     # 8_8_lg_1-4_3_0_2
@@ -374,9 +376,10 @@ def generate_inter_execution_plans(exp_config: Evaluation_Configs, da_config: Di
         with open(plan_file, 'wb') as f:
             pickle.dump(execute_plan, f)
 
-def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config):
+def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Dist_Attn_Config, prof_db: Prof_DB):
     exp_config.hierarchy = da_config.hierarchy = 1
-    m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
+    # m_config = get_profile_data(da_config.SP, exp_config.hierarchy)
+    m_config = prof_db.m_config
     cc_optimal_schedule = get_cc_optimal_schedule(da_config, m_config)
     if not isinstance(cc_optimal_schedule, Dist_Attn_Schedule):
         assert isinstance(cc_optimal_schedule, list)
@@ -393,16 +396,18 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
     print(f'par_dir: {par_dir}')
     os.makedirs(par_dir, exist_ok=True)
     # return
-    plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
+    # plan_types = ['automatic', 'ablation1'] # ILP, Flexflow
+    plan_types = ['Flexflow', 'ILP']
     for plan_type in plan_types:
         # Raw Execution_Plan:
-        print(f'Raw, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)
+        print(f'Raw, {plan_type}', flush=True)
         # if not plan_type == 'automatic':
         if True:
             execute_plan = Execution_Plan(d_graph, exp_config.fob, plan_type=plan_type)
             execute_plan.print_lp_result()
             plan_name = execute_plan.get_plan_name()
-            if plan_type == 'ablation1':
+            # if plan_type == 'ablation1':
+            if plan_type == 'Flexflow':
                 plan_name = f'{plan_name}_{plan_type}'
             # Dump Execution_Pl   an:
             plan_file = f'{par_dir}/{plan_name}.pkl'
@@ -410,14 +415,15 @@ def generate_intra_execution_plans(exp_config: Evaluation_Configs, da_config: Di
                 pickle.dump(execute_plan, f)
         
         # Transformed Execution_Plans:
-        print(f'Fused, {"ILP" if plan_type == "automatic" else "Flexflow"}:', flush=True)
+        print(f'Fused, {plan_type}:', flush=True)
         gt_engine = Graph_Transformation_Engine(exp_config, da_config, m_config)
         execute_plan = gt_engine.transform(d_graph, exp_config.transform_mode, plan_type=plan_type)
         if execute_plan is None:    # No feasible transformations
             continue
         assert isinstance(execute_plan, Execution_Plan)
         plan_name = f'{execute_plan.get_plan_name()}_fused'
-        if plan_type == 'ablation1':
+        # if plan_type == 'ablation1':
+        if plan_type == 'Flexflow':
             plan_name = f'{plan_name}_{plan_type}'
         # Dump Execution_Plan:
         plan_file = f'{par_dir}/{plan_name}.pkl'
@@ -434,6 +440,8 @@ def main():
     # [Deprecated]: end. 
     
     # return
+    prof_db = initialize_prof_db()
+    
     da_configs = get_configs()
     exp_configs = get_exp_configs()
     if isinstance(da_configs, Dist_Attn_Config):
@@ -447,7 +455,7 @@ def main():
             # run_cc_optimal_exp(exp_config, da_config)
             # run_exp(exp_config, da_config)
             # generate_inter_execution_plans(exp_config, da_config) # for causal
-            generate_intra_execution_plans(exp_config, da_config)   # for causal
+            generate_intra_execution_plans(exp_config, da_config, prof_db)   # for causal
             # generate_intra_execution_plans_for_BSA(exp_config, da_config)
 
 if __name__ == '__main__':

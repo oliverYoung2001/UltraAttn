@@ -13,6 +13,7 @@ from custom_sparse_pattern import create_block_sparse_pattern
 from search_algo.bsa_config import BSA_Config, BSA_Repr
 from search_algo.global_vars import TASK_STATUS
 from search_algo.utils import print_rank_0
+from search_algo.bsa_utils import bsa_is_causal
 import copy
 
 TIME_BUDGET = 5 * 60 * 60   # 5 hours
@@ -421,6 +422,8 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
             # [HACK] for fob=0_bsa_config={CP=(8, 1)_repr=[[20000000][12000000][11200000][11120000][10112000][10011200][10001120][10000112]]}
             if CP_ == 8 and COMP_TOTAL == 22:
                 COMP_UB += 0.5  # 3.5
+            if bsa_is_causal(block_config): # causal
+                COMP_UB += 0.5
         else:   # Inter schedule
             COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
             COMP_UB = int(math.ceil(COMP_TOTAL / CP_))

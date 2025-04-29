@@ -177,7 +177,38 @@ def step4_profile_inter_bsa_exe_plans(inter_exp_da_configs, ncclcomm_global, glo
         torch.distributed.barrier(gloo_global_group)
         inter_plan_id += 1
 
-def main():
+def step4_profile_inter_full_exe_plans(inter_exp_da_configs, shape_config_dict, ncclcomm_global, gloo_global_group, prof_db):
+    # [TODO]
+    MAX_S_perG, MAX_NH, MAX_D, MAX_bs = 0, 0, 0, 0
+    for exp_da_config in inter_exp_da_configs:
+        da_config = exp_da_config['da_config']
+        MAX_S_perG = max(MAX_S_perG, max(da_config.S_per_gpu))
+        MAX_NH = max(MAX_NH, max(da_config.shape_config['Nh']))
+        MAX_D = max(MAX_D, da_config.shape_config['D'])
+        MAX_bs = max(MAX_bs, da_config.shape_config['bs'])
+    report_memory(f'Before tensor_buf allocated')
+    BUF_ELE_NUM = ((MAX_bs * MAX_S_perG * MAX_NH * (MAX_D + 1)) * (4 * 8) * (4))
+    BUF_ELE_NUM = ((MAX_bs * MAX_S_perG * MAX_NH * (MAX_D + 1)) * (4 * 8) * (2))
+    SYNC_SIZE = get_global_var('SYNC_SIZE')
+    tensor_buf = torch.empty(
+        max(BUF_ELE_NUM, SYNC_SIZE // (torch.finfo(DTYPE).bits // 8)),
+        device=torch.cuda.current_device(), dtype=DTYPE, requires_grad=False
+    )   # 6 * 512MB = 3GB
+    report_memory(f'After tensor_buf allocated')
+    print_rank_0(f'MAX_S_perG={MAX_S_perG}; MAX_NH={MAX_NH}; MAX_D={MAX_D}; MAX_bs={MAX_bs}')
+    print_rank_0(f'tensor_buf: {tensor_buf.numel() * 2} B')
+    args = parse_args()
+    inter_plan_id = 0
+    
+    for exp_da_config in inter_exp_da_configs:
+        exp_config, da_config = exp_da_config['exp_config'], exp_da_config['da_config']
+        print_rank_0(f'[inter_plan_id {inter_plan_id}]')
+        profile_all_inter_BSA(args, exp_config, da_config, ncclcomm_global, gloo_global_group, tensor_buf, prof_db)
+        torch.distributed.barrier(gloo_global_group)
+        inter_plan_id += 1
+
+def main(args):
+    set_global_var('ARGS', args)
     # Initialize distribution
     ncclcomm_global, gloo_global_group = initialize_distribution()
     # Initialize Profile_DataBase
@@ -186,17 +217,25 @@ def main():
     # if torch.distributed.get_rank() == 0:
     inter_node_bsa_configs, intra_node_bsa_configs, shape_config_dict, exp_configs = step0_top_down_decompose()
     
-    from search_algo.task1_bsa import step3_generate_inter_bsa_exe_plans
+    from search_algo.task1_bsa import step3_generate_inter_bsa_exe_plans, step3_generate_inter_dense_exe_plans
     # # Step3: Generate execution plans for all BSA at inter_SP=2,4,8; need all cpus on one node; (w cache/bypass)
     # if torch.distributed.get_rank() == 0:
     #     step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db)  
     # torch.distributed.barrier(gloo_global_group)
     # # return # Step3 End
-      
-    inter_exp_da_configs = step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db, is_bypass_mode=True)  # Bypass mode
-    # Step4: Profile all BSA at inter_SP; multiple nodes, one processor occupies one gpu and even cpus; (w cache/bypass)
-    if torch.cuda.is_available():
-        step4_profile_inter_bsa_exe_plans(inter_exp_da_configs, ncclcomm_global, gloo_global_group, prof_db)
+    
+    if args.exp_class == 'dense_train': # full, causal
+        intra_exp_da_full_configs, inter_exp_da_causal_configs = \
+            step3_generate_inter_dense_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db, is_bypass_mode=True) # Full + Causal
+        # Step4: Profile all dense at inter_SP; multiple nodes, one processor occupies one gpu and even cpus; (w cache/bypass)
+        if torch.cuda.is_available():
+            step4_profile_inter_bsa_exe_plans(inter_exp_da_causal_configs, ncclcomm_global, gloo_global_group, prof_db)
+            step4_profile_inter_full_exe_plans(intra_exp_da_full_configs, shape_config_dict, ncclcomm_global, gloo_global_group, prof_db)
+    else:
+        inter_exp_da_configs = step3_generate_inter_bsa_exe_plans(inter_node_bsa_configs, shape_config_dict, exp_configs, prof_db, is_bypass_mode=True)  # Bypass mode
+        # Step4: Profile all BSA at inter_SP; multiple nodes, one processor occupies one gpu and even cpus; (w cache/bypass)
+        if torch.cuda.is_available():
+            step4_profile_inter_bsa_exe_plans(inter_exp_da_configs, ncclcomm_global, gloo_global_group, prof_db)
     
 if __name__ == '__main__':
-    main()
+    main(parse_args())
