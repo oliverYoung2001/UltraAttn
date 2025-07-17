@@ -16,10 +16,10 @@ from search_algo.database import Prof_DB
 from datetime import timedelta
 from pynvml import nvmlInit, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo
 
-def initialize_prof_db():
+def initialize_prof_db(gloo_global_group):
     # Generate Intra_Execution_Plans:
     CLUSTER_NAME, PLATFORM = os.environ.get('CLUSTER_NAME', None), os.environ.get('PLATFORM', None)
-    prof_db = Prof_DB(CLUSTER_NAME, PLATFORM)
+    prof_db = Prof_DB(CLUSTER_NAME, PLATFORM, gloo_global_group)
     return prof_db
     
 def parse_slurm_tasks_per_node(tasks_per_node):

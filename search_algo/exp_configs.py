@@ -29,6 +29,7 @@ def get_exp_configs():
     return exp_configs
 
 def get_exp_train_configs():
+    # plan_type: in ['ILP', 'manual', 'Flexflow']
     # plan_type = 'ILP'         # automatic
     plan_type = 'manual'        # for noncausal !!!
     # plan_type = 'Flexflow'    # ablation1
@@ -39,6 +40,7 @@ def get_exp_train_configs():
     ]
     # hierarchy = 0  # 0: intra-machine, 1: inter-machine
     hierarchy = None    # define in exps !!!
+    # transform_node: in ['bf', 'greedy']
     transform_mode = 'bf'       # Enumerate all possible transformations
     transform_mode = 'greedy'   # Apply transformations greedily
     exp_configs = []
@@ -159,6 +161,12 @@ def get_dense_train_configs():
         (8, 4),
         (8, 8),
     ]
+    # CPs = [         # [DEBUG]
+    #     # (8, 1),   
+    #     (8, 2),
+    #     # (8, 4),
+    #     # (8, 8),
+    # ]
     Ss_total = [
         16 * 1024,
         32 * 1024,
@@ -166,8 +174,8 @@ def get_dense_train_configs():
         128 * 1024,
         256 * 1024,
         512 * 1024,
-        1 * 1024 * 1024,
-        2 * 1024 * 1024,    # 2M
+        # 1 * 1024 * 1024,    # 1M, Error for Fused_Execution_Plan
+        # 2 * 1024 * 1024,    # 2M
     ]
     S_per_gpu_LB = 256
     S_per_gpu_UB = 64 * 1024   # (8, 8) -> 2M; aims to limit memory usage

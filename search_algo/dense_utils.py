@@ -1,5 +1,5 @@
 import numpy as np
-from search_algo.search_engine import Search_Engine, Dist_Attn_Schedule, Machine_Config, Dist_Attn_Config, create_schedule
+from search_algo.search_engine import Dist_Attn_Schedule, Machine_Config, Dist_Attn_Config, create_schedule
 import pickle
 from functools import partial
 from search_algo.dependent_graph import Dependent_Graph
@@ -9,7 +9,14 @@ from search_algo.bsa_config import BSA_Config
 from search_algo.utils import Block_Type
 import copy
 
-def get_block_schedule_table_for_full(split_degrees: list, S_map: np.ndarray, causal: bool, X, da_config):
+CP2ParD_map = {
+    1: 1,
+    2: 4,
+    4: 8,
+    8: 8,
+}
+
+def get_block_schedule_table_for_full(split_degrees: list, S_map: np.ndarray, X, da_config):
     assert len(split_degrees) == 4
     assert S_map.shape == (split_degrees[2], min(split_degrees[0], split_degrees[1]))
     assert split_degrees[0] == split_degrees[1] and split_degrees[0] % X == 0
@@ -20,30 +27,30 @@ def get_block_schedule_table_for_full(split_degrees: list, S_map: np.ndarray, ca
         for j in range(split_degrees[3]):   # split_Nh
             for k in range(split_degrees[0]):   # split_Sq
                 for l in range(split_degrees[1]):   # split_Skv
-                    if causal and k < l:
-                        continue
                     block_schedule_table[i, j, k, l] = S_map[i, k // X * X + l % X]
     return block_schedule_table
 
 def create_plan_for_full(da_config: Dist_Attn_Config, m_config: Machine_Config, X, fob, first_dim) -> Execution_Plan:
     # **Not fused** with manually cc schedule !!!
-    tot_sp = da_config.tot_sp
+    hierarchy_cp = da_config.hierarchy_sp
     # Create Schedule:
-    split_degrees = [tot_sp, tot_sp, 1, 1]
+    split_degrees = [hierarchy_cp, hierarchy_cp, 1, 1]
     S_map = np.empty((split_degrees[2], min(split_degrees[0], split_degrees[1])), dtype=np.int32)
-    S_map[:] = np.arange(tot_sp)
+    S_map[:] = np.arange(hierarchy_cp)
     get_schedule_table_func = partial(get_block_schedule_table_for_full, X=X)
     schedule = create_schedule(da_config, m_config, split_degrees, S_map, get_schedule_table_func)
     print(f'schedule: {schedule.schedule_table}', flush=True)
     # Create Dependent Graph:
-    d_graph = Dependent_Graph(schedule, fob) # Intra-machine
+    #   Create bsa_comp_key_suffixes for full at inter level
+    bsa_comp_key_suffixes = [f'_ablation=(w/o_kernel_tile,Flexflow)'] if da_config.hierarchy == 0 else None
+    d_graph = Dependent_Graph(schedule, fob, bsa_comp_key_suffixes=bsa_comp_key_suffixes, seqlen_variable_graph=True) # Both for Intra&Inter-machine
     # Create Execution Plan:
     plan = Execution_Plan(d_graph, fob, plan_type=None, is_hack=False)
     # Generate Manual Plan:
-    plan.generate_manual_plan(tot_sp, X, first_dim=first_dim)
+    plan.generate_manual_plan(hierarchy_cp, X, first_dim=first_dim)
     return plan
 
-def write_plan(execute_plan: Execution_Plan, prefix: str):
+def write_plan(execute_plan: Execution_Plan, prefix: str):  # [DEPRECATED]
     # dump plan
     plan_name = execute_plan.get_plan_name()
     plan_file = f'{prefix}/{plan_name}.pkl'

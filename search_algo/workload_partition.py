@@ -12,7 +12,7 @@ from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Table_Type, B
 from custom_sparse_pattern import create_block_sparse_pattern
 from search_algo.bsa_config import BSA_Config, BSA_Repr
 from search_algo.global_vars import TASK_STATUS
-from search_algo.utils import print_rank_0
+from search_algo.utils import print_rank_0, use_all_cpus
 from search_algo.bsa_utils import bsa_is_causal
 import copy
 
@@ -82,7 +82,8 @@ def convert_result_to_np(CP: int, ParD: int, Vars: dict, v_attr: str, cmap: Unio
                     max_kid = k
             ret[i, j] = max_kid
     return ret
-    
+
+@use_all_cpus
 def ILP(N: int):
     # causal = True, fwd
     mylp = pulp.LpProblem(f"Workload_Partition_Allocation_ILP", pulp.LpMinimize)
@@ -155,7 +156,8 @@ def ILP(N: int):
     
     # print_lp_result
     print_lp_result(N, N, Vars, 'varValue')
-        
+
+@use_all_cpus  
 def Quad_LP_GUROBI(N: int):
     # causal = True, fwd
     # Arguments
@@ -266,7 +268,7 @@ def Quad_LP_GUROBI(N: int):
         print(f"Optimal value: {mylp.objVal}")
     print_lp_result(N, N, Vars, 'x')
 
-
+@use_all_cpus
 def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config, BSA_Config], fob: bool, hierarchy: bool, ParD: Optional[int]):
     # fwd
     # Arguments: Begin -----------------------------------------------
@@ -425,11 +427,13 @@ def Quad_LP_GUROBI_from_block_config(block_config: Union[Block_Attention_Config,
             if bsa_is_causal(block_config): # causal
                 COMP_UB += 0.5
         else:   # Inter schedule
-            COMP_TOTAL = calc_table_comp_relative_time(cur_block_table)
+            COMP_TOTAL = calc_table_comp_relative_time(cur_block_table) # 1 unit stands for 1 full block at Par_D split
             COMP_UB = int(math.ceil(COMP_TOTAL / CP_))
             # [HACK]: Find a more general strategy
-            if CP_ == 2:
+            if CP_ == 2 and not bsa_is_causal(block_config):
                 COMP_UB += 1
+            if CP_ == 8 and bsa_is_causal(block_config):
+                COMP_UB += 0.5
             # END
         # print_rank_0(f'COMP_TOTAL: {COMP_TOTAL}, COMP_UB: {COMP_UB}')
         for g in range(CP_):
@@ -493,7 +497,7 @@ def solve_global_causal():
     })
     result = Quad_LP_GUROBI_from_block_config(bsa_config, fob, hierarchy, Par_D)
     print(f'{result["table"]}')
-  
+
 def solve_custom_sparse():
     # # star
     # CP, Par_D = 4, 8

@@ -13,55 +13,74 @@ from search_algo.utils import filter_kwargs, calc_flops, all_wait_main_stream, m
 from orchestrated_attn.orchestrated_attn_impl import orchestrated_attn_backward
 from search_algo.global_vars import get_global_var as get_global_var_search_algo
 from search_algo.database import Prof_DB
+from search_algo.bsa_utils import convert_intra_profile_key_to_exe_key_or_plan, bsa_is_causal
 import json
 import time
 import pickle
 
-def prepare_inter_comp_plans(inter_bsa_execution_plan: Execution_Plan, prof_db: Prof_DB) -> dict:   # [TODO]
+def prepare_inter_comp_plans(inter_bsa_execution_plan: Execution_Plan, prof_db: Prof_DB, da_config: Dist_Attn_Config) -> dict:   # [TODO]
     # OBJ1: build inter_comp_plans_dict
     # OBJ2: Set correct execution_plan to each inter kernel
     
-    # inter_comp_plans_dict: {intra_bsa_key: intra_bsa_exe_plan}
-    # intra_bsa_key = ((relative_Sq, relative_Skv), str(da_config.bsa_config.bsa_repr)) # [Deprecated], used only in inter_CP=1 !!!
-    # intra_bsa_key = ((relative_Sq, relative_Skv), key in 'intra_bsa_exe_plans_profile.json' or 'inter_bsa_exe_plans_kv.json' 
+    # inter_comp_plans_dict: {inter_comp_key: intra_bsa_exe_plan}
+    # inter_comp_key = ((relative_Sq, relative_Skv), str(da_config.bsa_config.bsa_repr)) # [Deprecated], used only in inter_CP=1 !!!
+    # inter_comp_key = ((relative_Sq, relative_Skv), key in 'intra_bsa_exe_plans_profile.json' or 'inter_bsa_exe_plans_kv.json' 
     #                       or inter_CP=1 of 'inter_bsa_exe_plans_kv.json')
     PROC_INFO = get_global_var_search_algo(f'PROC_INFO')
     node_id = PROC_INFO['nodeid']
     with open(prof_db.INTRA_BSA_EXE_PLANS_KV, 'r') as f:
         intra_bsa_exe_plans_dict = json.load(f)
-    
     inter_comp_plans_dict = {}
-    # print_rank_0(f'inter_bsa_execution_plan.gpu_kernel_lists: {inter_bsa_execution_plan.gpu_kernel_lists}')
     
-    intra_bsa_execution_plan_dict = {}  # [NOTE]: Ensure plans with the same plan_id loaded only once !!!
-    for kernel in inter_bsa_execution_plan.gpu_kernel_lists[node_id]:
-        if not isinstance(kernel, Comp_Kernel):
-            continue
-        comp_map_key = kernel.comp_map_key
-        assert comp_map_key in intra_bsa_exe_plans_dict.keys(), f'[ERROR]: Exe_plan of inter_comp_key={comp_map_key} is not cached !!!'
-        plan_id = intra_bsa_exe_plans_dict[comp_map_key]
-        if str(plan_id) not in intra_bsa_execution_plan_dict.keys():
-            with open(f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
-                intra_bsa_execution_plan: Execution_Plan = pickle.load(fin)
-                intra_bsa_execution_plan.plan_id = plan_id
-                intra_bsa_execution_plan_dict[str(plan_id)] = intra_bsa_execution_plan
-        else:
-            intra_bsa_execution_plan = intra_bsa_execution_plan_dict[str(plan_id)]
-        kernel.execution_plan = intra_bsa_execution_plan
-        # Create inter_comp_key
-        rcs = kernel.key[2: 4]
-        batch_degrees = (len(rcs[0]) if isinstance(rcs[0], tuple) else 1, len(rcs[1]) if isinstance(rcs[1], tuple) else 1)
-        # inter_comp_key = (batch_degrees, str(da_config.bsa_config.bsa_repr))
-        inter_comp_key = (batch_degrees, comp_map_key)  # [TODO]: parse bsa_repr ???
-        # End
-        # print(f'[RANK{torch.distributed.get_rank()}] kernel.key: {kernel.key}; inter_comp_key: {inter_comp_key}', flush=True)
-        if inter_comp_key in inter_comp_plans_dict.keys():
-            assert intra_bsa_execution_plan.plan_id == inter_comp_plans_dict[inter_comp_key].plan_id, \
-                f'[ERROR]: Equivalent inter comp kernels should use the same inter comp plan !!!'
-        else:
+    def get_exe_plan_from_exe_key_or_plan(exe_key_or_plan: Union[str, Fused_Execution_Plan]):
+        nonlocal intra_bsa_exe_plans_dict, inter_comp_plans_dict
+        if isinstance(exe_key_or_plan, str):
+            assert exe_key_or_plan in intra_bsa_exe_plans_dict.keys(), f'[ERROR]: Exe_plan of inter_comp_key={exe_key_or_plan} is not cached !!!'
+            plan_id = intra_bsa_exe_plans_dict[exe_key_or_plan]
+            if inter_comp_key not in inter_comp_plans_dict.keys():
+                with open(f'{prof_db.INTRA_BSA_EXE_PLANS_DIR}/{plan_id}.pkl', 'rb') as fin:
+                    intra_bsa_execution_plan: Execution_Plan = pickle.load(fin)
+            else:
+                intra_bsa_execution_plan = inter_comp_plans_dict[inter_comp_key]
+        else:   # Fused_Execution_Plan
+            assert isinstance(exe_key_or_plan, Fused_Execution_Plan)
+            intra_bsa_execution_plan = exe_key_or_plan
+        return intra_bsa_execution_plan
+    
+    if isinstance(inter_bsa_execution_plan, Fused_Execution_Plan) or \
+        (inter_bsa_execution_plan.d_graph is not None and inter_bsa_execution_plan.d_graph.seqlen_variable_graph):
+        inter_bsa_execution_plan.materialize(da_config)
+    # Now 'inter_bsa_execution_plan' is materialized !!!
+    assert inter_bsa_execution_plan.is_materialized() == True
+    
+    # [NOTE]: Ensure that kernels with the same inter_comp_key using the same exe_plan object
+    if isinstance(inter_bsa_execution_plan, Fused_Execution_Plan):  # Only one inter_comp_plan per node. For full w kernel tile
+        batch_degrees = (inter_bsa_execution_plan.X, inter_bsa_execution_plan.Y)
+        kernel_list = inter_bsa_execution_plan.gpu_kernel_lists[node_id]
+        assert len(kernel_list) == 1, f'Fused_Execution_Plan only has one comp kernel'
+        profile_comp_map_key = kernel_list[0].comp_map_key # [TODO]: deal with seqlen_variable_graph, select from all ablations
+        inter_comp_key = (batch_degrees, profile_comp_map_key)
+        exe_key_or_plan = convert_intra_profile_key_to_exe_key_or_plan(profile_comp_map_key, prof_db)
+        intra_bsa_execution_plan = get_exe_plan_from_exe_key_or_plan(exe_key_or_plan)
+        # Record intra_bsa_execution_plan
+        inter_bsa_execution_plan.kernel_execution_plan = intra_bsa_execution_plan
+        inter_comp_plans_dict[inter_comp_key] = intra_bsa_execution_plan
+    else:
+        for kernel in inter_bsa_execution_plan.gpu_kernel_lists[node_id]:
+            if not isinstance(kernel, Comp_Kernel):
+                continue
+            profile_comp_map_key = kernel.comp_map_key  
+            #   Create inter_comp_key which is **identifier** for clear/real intra workload
+            rcs = kernel.key[2: 4]
+            batch_degrees = (len(rcs[0]) if isinstance(rcs[0], tuple) else 1, len(rcs[1]) if isinstance(rcs[1], tuple) else 1)
+            inter_comp_key = (batch_degrees, profile_comp_map_key)  # [TODO]: parse bsa_repr ???
+            #   End
+            exe_key_or_plan = convert_intra_profile_key_to_exe_key_or_plan(profile_comp_map_key, prof_db)
+            intra_bsa_execution_plan = get_exe_plan_from_exe_key_or_plan(exe_key_or_plan)
+            # Record intra_bsa_execution_plan
+            kernel.execution_plan = intra_bsa_execution_plan
             inter_comp_plans_dict[inter_comp_key] = intra_bsa_execution_plan
     return inter_comp_plans_dict
-        
 
 def benchmark_ops(streams, global_group, device, f, inputs, \
                 warmup, warmup_cudagraph, num_iter, use_cudagraph, TRACE_NAME, args, placeholder_op):
@@ -212,6 +231,7 @@ def benchmark_ops(streams, global_group, device, f, inputs, \
 def create_buf_dict(da_config: Dist_Attn_Config, exp_config: Evaluation_Configs, \
                     execution_plan: Union[Execution_Plan, Fused_Execution_Plan], fused: bool, \
                     batch_degrees: tuple, tensor_buf: torch.Tensor, level_rank: int) -> dict:
+    # buf_dict stores absolute shape infos of kernels of the exe_plan
     assert len(batch_degrees) == 2, f'Invalid batch_degrees: {batch_degrees}'   # [Q_batch_degree, KV_batch_degree]
     bs = da_config.bs
     Sq, Skv = da_config.S_per_partition
@@ -219,6 +239,7 @@ def create_buf_dict(da_config: Dist_Attn_Config, exp_config: Evaluation_Configs,
     Skv *= batch_degrees[1]
     Nhq, Nhg = da_config.Nh
     d = da_config.D
+    # print_rank_0(f'da_config.S_per_partition: {da_config.S_per_partition}, (Sq, Skv): ({Sq}, {Skv})')
     
     fob = exp_config.fob
     # buf_dict : (('i'/'o', 'r'/'c'), batch_degree) -> Integrated_Data
@@ -240,12 +261,12 @@ def create_buf_dict(da_config: Dist_Attn_Config, exp_config: Evaluation_Configs,
             (('o', 'c'), 1): integrated_data_types[('o', 'c')].from_da_config_with_buf(da_config, KV_buf, batch_degrees[1] * 1),
         }
         for kernel in execution_plan.gpu_kernel_lists[level_rank]:
-            # [TODO]: Ignore Comm Kenrel here, because kernel fusion of comm kernel is not supported now
+            # [NOTE]: Ignore Comm Kenrel here, because kernel fusion of comm kernel is not supported now
             if isinstance(kernel, Comp_Kernel):
                 rcs = kernel.key[2: 4]
                 low_bds = (
                     len(rcs[0]) if isinstance(rcs[0], tuple) else 1,
-                    len(rcs[1]) if isinstance(rcs[1], tuple) else 1, 
+                    len(rcs[1]) if isinstance(rcs[1], tuple) else 1,
                 )
                 if (('i', 'r'), low_bds[0]) not in buf_dict.keys():
                     buf_dict[(('i', 'r'), low_bds[0])] = integrated_data_types[('i', 'r')].from_da_config_with_buf(da_config, Q_buf, batch_degrees[0] * low_bds[0])
@@ -401,7 +422,6 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
         Nhs = (nheads, nheads)
         bs = batch_size
         
-        causal = da_config.causal   # [NOTE]: Useless
         if fob == 0:
             f = raw_f
         else:
@@ -409,7 +429,7 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
         
         for inter_execution_plan, inter_comp_plans in zip(inter_bsa_execution_plans, inter_comp_plans_dicts):
             inputs = create_inputs_and_buf_dict(exp_config, inter_execution_plan, inter_comp_plans)
-            inputs['causal'] = causal
+            # inputs['causal'] = causal
             # Mark in_ranks on execution_plans to judge whether kernel is on current rank easily
             #   for inter-level `kernels`
             if isinstance(inter_execution_plan, Execution_Plan):
@@ -567,7 +587,8 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
             # continue
             TRACE_NAME = f'{os.environ["TRACE_NAME"]}_SP({node_num},{local_size})_w{world_size}_r{rank}_' \
                          f'S({da_config.S_per_partition[0]},{da_config.S_per_partition[1]})_bs{batch_size}_Nh{nheads}_D{nheads}_' \
-                         f'{"causal" if causal else "noncausal"}_{f.__name__}'
+                         f'{"causal" if True else "noncausal"}_{f.__name__}'    # [TODO]: Correct it !!!
+                        #  f'{"causal" if causal else "noncausal"}_{f.__name__}'
             # Build placeholder_op
             SYNC_SIZE = get_global_var_search_algo('SYNC_SIZE')
             placeholder_op = partial(ncclcomm_global.all_reduce, tensor_buf[: SYNC_SIZE // tensor_buf.element_size()])
@@ -578,11 +599,12 @@ def benchmark_orchestrate_bsa(args, raw_f, da_config: Dist_Attn_Config, exp_conf
             # report_memory(f'After benchmark_ops')
             if rank == 0:
             # if True:
-                if da_config.bsa_config:
-                    total_sparsity = da_config.bsa_config.total_sparsity
-                else:
-                    total_sparsity = 0.5 if causal else 1
-                m_flops, h_flops = calc_flops(batch_size, da_config.S, nheads, d, causal, fob=fob, total_sparsity=total_sparsity)
+                assert da_config.bsa_config is not None, f'Now only bsa_config is supported'
+                # if da_config.bsa_config:
+                total_sparsity = da_config.bsa_config.total_sparsity
+                # else:
+                #     total_sparsity = 0.5 if causal else 1
+                m_flops, h_flops = calc_flops(batch_size, da_config.S, nheads, d, fob=fob, total_sparsity=total_sparsity)
                 mfu, hfu = (round(flops / pow(1000, 4) / (td / num_iter * world_size), 3) for flops in (m_flops, h_flops))
                 # print(f"suffix: {plan_path.split('/')[-1]}, mfu: {mfu} Tflops/s, hfu: {hfu} Tflops/s, {num_iter / td:.3f} iter/s, {td / num_iter:.3e} s/iter, ({(t1 - t0):.3f}, {(t2 - t1):.3f}, {td:.3f}) sec", flush=True)
                 if log:

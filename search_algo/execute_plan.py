@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 from search_algo.dependent_graph import Dependent_Graph, Cuda_Kernel, Comp_Kernel
+from search_algo.search_engine import Dist_Attn_Config, Machine_Config
 import pulp
 import regex as re
 import random
@@ -10,25 +11,102 @@ import json
 import time
 from heapq import heappush, heappop, heappushpop
 import numpy as np
-from search_algo.utils import print_rank_0
+from search_algo.utils import print_rank_0, use_all_cpus
 import gurobipy as gp
 from gurobipy import GRB
-from typing import Optional
+from typing import Optional, List
+from search_algo.bsa_utils import get_b2f_suf_map, select_best_profile_comp_key, convert_shape_config_to_str, bsa_is_full
+from search_algo.bsa_config import BSA_Config
+import copy
 
 class Fused_Execution_Plan():
-    def __init__(self, Y: int, X: int, time: float, causal: bool, fob: bool, ):
+    '''
+    Designed only for fused full attention.
+    '''
+    def __init__(self, Y: int, X: int, time: Optional[float], fob: bool, m_config: Machine_Config):
         self.Y = Y
         self.X = X
         self.time = time
-        assert causal == False, "[Error]: causal attention is supported in Fused_Execution_Plan"
-        self.causal = causal
+        # assert causal == False, "[Error]: causal attention is supported in Fused_Execution_Plan"
+        # self.causal = causal  # [DEPRECATED]
         self.fob = fob
-        self.end_time = time    # [TODO]
-        
+        assert time is None, f'[ERROR]: Time of non-materialized Fused_Execution_Plan should be None rather than {time}'
+        # self.end_time = time
+        assert m_config is not None
+        self.m_config = m_config
+        self.stream_num = 3 # [HARDCODE]
+    
+    @property
+    def hierarchy(self):    # (0, 1) -> (inter, intra)
+        return self.da_config.hierarchy if hasattr(self, 'da_config') else None
+    
+    @property
+    def CP(self) -> Optional[tuple]:  # (intra, inter)
+        return self.da_config.bsa_config.CP if hasattr(self, 'da_config') else None
+    
+    @property
+    def hierarchy_cp(self):
+        return self.CP[not self.hierarchy]
+    
     def __str__(self):
-        ret = f'Y={self.Y}, X={self.X}, fused={True}, causal={self.causal}, time={self.time}, fob={self.fob}'
+        # ret = f'Y={self.Y}, X={self.X}, fused={True}, causal={self.causal}, time={self.time}, fob={self.fob}'
+        ret = f'Y={self.Y}, X={self.X}, fused={True}, time={self.time}, fob={self.fob}'
         ret = ret.replace(' ', '')
         return ret
+    
+    def materialize(self, da_config: Dist_Attn_Config):
+        assert not hasattr(self, 'da_config'), f'Fused_Execution_Plan should have not attribute "da_config" before metarializing'
+        self.da_config = da_config
+        KERNEL_TILE_TYPES = ['w/o_kernel_tile', 'w_kernel_tile']
+        self.bsa_comp_key_suffixes = [f'_ablation=({kernel_tile_type},Flexflow)' for kernel_tile_type in KERNEL_TILE_TYPES] # [HARDCODE]
+        assert self.hierarchy == 0, f'Now only support materializing Fused_Execution_Plan at inter-level'
+        self.profile_comp_key_suffixes = list(set([suf for key_suffix in self.bsa_comp_key_suffixes for suf in get_b2f_suf_map(self.CP[0])[key_suffix]]))
+        # Build self.gpu_kernel_lists
+        X, Y = self.X, self.Y
+        self.gpu_kernel_lists = []
+        for g in range(self.hierarchy_cp):
+            # (split_bs, split_Nh, tuple of Sq chunks, tuple of Skv chunks, nd.array[1, 1, X, Y])
+            ids_tuple = (
+                tuple(range(g // X * X, (g // X + 1) * X)), # Sq
+                tuple(range(g % X, self.hierarchy_cp, X)),  # Skv
+            )
+            comp_key = (0, 0, ids_tuple[0], ids_tuple[1], np.full((1, 1, X, Y), fill_value=g))
+            
+            # Create key_preffix
+            inter_CP = self.CP[1]
+            intra_CP_tuple = (self.CP[0], 1)
+            split_degrees = (inter_CP, inter_CP, 1, 1)    # (split_Sq, split_Skv, split_bs, split_Nh) at inter level
+            bsa_intra_unit_shape_config = copy.deepcopy(da_config.shape_config)
+            bsa_intra_unit_shape_config['S'] = (bsa_intra_unit_shape_config['S'][0] // split_degrees[0] * len(ids_tuple[0]), \
+                                                bsa_intra_unit_shape_config['S'][1] // split_degrees[1] * len(ids_tuple[1]))
+            sub_bsa_repr = da_config.bsa_config.bsa_repr.create_sub_bsa_repr(
+                split_degrees[0: 2], select_ids = [list(ids_tuple[0]), list(ids_tuple[1])])
+            sub_pat_bsa_repr = {'bsa_repr': sub_bsa_repr, 'CP': intra_CP_tuple}
+            sub_bsa_config = BSA_Config(None, None, sub_pat_bsa_repr)
+            if bsa_is_full(sub_bsa_config):
+                # [HACK]: Manually create a full bsa_config when Sq != Skv
+                sub_bsa_config = BSA_Config.create_full(intra_CP_tuple)                
+            
+            key_preffix = f'fob={self.fob}_CP={intra_CP_tuple}_shape_config={{{convert_shape_config_to_str(bsa_intra_unit_shape_config)}}}_' \
+                          f'bsa_config={{{sub_bsa_config}}}'
+            
+            # select best profile_comp_key
+            def fault_tolerance_func(key_suffix: str):
+                # When Nh=32 and intra_bsa=full and inter_bsa is dense, 'w_kernel_tile' does not exist !!!
+                return max(self.da_config.Nh) > 1 and 'w_kernel_tile' in key_suffix
+            profile_comp_map_key = select_best_profile_comp_key(key_preffix, self.profile_comp_key_suffixes, \
+                self.m_config.comp_profile_maps[self.hierarchy], self.fob, fault_tolerance_func)
+            only_comp_kernel = Comp_Kernel(
+                comp_key, self.m_config,
+                profile_comp_map_key,
+                self.hierarchy,
+                seqlen_variable_graph=False)
+            self.gpu_kernel_lists.append([only_comp_kernel])
+            # Update time&end_time  # [TODO]
+    
+    def is_materialized(self):
+        return hasattr(self, 'da_config')
+        
         
 class Execution_Plan(): # input: kernel streams of gpus
     def __init__(self, d_graph: Dependent_Graph, fob: bool, plan_type: Optional[str], is_hack: bool = False):
@@ -42,12 +120,12 @@ class Execution_Plan(): # input: kernel streams of gpus
             self.plan_type = plan_type
             assert plan_type in ['ILP', 'Flexflow', None]
             self.d_graph = d_graph
-            self.da_config = d_graph.da_config
-            self.m_config = d_graph.m_config
-            self.split_degrees = d_graph.split_degrees
-            self.tot_sp = d_graph.tot_sp
-            self.hierarchy = d_graph.hierarchy
-            self.hierarchy_sp = self.da_config.SP[self.hierarchy]
+            # self.da_config = d_graph.da_config
+            # self.m_config = d_graph.m_config
+            # self.split_degrees = d_graph.split_degrees
+            # self.tot_sp = d_graph.tot_sp
+            # self.hierarchy = d_graph.hierarchy
+            # self.hierarchy_sp = self.da_config.SP[self.hierarchy]
             if plan_type == 'ILP':
                 self.TIME_BUDGET = 5 * 60   # 5mins
                 self.TIME_BUDGET = 1 * 60   # 1mins
@@ -61,12 +139,12 @@ class Execution_Plan(): # input: kernel streams of gpus
             self.plan_type = plan_type
             assert plan_type in ['ILP', 'Flexflow']
             self.d_graph = None
-            self.da_config = None
-            self.m_config = None
-            self.split_degrees = (1, 1, 1, 1)
-            self.tot_sp = None
-            self.hierarchy = 0  # 0 stands for inter, 1 stands for intra
-            self.hierarchy_sp = 1
+            # self.da_config = None
+            # self.m_config = None
+            # self.split_degrees = (1, 1, 1, 1)
+            # self.tot_sp = None
+            # self.hierarchy = 0  # 0 stands for inter, 1 stands for intra
+            # self.hierarchy_sp = 1
             # [TODO]: Hack gpu_kernel_lists, stream_num, valid_kernels
             self.stream_num = 3
             # dict keys: (b_id, h_id, r_id, c_id, gpuid) or (b_id, h_id, (r_ids), (c_ids), gpuid)
@@ -77,18 +155,58 @@ class Execution_Plan(): # input: kernel streams of gpus
             self.gpu_kernel_lists = [[only_kernel]]
             self.valid_kernels = [only_kernel]
     
+    @property
+    def m_config(self):
+        return self.d_graph.m_config if self.d_graph else None
+    
+    @property
+    def tot_sp(self):
+        return self.d_graph.tot_sp if self.d_graph else None
+    
+    @property
+    def da_config(self):
+        return self.d_graph.da_config if self.d_graph else None
+    
+    @property
+    def hierarchy_sp(self):
+        return self.da_config.SP[self.hierarchy] if self.d_graph else 1
+    
+    @property
+    def hierarchy(self):
+        return self.d_graph.hierarchy if self.d_graph else 0 # 0 stands for inter, 1 stands for intra
+    
+    @property
+    def split_degrees(self):
+        return self.d_graph.split_degrees if self.d_graph else (1, 1, 1, 1)
+    
     @classmethod
     def create_one_node_exe_plan(cls, fob: bool):
         return cls(None, fob, plan_type='ILP', is_hack=True)
-        
-    def get_plan_name(self):
-        if self.plan_type == 'manual':
-            return f'SP={self.hierarchy_sp}_fob={self.fob}_Y={self.Y}_X={self.X}_dim={self.first_dim}'
-        else:
-            da_config = self.da_config
-            return da_config.get_plan_name(self.fob)
-        return None
     
+    def clear_states(self):
+        # Useful for materialization
+        attrs_to_remove = ['valid_kernels', 'stream_num', 'stream_kernel_lists']
+        for attr in attrs_to_remove:
+            delattr(self, attr) if hasattr(self, attr) else None
+        
+    def is_materialized(self):
+        return self.d_graph.is_materialized() if self.d_graph else False    # [TODO]: Is the hacked exe_plan materialized?
+    
+    def materialize(self, da_config: Dist_Attn_Config):
+        assert self.plan_type == 'manual', f'Not support plan_type={self.plan_type} in materialization for full attention'
+        self.d_graph.materialize(da_config)
+        self.clear_states()
+        self.generate_manual_plan(self.hierarchy_sp, X=self.X, first_dim=0) # Update gpu_kernel_lists with materialized kernels
+    
+    # def get_plan_name(self):    # [DEPRECATED]
+    #     if self.plan_type == 'manual':
+    #         return f'SP={self.hierarchy_sp}_fob={self.fob}_Y={self.Y}_X={self.X}_dim={self.first_dim}'
+    #     else:
+    #         da_config = self.da_config
+    #         return da_config.get_plan_name(self.fob)
+    #     return None
+    
+    @use_all_cpus
     def solve_ILP_with_gurobipy(self, TOT_TIME_UP):
         fob = self.fob
         d_graph = self.d_graph
@@ -156,6 +274,7 @@ class Execution_Plan(): # input: kernel streams of gpus
             v._start_time = v.start_time.x
         self.end_time = self.mylp_obj = mylp.objVal
 
+    @use_all_cpus
     def solve_ILP_with_pulp(self, TOT_TIME_UP):
         fob = self.fob
         d_graph = self.d_graph
@@ -417,7 +536,7 @@ class Execution_Plan(): # input: kernel streams of gpus
         #     return rank[0] * X + rank[1]
             
         assert split_degrees[0] == split_degrees[1] == hierarchy_sp and split_degrees[0] % X == 0
-        assert self.da_config.causal == False, "[Error]: causal attention is supported in manually designed plans"
+        assert bsa_is_full(self.da_config.bsa_config), '[ERROR]: Only full attention is supported in manually designed plans'
         
         for b_id in range(split_degrees[2]):
             for h_id in range(split_degrees[3]):
@@ -600,14 +719,15 @@ class Execution_Plan(): # input: kernel streams of gpus
         for v in self.valid_kernels:
             self.end_time = max(self.end_time, v._start_time + v.time[fob])
                 
-    def generate_manual_plan(self, hierarchy_sp: int, X: int, first_dim: int = 0):
+    def generate_manual_plan(self, hierarchy_cp: int, X: int, first_dim: int = 0):
         self.plan_type = 'manual'
-        self.hierarchy_sp = hierarchy_sp
+        # self.hierarchy_cp = hierarchy_cp
+        assert hierarchy_cp == self.hierarchy_sp
         self.X = X
-        Y = hierarchy_sp // X
+        Y = hierarchy_cp // X
         self.Y = Y
         self.first_dim = first_dim
-        print(f'X={X}, Y={Y}, first_dim={first_dim}')
+        # print(f'X={X}, Y={Y}, first_dim={first_dim}')
         fob = self.fob
         d_graph = self.d_graph
         # self.valid_kernels

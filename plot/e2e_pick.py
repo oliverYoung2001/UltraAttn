@@ -213,7 +213,7 @@ def plot_e2e(raw_time_dict):
     fig.legend(handles=legend_handles, loc='upper center', ncol=len(full_sys_names), bbox_to_anchor=(0.5, 1.2), columnspacing=0.5)
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.05)
-    fig.savefig(f"./plot/figs/e2e_cherry_pick.pdf", bbox_inches='tight')
+    fig.savefig(f"./plot/figs/e2e_pick.pdf", bbox_inches='tight')
     
 def main():
     _, raw_time_dict = parse_dense_performance_data()  # {key: {'hfu': xxx, 'time': xxx, 'sim_time': xxx}}}

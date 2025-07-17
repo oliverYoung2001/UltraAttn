@@ -188,7 +188,7 @@ def plot_strong_scalability_for_training(raw_time_dict: dict):
     fig.legend(handles=legend_elements, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.02))
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.2)
-    fig.savefig(f"./plot/figs/strong_scalability_training_cherry_pick.pdf", bbox_inches='tight')
+    fig.savefig(f"./plot/figs/strong_scalability_training_pick.pdf", bbox_inches='tight')
 
                     
 def main():

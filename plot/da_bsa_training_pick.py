@@ -200,7 +200,7 @@ def plot_all_inter_configs(inter_exp_da_configs, prof_db: Prof_DB, fob: bool): #
     fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.10))
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.05)
-    fig.savefig(f"./plot/figs/inter_bsa_configs_training_cherry_pick_fob={fob}.pdf", bbox_inches='tight')
+    fig.savefig(f"./plot/figs/inter_bsa_configs_training_pick_fob={fob}.pdf", bbox_inches='tight')
 
 def plot(data, devices, model_names, sys_names, figure_name, add_legend=False):
   # 两图合并，参数有所修改

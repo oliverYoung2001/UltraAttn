@@ -16,6 +16,7 @@ popd
 CPUS_PER_NODE=104
 
 # Install Openmpi
+#   1. From source
 export OPENMPI_HOME=/home/fit/zhaijd/yhy/.local/openmpi
 pushd ~/yhy/Software
 wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.8.tar.gz
@@ -25,6 +26,9 @@ cd openmpi-4.1.8
 make -j $CPUS_PER_NODE all
 make install
 popd
+#   2. From spack
+#   TODO
+# End
 
 # For qiyuan:
 source ./scripts/env_qy.sh

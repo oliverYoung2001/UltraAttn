@@ -193,7 +193,7 @@ def plot_all_intra_configs(intra_exp_da_configs, prof_db: Prof_DB): # Relative P
     fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15), columnspacing=0.2, handletextpad=0.1)
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.05)
-    fig.savefig(f"./plot/figs/intra_bsa_configs_inference_cherry_pick.pdf", bbox_inches='tight')
+    fig.savefig(f"./plot/figs/intra_bsa_configs_inference_pick.pdf", bbox_inches='tight')
   
 def main():
     os.environ['CLUSTER_NAME'] = 'hamming'

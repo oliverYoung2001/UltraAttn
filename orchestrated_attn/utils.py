@@ -365,7 +365,7 @@ class InterComm_fused(Comm_Fused):
     def __init__(self, PROC_INFO: dict, X: int, Y: int):
         super().__init__()
         rank = PROC_INFO['rank']
-        world_size = PROC_INFO['world_size']
+        # world_size = PROC_INFO['world_size']    # Wrong world_size
         local_rank = PROC_INFO['local_rank']
         local_size = PROC_INFO['tasks_per_node']
         node_id = PROC_INFO['nodeid']
@@ -373,7 +373,8 @@ class InterComm_fused(Comm_Fused):
         cur_x_id = node_id % X
         cur_y_id = node_id // X
         r_key = tuple(range(cur_y_id * X * local_size + local_rank, (cur_y_id + 1) * X * local_size + local_rank, local_size))
-        c_key = tuple(range(cur_x_id * local_size + local_rank, world_size, X * local_size))
+        # c_key = tuple(range(cur_x_id * local_size + local_rank, world_size, X * local_size))
+        c_key = tuple(range(cur_x_id * local_size + local_rank, (cur_x_id + Y * X) * local_size + local_rank, X * local_size))
         ncclcomm_dict = get_global_var('ncclcomm_dict')
         self.r_ncclcomm: PyNcclCommunicator = ncclcomm_dict[r_key]
         self.c_ncclcomm: PyNcclCommunicator = ncclcomm_dict[c_key]

@@ -16,7 +16,26 @@ import inspect
 import argparse
 import regex as re
 from pynvml import nvmlInit, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo
+from functools import wraps
 
+def use_all_cpus(func):
+    """Decorator to temporarily enable all CPU cores for the function."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Save original CPU affinity
+        original_affinity = os.sched_getaffinity(0)
+        
+        # Set to all available CPUs
+        all_cpus = set(range(os.cpu_count()))
+        os.sched_setaffinity(0, all_cpus)
+        
+        try:
+            return func(*args, **kwargs)
+        finally:
+            # Restore original affinity (even if function raises an exception)
+            os.sched_setaffinity(0, original_affinity)
+    
+    return wrapper
 def report_memory(name):
     """Simple GPU memory report."""
     mega_bytes = 1024.0 * 1024.0
@@ -70,7 +89,7 @@ def filter_kwargs(func, kwargs):
     sig = inspect.signature(func)
     return {k: v for k, v in kwargs.items() if k in sig.parameters}
 
-def calc_flops(mbs, S: tuple, Nh, D, causal=True, fob=0, total_sparsity=1):
+def calc_flops(mbs, S: tuple, Nh, D, fob=0, total_sparsity=1):
     # print(f'total_sparsity: {total_sparsity}')
     flops = 2 * 2 * mbs * S[0] * S[1] * Nh * D * total_sparsity
     if fob == 0:
@@ -211,6 +230,8 @@ def convert_profile_data_to_map(profile_list):
     profile_map = {}
     for i in range(len(profile_list)):
         map_key = tuple(profile_list[i][0])
+        if map_key in profile_map.keys():
+            print(f'{map_key}', flush=True)
         assert map_key not in profile_map.keys()
         profile_map[map_key] = np.array(profile_list[i][1][:2]) / 1e6    # [fwd/bwd], (s)
     # print(f'profile_map: {profile_map}')
@@ -341,7 +362,7 @@ def convert_node_profile_data_to_comp_map(file_name: Optional[str], local_size: 
     # exit(0)
     return profile_map
 
-def select_best_schedule_in_node_profile_data(file_name: str, local_size: int):
+def select_best_schedule_in_node_profile_data(file_name: str, local_size: int): # [DEPRECATED]
     # [NOTE]: Only for full attention
     # map_key: ((Sq, Skv), (Nhq, Nhg), bs, D, causal) -> Time[fwd/bwd]  # S per GPU !!!
     profile_map = {

@@ -349,7 +349,7 @@ def intra_attn_forward(
             execute_kernel(kernel, None, PROC_INFO, p_fwd_comp_func, comm, buf_dict, causal)
         return buf_dict['out_row'], buf_dict['out_col']
     elif buf_dict['graph_type'] == 'fused':   # (X, Y) cases
-        assert causal == False, 'Intra attn XY not support causal == True'
+        # `causal` is useless here !!!
         X, Y = execution_plan.X, execution_plan.Y
         comm = IntraComm_fused(PROC_INFO, X, Y)
         return fused_attn_forward(
@@ -385,13 +385,7 @@ def orchestrated_attn_forward(
     
     # Parse buf_dict
     buf_dict = inter_execution_plan.buf_dict
-        
-    if hasattr(inter_execution_plan, 'hierarchy_sp'):
-        # assert inter_execution_plan.hierarchy_sp == PROC_INFO['node_num']
-        pass
-    else:
-        assert inter_execution_plan.X * inter_execution_plan.Y == PROC_INFO['node_num']
-    # assert inter_execution_plan.split_degrees[2] == 1 and inter_execution_plan.split_degrees[3] == 1
+    
     inter_streams = copy.copy(get_global_var('streams')['inter'])
     # modify inter_streams[0] to intra_streams
     inter_streams[0] = get_global_var('streams')['intra']
@@ -400,7 +394,6 @@ def orchestrated_attn_forward(
         intra_attn_forward, 
         softmax_scale=softmax_scale,
         dropout_p=dropout_p,
-        # execution_plan.da_config.causal,
         window_size=window_size,
         alibi_slopes=alibi_slopes,
         deterministic=deterministic,
@@ -415,7 +408,7 @@ def orchestrated_attn_forward(
             execute_inter_kernel(kernel, None, PROC_INFO, p_fwd_inter_comp_func, comm, buf_dict, causal)
         return inter_execution_plan.buf_dict['out_row'], inter_execution_plan.buf_dict['out_col']
     elif buf_dict['graph_type'] == 'fused':   # (X, Y) cases
-        assert causal == False, 'Intra attn XY not support causal == True'
+        # `causal` is useless here !!!
         assert hasattr(inter_execution_plan, 'kernel_execution_plan')
         X, Y = inter_execution_plan.X, inter_execution_plan.Y
         comm = InterComm_fused(PROC_INFO, X, Y)
@@ -424,7 +417,7 @@ def orchestrated_attn_forward(
             return p_fwd_inter_comp_func(
                 inp_row=inp_row,
                 inp_col=inp_col,
-                causal=causal,
+                causal=False,
                 execution_plan=inter_execution_plan.kernel_execution_plan,
             )
         return fused_attn_forward(
@@ -613,7 +606,7 @@ def intra_attn_backward(
             execute_kernel(kernel, None, PROC_INFO, p_bwd_comp_func, comm, buf_dict, causal)
         return buf_dict['out_row'], buf_dict['out_col']
     elif buf_dict['graph_type'] == 'fused':   # (X, Y) cases
-        assert causal == False, 'Intra attn XY not support causal == True'
+        # `causal` is useless here !!!
         X, Y = execution_plan.X, execution_plan.Y
         comm = IntraComm_fused(PROC_INFO, X, Y)
         return fused_attn_backward(
@@ -625,8 +618,7 @@ def intra_attn_backward(
         )
     else:
         raise Exception(f"graph_type {buf_dict['graph_type']} not supported !!!")
-    
-    
+
 def orchestrated_attn_backward(
     inp_row: Input_Row_Bwd,
     inp_col: Input_Col_Bwd,
@@ -650,12 +642,6 @@ def orchestrated_attn_backward(
     # Parse buf_dict
     buf_dict = inter_execution_plan.buf_dict
     
-    if hasattr(inter_execution_plan, 'hierarchy_sp'):
-        # assert inter_execution_plan.hierarchy_sp == PROC_INFO['node_num']
-        pass
-    else:
-        assert inter_execution_plan.X * inter_execution_plan.Y == PROC_INFO['node_num']
-    # assert inter_execution_plan.split_degrees[2] == 1 and inter_execution_plan.split_degrees[3] == 1
     inter_streams = copy.copy(get_global_var('streams')['inter'])
     # modify inter_streams[0] to intra_streams
     inter_streams[0] = get_global_var('streams')['intra']
@@ -675,7 +661,7 @@ def orchestrated_attn_backward(
         for kernel in inter_execution_plan.gpu_kernel_lists[node_id]:
             execute_inter_kernel(kernel, None, PROC_INFO, p_bwd_inter_comp_func, comm, buf_dict, causal)
     elif buf_dict['graph_type'] == 'fused':   # (X, Y) cases
-        assert causal == False, 'Intra attn XY not support causal == True'
+        # `causal` is useless here !!!
         assert hasattr(inter_execution_plan, 'kernel_execution_plan')
         X, Y = inter_execution_plan.X, inter_execution_plan.Y
         comm = InterComm_fused(PROC_INFO, X, Y)
@@ -684,7 +670,7 @@ def orchestrated_attn_backward(
             return p_bwd_inter_comp_func(
                 inp_row=inp_row,
                 inp_col=inp_col,
-                causal=causal,
+                causal=False,
                 execution_plan=inter_execution_plan.kernel_execution_plan,
             )
         return fused_attn_backward(
@@ -753,7 +739,8 @@ class OrchestratedAttnFunc(torch.autograd.Function):
         return out if not return_softmax else (out, softmax_lse, None)
     
     @staticmethod
-    def backward(ctx, dout, *args):
+    def backward(ctx, dout, *args): # [DEPRECATED]
+        assert False
         q, k, v, out, softmax_lse = ctx.saved_tensors
         dq, dk, dv = orchestrated_attn_backward(
             dout,

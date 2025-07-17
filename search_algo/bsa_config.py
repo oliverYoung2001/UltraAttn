@@ -4,6 +4,8 @@ import numpy as np
 from search_algo.utils import Block_Comp_Volume, Block_Type, Block_Attention_Config, closest_fraction, unique_list, convert_block_table_to_value
 import regex as re
 from typing import List, Union, Optional, Tuple
+import math
+from sympy import factorint
 
 class BSA_Repr():   # OK
     """
@@ -11,9 +13,10 @@ class BSA_Repr():   # OK
     """
     def __init__(self, block_table: np.ndarray, cmap: Optional[np.ndarray]):
         # [NOTE]: cmap can be None
-        assert len(block_table.shape) == 2 and block_table.shape[0] == block_table.shape[1]
+        assert len(block_table.shape) == 2 #and block_table.shape[0] == block_table.shape[1]
         self.block_table = block_table
         self.cmap = cmap
+        # print(f'block_table: {block_table}', flush=True)
         self.block_table_raw, self.cmap_raw = self.simplify(self.block_table, self.cmap)
         self.block_table_Par_D, self.cmap_Par_D = None, None
         self.minimum_Par_D = self.block_table_raw.shape[0]
@@ -30,13 +33,14 @@ class BSA_Repr():   # OK
             def factor_map(ids) -> List[int]:
                 return [new_id for id in ids for new_id in range(id * factor, (id + 1) * factor)]
             select_ids = [factor_map(axis_ids) for axis_ids in select_ids]
-            split_degrees = list(self.block_table_raw.shape)
+            # split_degrees = list(self.block_table_raw.shape)
         # fancy indexing:
+        # print(f'split_degrees: {split_degrees}, self.block_table_raw.shape: {self.block_table_raw.shape}, select_ids: {select_ids}', flush=True)
         sub_block_table = cur_block_table[np.ix_(*select_ids)]
+        # print(f'sub_block_table: \n{sub_block_table}', flush=True)
         sub_bsa_repr = BSA_Repr(sub_block_table, cmap=None)
         return sub_bsa_repr
-            
-        
+    
     def check_causal(self):
         for i in range(self.block_table_raw.shape[0]):
             for j in range(self.block_table_raw.shape[1]):
@@ -47,15 +51,22 @@ class BSA_Repr():   # OK
                 if i > j and self.block_table_raw[i, j].value not in [Block_Type.EMPTY.value, Block_Type.FULL.value]:# Should be EMPTY or FULL
                     return False
         return True
-        
+    
     def check_empty(self):
         for i in range(self.block_table_raw.shape[0]):
             for j in range(self.block_table_raw.shape[1]):
                 if self.block_table_raw[i, j].value != Block_Type.EMPTY.value:
                     return False
         return True
-        
-    def merge_blocks(self, sub_table: np.ndarray) -> Optional[Block_Type]:  # OK
+    
+    def check_full(self):
+        for i in range(self.block_table_raw.shape[0]):
+            for j in range(self.block_table_raw.shape[1]):
+                if self.block_table_raw[i, j].value != Block_Type.FULL.value:
+                    return False
+        return True
+    
+    def merge_blocks(self, sub_table: np.ndarray) -> Optional[Block_Type]:  # [NOTE]: Only support square shape !!!
         sub_par_d = sub_table.shape[0]
         
         is_empty, is_full, is_causal = True, True, True
@@ -80,7 +91,7 @@ class BSA_Repr():   # OK
             return Block_Type.CAUSAL
         return None
     
-    def simplify_by_2(self, block_table: np.ndarray, cmap: np.ndarray): # OK
+    def simplify_by_2(self, block_table: np.ndarray, cmap: np.ndarray): # [NOTE]: Only support square shape, currently !!!
         par_d = block_table.shape[0]
         if par_d % 2 != 0:
             return block_table, cmap, False
@@ -111,11 +122,56 @@ class BSA_Repr():   # OK
             new_cmap = None
         return new_block_table, new_cmap, successed
     
-    def simplify(self, block_table: np.ndarray, cmap: np.ndarray):  # OK
-        while True:
-            block_table, cmap, successed = self.simplify_by_2(block_table, cmap)
-            if not successed:
+    def simplify_by_k(self, block_table: np.ndarray, cmap: np.ndarray, k: int): # [NOTE]: Support general rectangle shapes
+        if k <= 1:
+            return block_table, cmap, False
+        Par_Q, Par_KV = block_table.shape
+        if math.gcd(Par_Q, Par_KV) % k != 0:
+            return block_table, cmap, False
+        new_Par_Q, new_Par_KV = Par_Q // k, Par_KV // k
+        new_block_table = np.empty_like(block_table, shape=(new_Par_Q, new_Par_KV))
+        successed = True
+        # simplify block_table
+        for ij in range(new_Par_Q * new_Par_KV):
+            i = ij // new_Par_KV
+            j = ij % new_Par_KV
+            merged_elem = self.merge_blocks(block_table[i*k: (i+1)*k, j*k: (j+1)*k])
+            if merged_elem is None:
+                successed = False
                 break
+            new_block_table[i, j] = merged_elem
+        
+        if not successed:
+            return block_table, cmap, successed
+        # simplify cmap
+        if cmap is not None:
+            assert Par_Q == Par_KV, f'Now not support (Par_Q={Par_Q}) != (Par_KV={Par_KV}) for cmap simplification'
+            new_par_d = Par_Q
+            new_cmap = np.empty_like(cmap, (new_par_d))
+            for i in range(new_par_d):
+                if cmap[i * 2] != cmap[i * 2 + 1]:
+                    new_cmap = None
+                    break
+                new_cmap[i] = cmap[i * 2]
+        else:
+            new_cmap = None
+        return new_block_table, new_cmap, successed
+    
+    def simplify(self, block_table: np.ndarray, cmap: np.ndarray):  # OK
+        Par_Q, Par_KV = block_table.shape
+        Par_GCD = math.gcd(Par_Q, Par_KV)
+        factors = factorint(Par_GCD)
+        for alpha, beta in factors.items():
+            if alpha <= 1:
+                continue
+            for _ in range(beta):
+                block_table, cmap, successed = self.simplify_by_k(block_table, cmap, k=alpha)
+                if not successed:
+                    break
+        # while True:
+        #     block_table, cmap, successed = self.simplify_by_2(block_table, cmap)
+        #     if not successed:
+        #         break
         return block_table, cmap
 
     def complicate_block(self, sub_table: np.ndarray, block_type: Block_Type, rate: int) -> np.ndarray:    # OK
@@ -215,7 +271,7 @@ class BSA_Config(): # OK
         self.pat_s = None
         # self.block_table = None
         self.cmap = None
-        self.bsa_repr = None
+        self.bsa_repr: BSA_Repr = None
         if pat_s is not None and pat_dict is None:  # Create from pat_s; [DEPRECATED]
             assert False
             pat_dict = self.convert_string_to_dict(pat_s)
@@ -247,7 +303,17 @@ class BSA_Config(): # OK
             raise Exception(f'[ERROR]: Unknown BSA_Config __init__ !!!')
         self.causal = self.bsa_repr.check_causal()
         # self.print_block_table()
-        
+    
+    @classmethod
+    def create_full(cls, CP: tuple):
+        return cls(None, None, {
+            'bsa_repr': BSA_Repr(
+                block_table=np.full((1, 1), fill_value=Block_Type.FULL, dtype=Block_Type), 
+                cmap=None
+            ),
+            'CP': CP,
+        })
+    
     @classmethod
     def from_dict(cls, pat_dict: dict): # OK
         # CP: int, Par_D: int, pattern_type: str, pattern_sparsity: float, 

@@ -4,13 +4,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 from search_algo.search_engine import Dist_Attn_Schedule, Dist_Attn_Config, Machine_Config, Evaluation_Configs
 from search_algo.utils import get_factors, print_rank_0
-from search_algo.bsa_utils import bsa_is_dense
+from search_algo.bsa_utils import bsa_is_dense, bsa_is_causal
 from search_algo.dependent_graph import Dependent_Graph, Comp_Kernel
 from search_algo.execute_plan import Execution_Plan
+from search_algo.bsa_config import BSA_Config
 import numpy as np
 import copy
 import itertools
-from typing import Optional
+from typing import Optional, List
 import math
 
 class Comm_Rebuild_Engine():   # (Broadcast/reduce, row/col)
@@ -41,13 +42,28 @@ class Comp_Fusion_Transformation(Graph_Transformation):
             for y in ids_tuple[1]:
                 self.ids_set.add((x, y))
     
-    def apply_on_d_graph(self, d_graph: Dependent_Graph):
+    def apply_on_d_graph(self, d_graph: Dependent_Graph): # ✅
         # [TODO]: apply transformation on d_graph
+        da_config: Dist_Attn_Config = d_graph.da_config
         schedule = d_graph.schedule
         hierarchy = d_graph.hierarchy
+        bsa_comp_key_suffixes = d_graph.bsa_comp_key_suffixes
         ids_tuple = self.ids_tuple
         ids_set = self.ids_set
-        comp_map_key = schedule.m_config.comp_profile_maps[hierarchy].get_comp_map_key(schedule.da_config, [len(ids_tuple[0]), len(ids_tuple[1])], schedule.split_degrees)
+        if hierarchy == 0:
+            bsa_intra_unit_shape_config = copy.deepcopy(da_config.shape_config)
+            bsa_intra_unit_shape_config['S'] = (bsa_intra_unit_shape_config['S'][0] // schedule.split_degrees[0] * len(ids_tuple[0]), \
+                                                bsa_intra_unit_shape_config['S'][1] // schedule.split_degrees[1] * len(ids_tuple[1]))
+            bsa_CP = (da_config.SP[1], 1)  # (intra, inter)
+            sub_bsa_repr = da_config.bsa_config.bsa_repr.create_sub_bsa_repr(
+                schedule.split_degrees[0: 2], select_ids = [list(ids_tuple[0]), list(ids_tuple[1])])
+            sub_pat_bsa_repr = {'bsa_repr': sub_bsa_repr, 'CP': bsa_CP}
+            sub_bsa_config = BSA_Config(None, None, sub_pat_bsa_repr)
+            comp_map_key = d_graph.select_bsa_comp_key(bsa_CP, bsa_intra_unit_shape_config, sub_bsa_config, \
+                key_suffixes=bsa_comp_key_suffixes, enable_suf_map=bsa_is_dense(da_config.bsa_config))# [NOTE]: Select best key_suffix from key_suffixes
+        else:
+            comp_map_key = schedule.m_config.comp_profile_maps[hierarchy].\
+                get_comp_map_key(schedule.da_config, [len(ids_tuple[0]), len(ids_tuple[1])], schedule.split_degrees)
         
         # Collect comp kernels to be fused
         old_kernels = []
@@ -108,8 +124,6 @@ class Comp_Fusion_Substitution(Graph_Substitution):
         self.dfs_lines(x_id + 1, x_ids, new_y_ids)
         x_ids.pop()
         
-        
-        
     def findall_trans_in_d_graph(self, d_graph: Dependent_Graph, hierarchy_sp: int) -> list:
         schedule_table = d_graph.schedule.schedule_table
         split_degrees = d_graph.split_degrees
@@ -119,7 +133,7 @@ class Comp_Fusion_Substitution(Graph_Substitution):
         trans = []
         causal = False
         
-        # Adssign invalid values to diagonal of schedule table when causal !!!
+        # Assign invalid values to diagonal of schedule table when causal !!!
         if schedule_table_sp[0, split_degrees[1] - 1] < 0: # causal
             causal = True
             assert split_degrees[0] == split_degrees[1]
@@ -133,16 +147,13 @@ class Comp_Fusion_Substitution(Graph_Substitution):
         for sp_id in range(hierarchy_sp):
             self.bool_schedule_table = schedule_table_sp == sp_id
             self.cur_trans = trans[sp_id]
-            self.dfs_lines(0, [], np.arange(hierarchy_sp))
+            self.dfs_lines(0, [], np.arange(self.bool_schedule_table.shape[1]))
         
         # Retore diagonal values of schedule table
         if causal: # causal
             schedule_table_sp[np.diag_indices_from(schedule_table_sp)] = table_diagonal
         
         return trans
-    
-        
-
         
 class Graph_Transformation_Engine():    # batch engine
     # input: d_graph
@@ -161,7 +172,7 @@ class Graph_Transformation_Engine():    # batch engine
             print(f'{sp_id}:', flush=True)
             for tran in self.trans_sp[sp_id]:
                 print(f'{tran.ids_tuple}', flush=True)
-        
+    
     def get_all_transformations(self):
         '''
         transformations are concrete substitutions with positions on a concrete graph
@@ -182,11 +193,11 @@ class Graph_Transformation_Engine():    # batch engine
     
     def apply_transformations(self, selected_trans: list):
         new_d_graph = copy.deepcopy(self.d_graph)   # apply transformations on new_d_graph
-        # # Print trans
-        # print(f'Selected Transformations: ', end='', flush=True)
-        # for tran in selected_trans:
-        #     print(f'{tuple(tran.ids_tuple)} ', end='', flush=True)
-        # print(flush=True)
+        # Print trans
+        print(f'Selected Transformations: ', end='', flush=True)
+        for tran in selected_trans:
+            print(f'{tuple(tran.ids_tuple)} ', end='', flush=True)
+        print(flush=True)
         # Apply transformations on d_graph
         for tran in selected_trans:
             tran.apply_on_d_graph(new_d_graph)
@@ -194,7 +205,7 @@ class Graph_Transformation_Engine():    # batch engine
         execute_plan = Execution_Plan(new_d_graph, self.exp_config.fob, plan_type=self.plan_type)
         # execute_plan.print_lp_result()
         return execute_plan
-            
+    
     def dfs_trans(self, trans_all_id: int, selected_trans: list, fused_pos: set):
         if trans_all_id >= len(self.trans_all):
             if len(selected_trans) == 0:
@@ -215,8 +226,11 @@ class Graph_Transformation_Engine():    # batch engine
         # type1: comp fusion substitutions
         # print(f'self.da_config.bsa_config: {self.da_config.bsa_config}', flush=True)
         # if self.da_config.bsa_config is None: # dense
-        if bsa_is_dense(self.da_config.bsa_config): # dense (full, causal)
-            self.comp_unit_ub = self.hierarchy_sp // 2 + (self.hierarchy_sp == 3)  # 4 -> 2, 5 -> 2, 8 -> 4, special !!! 3 -> 2
+        if bsa_is_dense(self.da_config.bsa_config): # dense: just causal !!!
+            # self.comp_unit_ub = self.hierarchy_sp // 2 + (self.hierarchy_sp == 3)  # 4 -> 2, 5 -> 2, 8 -> 4, special !!! 3 -> 2
+            assert self.d_graph.split_degrees[0] == self.d_graph.split_degrees[1]
+            Par_D = self.d_graph.split_degrees[0]
+            self.comp_unit_ub = int(math.ceil(Par_D * (Par_D - 1) / 2 / self.hierarchy_sp))
         else:   # bsa
             self.comp_unit_ub = int(math.ceil(math.prod(self.d_graph.split_degrees) / self.hierarchy_sp))
         # self.ub_factors = get_factors(self.comp_unit_ub)

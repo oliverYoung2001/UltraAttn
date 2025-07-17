@@ -215,7 +215,8 @@ def plot_all_inter_configs(raw_time_dict: dict, fob: bool): # Relative Performan
     fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15), columnspacing=1)
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.05)
-    fig.savefig(f"./plot/figs/inter_dense_configs_training_cherry_pick_fallback_fob={fob}.pdf", bbox_inches='tight')
+    fig.savefig(f"./plot/figs/inter_dense_configs_training_pick_fob={fob}.pdf", bbox_inches='tight')
+    # fig.savefig(f"./plot/figs/inter_dense_configs_training_pick_fallback_fob={fob}.pdf", bbox_inches='tight')
 
 def main():
     random.seed(114514)

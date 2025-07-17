@@ -8,3 +8,7 @@
 	path = third_party/UltraAttn_baseline
 	url = https://github.com/oliverYoung2001/UltraAttn_baseline.git
 	branch = main
+[submodule "third_party/flash-attention"]
+	path = third_party/flash-attention
+	url = https://github.com/oliverYoung2001/flash-attention.git
+	branch = v2.5.7_burst
