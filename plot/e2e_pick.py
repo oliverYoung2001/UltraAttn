@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                             os.path.pardir)))
 from plot.common import parse_dense_performance_data
 import json
 import regex as re
@@ -201,7 +205,7 @@ def plot_e2e(raw_time_dict):
                     ax.yaxis.set_label_coords(-0.5, 0.5)
                     # ax.yaxis.set_label_coords(0, 1)
 
-                ax.set_ylim(0, ylim)
+                ax.set_ylim(0, ylim * 1.05)
                 if fig_cid == 0:
                     # ax.set_yticks(np.arange(0, ylim * 4 + 1, 1) / 4)  # [0, 0.25, 0.5, 0.75, 1]
                     ax.set_yticks(np.arange(0, ylim * 2 + 1, 1) / 2)  # [0, 0.5, 1]

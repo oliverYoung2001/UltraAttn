@@ -40,10 +40,10 @@ popd
 # "Times New Roman" font for plot
 # sudo apt update
 # sudo apt install ttf-mscorefonts-installer -y
-Download 'Times New Roman.ttf' at https://github.com/justrajdeep/fonts/blob/master/Times%20New%20Roman.ttf to ???/Software
+# Download 'Times New Roman.ttf' at https://github.com/justrajdeep/fonts/blob/master/Times%20New%20Roman.ttf to ???/Software
 mkdir -p ~/.fonts
-cp ???/Software/'Times New Roman.ttf' ~/.fonts
-sudo fc-cache -f -v # refresh font cache
+cp ./plot/fonts/times_new_roman.ttf ~/.fonts
+fc-cache -f -v # refresh font cache
 fc-list | grep "Times New Roman" # check whether it is installed
 rm -r ~/.cache/matplotlib   # remove cache of matplotlib
 

@@ -180,7 +180,7 @@ def plot_all_intra_configs(intra_exp_da_configs, prof_db: Prof_DB): # Relative P
                       ax.yaxis.set_label_coords(-0.35, 0.5)
                       # ax.yaxis.set_label_coords(0, 1)
 
-                    ax.set_ylim(0, ylim)
+                    ax.set_ylim(0, ylim * 1.05)
                     if fig_cid == 0:
                         # ax.set_yticks(np.arange(0, ylim * 4 + 1, 1) / 4)  # [0, 0.25, 0.5, 0.75, 1]
                         ax.set_yticks(np.arange(0, ylim * 2 + 1, 1) / 2)  # [0, 0.5, 1]
