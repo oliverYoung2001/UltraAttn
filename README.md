@@ -1,5 +1,5 @@
 <div align="center" id="sglangtop">
-<img src="assets/logo/logo.png" alt="logo" width="400" margin="10px"></img>
+<img src="assets/logo/UltraAttn_logo.png" alt="logo" width="400" margin="10px"></img>
 
 <!-- [![PyPI](https://img.shields.io/pypi/v/sglang)](https://pypi.org/project/sglang)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/sglang)
