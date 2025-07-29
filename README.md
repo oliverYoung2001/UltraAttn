@@ -1,32 +1,26 @@
-# UltraAttn
+<div align="center" id="sglangtop">
+<img src="assets/logo/logo.png" alt="logo" width="400" margin="10px"></img>
 
-## Code Hierarchy
-### Scheduler Searching Engine (Scheduling)
+<!-- [![PyPI](https://img.shields.io/pypi/v/sglang)](https://pypi.org/project/sglang)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/sglang)
+[![license](https://img.shields.io/github/license/sgl-project/sglang.svg)](https://github.com/sgl-project/sglang/tree/main/LICENSE)
+[![issue resolution](https://img.shields.io/github/issues-closed-raw/sgl-project/sglang)](https://github.com/sgl-project/sglang/issues)
+[![open issues](https://img.shields.io/github/issues-raw/sgl-project/sglang)](https://github.com/sgl-project/sglang/issues)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sgl-project/sglang) -->
 
-#### Step1 Row/Column (Q,KV) Allocation Engine
+</div>
 
-1. Strategy1: Sequential
-2. Strategy2: ZigZag
-3. Smart Strategy ???
+## News
 
-**Output**: A map from gpu ranks to token ids.
+## About
 
-#### Step2 Workload Partition and Allocation Engine
+## Getting Started
 
-**Method**: Solution Binary Search + ILP; 
-**Baseline for Step 1&2**: Ring; ZigZag
-**Output**: Comp Distribution Table
+## Performance
 
-#### Step3 Parallel Graph Transformation Engine
+## Contribution
 
-**Method**: Greedy Algorithm
-**Baseline**: No Transformation
-**Output**: CC Dependency Graph
+## Citation
 
-#### Step4. Lowering Engine
-
-**Method**: ILP
-**Baseline**: Flexflow
-**Output**: Cuda Stream Graph
-
-### DistAttn Engine (Executing)
+## License
+UltraAttn uses Apache License 2.0.
