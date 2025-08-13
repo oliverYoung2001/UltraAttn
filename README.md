@@ -38,22 +38,33 @@ The core of UltraAttn is the **hierarchically context-tiling at three levels**, 
 ## Getting Started
 
 ## Design Document
-If you are curious or interesting about the design philosophy of UltraAttn, please refer to [UltraAttn design document](https://github.com/oliverYoung2001/UltraAttn).
+If you are curious or interesting about the design philosophy of UltraAttn, please refer to [UltraAttn design document](docs/design_document.md).
 
 ## Performance
 ### End-to-End Speedup
 End-to-end relative performance of UltraAttn and baselines on Llama2-7b. Performance is normalized by UltraAttn. The speedup text above the last bar shows UltraAttn’s gain over the best baseline.
 Configuration: $S$, i.e., context length, is fixed to 512k for training or prefill phase in inference. $CP$, i.e. context parallel degree, is fixed to 8 for two inference cases including star and streaming. For other four training cases, $CP$ is fixed to 64.
+![e2e_pick](plot/figs/png/e2e_pick.png)
 
 ### Distributed Attention Speedup
 #### Block Sparse Attention in Training
 Relative performance, normalized by UltraAttn, of two types of block sparse attention, i.e., strided attention and global+local attention, for training from 8 GPUs to 64 GPUs. $CP$, $S$, and $Nh$ represent context parallelism degree, context length, and number of head, respectively. The first and the last blocks represent the baseline and UltraAttn, respectively. The other three blocks represent ablation studies. In these ablation studies, four optimization techniques are added one by one from left to right. The speedup text above the last bar shows UltraAttn’s gain over the best baseline.
+![bsa_train_0](plot/figs/png/inter_bsa_configs_training_pick_fob=0.png)
+**Forward block sparse attention**
+![bsa_train_1](plot/figs/png/inter_bsa_configs_training_pick_fob=1.png)
+**Backward block sparse attention**
 
 #### Dense Attention in Training
 Relative performance normalized by UltraAttn of two types of dense attention for training.
+![dense_train_0](plot/figs/png/inter_dense_configs_training_pick_fob=0.png)
+**Forward dense attention**
+
+![dense_train_1](plot/figs/png/inter_dense_configs_training_pick_fob=1.png)
+**Backward dense attention**
 
 #### Block Sparse Attention in Inference
 Relative performance normalized by UltraAttn of two types of block sparse attention for inference from 2 to 8 GPUs.
+![bsa_infer_0](plot/figs/png/intra_bsa_configs_inference_pick=0.png)
 
 ## Roadmaps
 ### Functionalities
