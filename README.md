@@ -50,21 +50,21 @@ Configuration: $S$, i.e., context length, is fixed to 512k for training or prefi
 #### Block Sparse Attention in Training
 Relative performance, normalized by UltraAttn, of two types of block sparse attention, i.e., strided attention and global+local attention, for training from 8 GPUs to 64 GPUs. $CP$, $S$, and $Nh$ represent context parallelism degree, context length, and number of head, respectively. The first and the last blocks represent the baseline and UltraAttn, respectively. The other three blocks represent ablation studies. In these ablation studies, four optimization techniques are added one by one from left to right. The speedup text above the last bar shows UltraAttn’s gain over the best baseline.
 ![bsa_train_0](plot/figs/png/inter_bsa_configs_training_pick_fob=0.png)
-**Forward block sparse attention**
+*Forward block sparse attention*
 ![bsa_train_1](plot/figs/png/inter_bsa_configs_training_pick_fob=1.png)
-**Backward block sparse attention**
+*Backward block sparse attention*
 
 #### Dense Attention in Training
 Relative performance normalized by UltraAttn of two types of dense attention for training.
 ![dense_train_0](plot/figs/png/inter_dense_configs_training_pick_fob=0.png)
-**Forward dense attention**
+*Forward dense attention*
 
 ![dense_train_1](plot/figs/png/inter_dense_configs_training_pick_fob=1.png)
-**Backward dense attention**
+*Backward dense attention*
 
 #### Block Sparse Attention in Inference
 Relative performance normalized by UltraAttn of two types of block sparse attention for inference from 2 to 8 GPUs.
-![bsa_infer_0](plot/figs/png/intra_bsa_configs_inference_pick=0.png)
+![bsa_infer_0](plot/figs/png/intra_bsa_configs_inference_pick.png)
 
 ## Roadmaps
 ### Functionalities
