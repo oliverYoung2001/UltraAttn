@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from search_algo.initialize import initialize_prof_db
-from search_algo.exp_configs import get_bsa_configs, get_exp_configs
 from search_algo.search_engine import Dist_Attn_Config
 import json
 from typing import List
@@ -75,7 +74,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
     fig, axs = plt.subplots(num_rows, num_figs_per_row)
     
     # 和utils.py中的COLOR_DEF相同，共7种颜色
-    pair_color_def = COLOR_DEF[:len(sys_names)]
+    pair_color_def = [COLOR_DEF[0], COLOR_DEF[3]] # just use two colors for inference
     marker_def = MARKER_DEF[:len(sys_names)]
     # hatch_def = [HATCH_DEF[2] if i == len(sys_names) - 1 else None for i in range(len(sys_names))]
     # hatch_def = [None] * len(sys_names)
@@ -183,7 +182,7 @@ def plot_strong_scalability_for_inference(raw_time_dict: dict):
         Line2D([0], [0], marker=marker_def[i], color=pair_color_def[i], linestyle='-', label=sys_names[i], linewidth=LINEWIDTH, markersize=MARKER_SIZE) for i in range(len(sys_names))
     ]
     # fig.legend(handles=legend_handles, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1))
-    fig.legend(handles=legend_elements, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15))
+    # fig.legend(handles=legend_elements, loc='upper center', ncol=len(sys_names), bbox_to_anchor=(0.5, 1.15))
     # fig.text(0.085, 0.5, 'Relative Performance', va='center', rotation='vertical', fontsize=10)
     plt.subplots_adjust(hspace=0.2,wspace=0.2)
     fig.savefig(f"./plot/figs/strong_scalability_inference_pick.pdf", bbox_inches='tight')

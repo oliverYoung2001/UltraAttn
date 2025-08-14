@@ -10,6 +10,9 @@ spack load cuda@12.8.1
 # export LD_LIBRARY_PATH=$(dirname $(which mpicxx))/../lib:$LD_LIBRARY_PATH
 # Numactl
 spack load numactl@2.0.18
+# imagemagick (convert pdf to png, usage: magick -density 300 input.pdf -quality 100 output.png)
+spack load ghostscript
+spack load imagemagick
 
 # conda
 source /ssd/yanghy/.local/miniconda3/bin/activate
